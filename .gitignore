@@ -38,4 +38,8 @@ CTestTestfile.cmake
 _deps
 
 # Custom
+cmake-build-debug
+[Bb]uild
 
+# IDEs
+.idea

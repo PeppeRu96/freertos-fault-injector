@@ -3,7 +3,7 @@
 Code base on github: https://github.com/PeppeRu96/freertos-fault-injector  
 All the other materials/resources can be found in the Dropbox shared folder RTOS_Project
 
-## General
+# General
 
 *#TODO things which are not dependent on the host operating system*
 
@@ -117,7 +117,21 @@ Therefore, we may have to choose which Linux FreeRTOS simulator implementation t
  
 *#TODO: understand how a building toolchain can be made on Linux (with CLion, GCC and CMake)? How can we build a configuration system, which should be as simple as possible to use, for the tasks to be executed? (building time configuration, not runtime)*
 
-
+# Building
+The project is fully based on CMake as it makes cross-platform compiling easy.
+## Linux
+Recommended IDE: CLion
+### Quick guide
+- Open CLion on the root folder of the project
+- It automatically detects CMakeLists.txt
+- Select the target
+- Build/Play
+- If you want to modify some options, open cmake-build-debug/CMakeCache.txt
+#### Manual cmake
+- go to the root folder
+- `cmake -S . -B build`
+- `cd build`
+- `make <target-name>`
 
 
 ##### Useful links
