@@ -122,19 +122,21 @@ The project is fully based on CMake as it makes cross-platform compiling easy.
 ## Linux
 Recommended IDE: CLion
 ### Quick guide
+You can use CLion or do it manually.
+#### Through CLion
 - Open CLion on the root folder of the project
 - It automatically detects CMakeLists.txt
 - Select the target
 - Build/Play
 - If you want to modify some options, open cmake-build-debug/CMakeCache.txt
-#### Manual cmake
+##### Manual cmake
 - go to the root folder
 - `cmake -S . -B build`
 - `cd build`
 - `make <target-name>`
 
 
-##### Useful links
+# Useful links
 - https://www.freertos.org/FreeRTOS-simulator-for-Linux.html
 - https://www.freertos.org/FreeRTOS-Windows-Simulator-Emulator-for-Visual-Studio-and-Eclipse-MingW.html
 - https://github.com/megakilo/FreeRTOS-Sim
@@ -142,11 +144,3 @@ Recommended IDE: CLion
 - [Read/Write memory under Windows and Linux](https://nullprogram.com/blog/2016/09/03/)
 - https://man7.org/linux/man-pages/man2/process_vm_readv.2.html - Read and write memory under Linux
 - https://www.youtube.com/watch?v=8XpVsb44YHA - Read-Write into another process memory (Windows)
-
-
-
-
-
-
-
-
