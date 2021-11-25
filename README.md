@@ -135,6 +135,17 @@ You can use CLion or do it manually.
 - `cd build`
 - `make <target-name>`
 
+## Windows
+Recommended IDE: Visual Studio Community 2019
+### Quick guide
+- Open Visual Studio on the root folder of the project
+- It automatically detects CMakeLists.txt and CMakeSettings.json and generate everything automatically
+- Open the main CMakeLists.txt
+- Play after having selected a target
+- You can modify CMake options and targets directly opening CMakeSettings
+- Use WIN32-Debug-Blinky-Demo to use the blinky demo
+- Use WIN32-Debug-Full-Demo to use the full demo
+
 
 # Useful links
 - https://www.freertos.org/FreeRTOS-simulator-for-Linux.html
