@@ -1,27 +1,52 @@
+# ---- DEMO ----
+
+option(BLINKY_DEMO "Build a blinky demo only rather than the full one" ON)
+
+configure_file(${FREERTOS_DIR}/Demo/WIN32-MSVC/demo_config.h.in demo_config.h)
+
 # Request Threads library
 find_package(Threads REQUIRED)
 
 # Compile options and definitions
-if(${DEMO} STREQUAL "BLINKY")
-    message("Blinky")
-    add_definitions(-DUSER_DEMO=0)
-elseif(${DEMO} STREQUAL "FULL")
-    message("Full")
-    add_definitions(-DUSER_DEMO=1)
+if (UNIX)
+    if(BLINKY_DEMO)
+        message("Blinky")
+        add_definitions(-DUSER_DEMO=0)
+    elseif(${DEMO} STREQUAL "FULL")
+        message("Full")
+        add_definitions(-DUSER_DEMO=1)
+    endif()
+    add_compile_options(-DprojCOVERAGE_TEST=0)
 endif()
-add_compile_options(-DprojCOVERAGE_TEST=0)
 
+# Includes
+# Platform dependent include directories
+if (WIN32)
+    set(DEMO_INCLUDES
+            ${FREERTOS_DIR}/Demo/WIN32-MSVC
+            ${FREERTOS_DIR}/Demo/WIN32-MSVC/Trace_Recorder_Configuration
+    )
+elseif (UNIX)
+    set(DEMO_INCLUDES
+            ${FREERTOS_DIR}/Demo/Posix_GCC
+    )
+endif()
+message(${PROJECT_BINARY_DIR})
+message(${CMAKE_BINARY_DIR})
+message(${CMAKE_CURRENT_BINARY_DIR})
+
+# Platform independent include directories
 set(DEMO_INCLUDES
-        ${FREERTOS_DIR}/Demo/Posix_GCC
+        ${DEMO_INCLUDES}
         ${FREERTOS_DIR}/Demo/Common/include
-        )
+        ${CMAKE_CURRENT_BINARY_DIR}
+)
 
-include_directories(${KERNEL_INCLUDES})
 include_directories(${DEMO_INCLUDES})
 
+# Sources
+# Platform-independent
 file(GLOB DEMO_ONLY_SOURCES
-        "${FREERTOS_DIR}/Demo/Posix_GCC/*.c"
-        "${FREERTOS_DIR}/Source/portable/MemMang/heap_3.c"
         "${FREERTOS_DIR}/Demo/Common/Minimal/AbortDelay.c"
         "${FREERTOS_DIR}/Demo/Common/Minimal/BlockQ.c"
         "${FREERTOS_DIR}/Demo/Common/Minimal/blocktim.c"
@@ -48,6 +73,22 @@ file(GLOB DEMO_ONLY_SOURCES
         "${FREERTOS_DIR}/Demo/Common/Minimal/TaskNotify.c"
         "${FREERTOS_DIR}/Demo/Common/Minimal/TimerDemo.c"
         )
+
+# Platform-dependent
+if (WIN32)
+    file(GLOB DEMO_ONLY_SOURCES
+            ${DEMO_ONLY_SOURCES}
+            "${FREERTOS_DIR}/Demo/WIN32-MSVC/*.c"
+            "${FREERTOS_DIR}/Source/portable/MemMang/heap_5.c"
+            "${FREERTOS_DIR}/Demo/Common/Minimal/TaskNotifyArray.c"
+        )
+elseif(UNIX)
+    file(GLOB DEMO_ONLY_SOURCES
+            ${DEMO_ONLY_SOURCES}
+            "${FREERTOS_DIR}/Demo/Posix_GCC/*.c"
+            "${FREERTOS_DIR}/Source/portable/MemMang/heap_3.c"
+    )
+endif()
 
 set(DEMO_SOURCES
         ${FREERTOS_SOURCES}

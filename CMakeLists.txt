@@ -5,22 +5,57 @@ project(FreeRTOS_FaultInjector)
 set(FREERTOS_DIR ${PROJECT_SOURCE_DIR}/FreeRTOS/FreeRTOS)
 set(FREERTOS_PLUS_DIR ${PROJECT_SOURCE_DIR}/FreeRTOS/FreeRTOS-Plus)
 
-set(DEMO "BLINKY" CACHE STRING "")
+if (WIN32)
+    message("Platform WIN32")
+elseif(UNIX)
+    message("Platform UNIX")
+endif()
+
+# Configuration variables and options
+
 
 # Kernel includes
+# Platform independent
 set(KERNEL_INCLUDES
         ${FREERTOS_DIR}/Source/include
-        ${FREERTOS_DIR}/Source/portable/ThirdParty/GCC/Posix
-        ${FREERTOS_DIR}/Source/portable/ThirdParty/GCC/Posix/utils
         ${FREERTOS_PLUS_DIR}/Source/FreeRTOS-Plus-Trace/Include
         )
 
+# Platform dependent
+if (WIN32)
+    set(KERNEL_INCLUDES
+                ${KERNEL_INCLUDES}
+                ${FREERTOS_DIR}/Source/portable/MSVC-MingW
+    )
+elseif (UNIX)
+    set(KERNEL_INCLUDES
+            ${KERNEL_INCLUDES}
+            ${FREERTOS_DIR}/Source/portable/ThirdParty/GCC/Posix
+            ${FREERTOS_DIR}/Source/portable/ThirdParty/GCC/Posix/utils
+    )
+endif()
+
+include_directories(${KERNEL_INCLUDES})
+
 # Kernel sources
+# Platform-independent
 file(GLOB FREERTOS_SOURCES
         "${FREERTOS_DIR}/Source/*.c"
-        "${FREERTOS_DIR}/Source/portable/ThirdParty/GCC/Posix/utils/wait_for_event.c"
-        "${FREERTOS_DIR}/Source/portable/ThirdParty/GCC/Posix/port.c"
         )
+
+# Platform-dependent
+if (WIN32)
+    file(GLOB FREERTOS_SOURCES
+            ${FREERTOS_SOURCES}
+            "${FREERTOS_DIR}/Source/portable/MSVC-MingW/*.c"
+    )
+elseif(UNIX)
+    file(GLOB FREERTOS_SOURCES
+                ${FREERTOS_SOURCES}
+                "${FREERTOS_DIR}/Source/portable/ThirdParty/GCC/Posix/utils/wait_for_event.c"
+                "${FREERTOS_DIR}/Source/portable/ThirdParty/GCC/Posix/port.c"
+    )
+endif()
 
 # FreeRTOS-Plus Trace Sources
 file(GLOB FREERTOS_TRACE_SOURCES
