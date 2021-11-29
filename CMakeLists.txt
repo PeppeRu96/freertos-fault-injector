@@ -8,7 +8,11 @@ set(FREERTOS_PLUS_DIR ${PROJECT_SOURCE_DIR}/FreeRTOS/FreeRTOS-Plus)
 if (WIN32)
     message("Platform WIN32")
 elseif(UNIX)
-    message("Platform UNIX")
+    if (APPLE)
+        message("Platform Mac OS X")
+    else()
+        message("Platform Linux")
+    endif()
 endif()
 
 # Configuration variables and options
