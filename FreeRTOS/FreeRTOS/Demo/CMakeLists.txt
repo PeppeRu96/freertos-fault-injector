@@ -7,18 +7,6 @@ configure_file(${FREERTOS_DIR}/Demo/WIN32-MSVC/demo_config.h.in demo_config.h)
 # Request Threads library
 find_package(Threads REQUIRED)
 
-# Compile options and definitions
-if (UNIX)
-    if(BLINKY_DEMO)
-        message("Blinky")
-        add_definitions(-DUSER_DEMO=0)
-    else()
-        message("Full")
-        add_definitions(-DUSER_DEMO=1)
-    endif()
-    add_compile_options(-DprojCOVERAGE_TEST=0)
-endif()
-
 # Includes
 # Platform dependent include directories
 if (WIN32)
@@ -31,9 +19,6 @@ elseif (UNIX)
             ${FREERTOS_DIR}/Demo/Posix_GCC
     )
 endif()
-message(${PROJECT_BINARY_DIR})
-message(${CMAKE_BINARY_DIR})
-message(${CMAKE_CURRENT_BINARY_DIR})
 
 # Platform independent include directories
 set(DEMO_INCLUDES
@@ -98,6 +83,18 @@ set(DEMO_SOURCES
 
 # Targets
 add_executable(Demo ${DEMO_SOURCES})
+
+# Compile options and definitions
+if (UNIX)
+    if(BLINKY_DEMO)
+        message("Blinky Demo")
+        target_compile_definitions(Demo PRIVATE USER_DEMO=0)
+    else()
+        message("Full Demo")
+        target_compile_definitions(Demo PRIVATE USER_DEMO=1)
+    endif()
+    target_compile_definitions(Demo PRIVATE projCOVERAGE_TEST=0)
+endif()
 
 # Link libraries to targets
 target_link_libraries(Demo PRIVATE Threads::Threads)
