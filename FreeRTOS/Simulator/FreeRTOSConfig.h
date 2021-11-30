@@ -40,6 +40,8 @@
  * http://www.freertos.org/a00110.html
  *----------------------------------------------------------*/
 
+#include "simulator_config.h"
+
 #if defined __unix__
     #include <pthread.h>
 #endif

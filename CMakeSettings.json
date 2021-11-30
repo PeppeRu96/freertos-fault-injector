@@ -30,7 +30,7 @@
       "inheritEnvironments": [ "msvc_x86" ]
     },
     {
-      "name": "Win32-Debug-Simulator",
+      "name": "Win32-Debug-Simulator-All-Tasks",
       "generator": "Ninja",
       "configurationType": "Debug",
       "buildRoot": "${projectDir}\\build\\${name}",
@@ -39,7 +39,61 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
       "inheritEnvironments": [ "msvc_x86" ],
-      "variables": []
+      "variables": [
+        {
+          "name": "TASK_CHECK",
+          "value": "True",
+          "type": "BOOL"
+        }
+      ]
+    },
+    {
+      "name": "Win32-Debug-Simulator-Check-Task-Only",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\build\\${name}",
+      "installRoot": "${projectDir}\\build\\bin\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "variables": [
+        {
+          "name": "TASK_CHECK",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_BLOCK_TIM",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_INDEF_DELAY_NOTIF",
+          "value": "False",
+          "type": "BOOL"
+        },
+        {
+          "name": "TIMER_PERIODIC_ISR_TESTS",
+          "value": "true",
+          "type": "BOOL"
+        },
+        {
+          "name": "TEST_DELETE_MUTEX",
+          "value": "true",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_TIMER_QUERY",
+          "value": "true",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_TIMER",
+          "value": "true",
+          "type": "BOOL"
+        }
+      ]
     }
   ]
 }

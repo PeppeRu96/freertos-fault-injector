@@ -2,6 +2,61 @@
 
 set(SIMULATOR_DIR ${PROJECT_SOURCE_DIR}/FreeRTOS/Simulator)
 
+# Configuration
+# Tasks to run
+option(TASK_CHECK "Task in charge of periodically checking the correct behaviour of all the other tasks. It is the only task which uses stdout to print some information." ON)
+option(TASK_TASK_NOTIFY "Tests the behaviour of direct task notifications." ON)
+option(TASK_BLOCKING_QUEUE "Test the blocking of a task while reading or writing from-to a queue." ON)
+option(TASK_SEM_TEST "Test the capability of a semaphore to guarantee the mutual exclusive access to a shared resource." ON)
+option(TASK_POLL_QUEUE "Test a queue with non-blocking calls in a consumer-produced scenario with fixed delay periods." ON)
+option(TASK_INTEGER "Test integer calculations. A mismatch should indicate an error in the context switch mechanism." ON)
+option(TASK_GEN_QUEUE "Test the send to front and send to back functionalities of the queues. It tests the priority inheritance mechanism too." ON)
+option(TASK_PEEK_QUEUE "Test peeking a value from a queue when there are more than one task blocked on the queue." ON)
+option(TASK_FLOP "Create tasks running at the same priority of the idle task and performing floating point calculations. Mismatches indicate problems in the context switch mechanism." ON)
+option(TASK_REC_MUTEX "Test the recursive mutex functionalities under different circumstances." ON)
+option(TASK_COUNT_SEM "Simple demonstration of the use of the counting semaphore." ON)
+option(TASK_DYNAMIC_PRIOR "Test the dynamics of the priorities through different tasks with different priorities trying to coordinate each other." ON)
+option(TASK_QUEUE_OVERWRITE "Test the overwrite functionality offered by the queue." ON)
+option(TASK_EVENT_GROUPS "Test the event groups functionalities" ON)
+option(TASK_INT_SEM_TEST "Test the mutexes being used from an interrupt handler" ON)
+option(TASK_BLOCK_TIM "Test and checks that tasks do not exit the send and receive queue functions prematurely while being blocked on it." ON)
+option(TASK_ABORT_DELAY "Test the abort delay functionality which allows to unblock a task in a blocked state." ON)
+option(TASK_QUEUE_SPACE_AVAIL "Test the retrieving of the available space inside a queue." ON)
+option(TASK_INDEF_DELAY_SEM "Test that an indefinite delay while blocked on a semaphore is effectively an indefinite delay." ON)
+option(TASK_INDEF_DELAY_NOTIF "Test that an indefinite delay while blocked on a notification is effectively an indefinite delay." ON)
+option(TASK_MESSAGE_BUFFER "Test the message buffer features." ON)
+option(TASK_STREAM_BUFFER "Test the stream buffer features." ON)
+option(TASK_STREAM_BUFF_INT "A simple example that shows a stream buffer being used to pass data from an interrupt to a task." ON)
+option(TASK_MESSAGE_BUFF_AMP "A message buffer is used by two cores to communicate with each other in a AMP setup." ON)
+option(TASK_QUEUE_SET "Test the queue sets." ON)
+option(TASK_QUEUE_SET_POLL "Test the queue sets doing polling." ON)
+option(TASK_STATIC_ALLOC "Test the creation and deletion of statically allocated objects." ON)
+option(TASK_TIMER "Test the behaviour of timers. Some are created before the scheduler has started and some others after." ON)
+option(TASK_DEATH "A creator task indefinitely creates two other suicidal tasks which will die and then periodically checks the number of alive tasks." ON)
+option(TASK_TASK_INTERNAL "Test some functionalities offered to access tasks internal data." ON)
+option(TASK_PEND_FUNC_CALL "Test the use of xTimerPendFunctionCall." ON)
+option(TASK_TIMER_QUERY "Demonstrate the use of functions that query information about a software timer." ON)
+
+# Mutex delete test
+option(TEST_DELETE_MUTEX "Demonstrate the deletion of a semaphore used as a mutex." ON)
+
+# ISR tests
+option(TIMER_PERIODIC_ISR_TESTS "Periodically test the timer API functions that can be called from an ISR." ON)
+option(QUEUE_OVERWRITE_PERIODIC_ISR "Call periodically the overwrite of a queue from an ISR." ON)
+option(QUEUE_SET_ACCESS_ISR "Writes to a queue set from an ISR." ON)
+option(QUEUE_SET_ACCESS_POLL_ISR "Poll a queue set from an ISR." ON)
+option(EVENT_GROUP_ISR "Exercises event groups from ISR." ON)
+option(SEM_TEST_ISR "Exercises giving mutexes from ISR." ON)
+option(NOTIFY_TASK_ISR "Exercises notify task from ISR." ON)
+option(STREM_BUFFER_PROC "Writes to a stream buffer byte by byte to test the stream buffer trigger level functionalities." ON)
+option(STREM_BUFFER_SEND_ISR "Writes a string to a string buffer four bytes at a time to demonstrate a stream being sent from an interrupt to a task." ON)
+
+
+configure_file(${SIMULATOR_DIR}/simulator_config.h.in simulator_config.h)
+
+# ---------------------------------------------------------------------
+
+
 # Request Threads library
 find_package(Threads REQUIRED)
 

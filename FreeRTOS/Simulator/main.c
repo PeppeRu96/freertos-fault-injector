@@ -151,64 +151,124 @@ StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
 
 int main( void )
 {
+#if defined TASK_CHECK
     /* Start the check task as described at the top of this file. */
     xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+#endif
 
     /* Create the standard demo tasks. */
+#if defined TASK_TASK_NOTIFY
     vStartTaskNotifyTask();
+#endif
+#if defined TASK_BLOCKING_QUEUE
     vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
+#endif
+#if defined TASK_SEM_TEST
     vStartSemaphoreTasks( mainSEM_TEST_PRIORITY );
+#endif
+#if defined TASK_POLL_QUEUE
     vStartPolledQueueTasks( mainQUEUE_POLL_PRIORITY );
+#endif
+#if defined TASK_INTEGER
     vStartIntegerMathTasks( mainINTEGER_TASK_PRIORITY );
+#endif
+#if defined TASK_GEN_QUEUE
     vStartGenericQueueTasks( mainGEN_QUEUE_TASK_PRIORITY );
+#endif
+#if defined TASK_PEEK_QUEUE
     vStartQueuePeekTasks();
+#endif
+#if defined TASK_FLOP
     vStartMathTasks( mainFLOP_TASK_PRIORITY );
+#endif
+#if defined TASK_REC_MUTEX
     vStartRecursiveMutexTasks();
+#endif
+#if defined TASK_COUNT_SEM
     vStartCountingSemaphoreTasks();
+#endif
+#if defined TASK_DYNAMIC_PRIOR
     vStartDynamicPriorityTasks();
+#endif
+#if defined TASK_QUEUE_OVERWRITE
     vStartQueueOverwriteTask( mainQUEUE_OVERWRITE_PRIORITY );
+#endif
+#if defined TASK_EVENT_GROUPS
     vStartEventGroupTasks();
+#endif
+#if defined TASK_INT_SEM_TEST
     vStartInterruptSemaphoreTasks();
+#endif
+#if defined TASK_BLOCK_TIM
     vCreateBlockTimeTasks();
+#endif
+#if defined TASK_ABORT_DELAY
     vCreateAbortDelayTasks();
+#endif
+#if defined TASK_QUEUE_SPACE_AVAIL
     xTaskCreate( prvDemoQueueSpaceFunctions, "QSpace", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+#endif
+#if defined TASK_INDEF_DELAY_SEM
     xTaskCreate( prvPermanentlyBlockingSemaphoreTask, "BlockSem", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+#endif
+#if defined TASK_INDEF_DELAY_NOTIF
     xTaskCreate( prvPermanentlyBlockingNotificationTask, "BlockNoti", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+#endif
 
+#if defined TASK_MESSAGE_BUFFER
     vStartMessageBufferTasks( configMINIMAL_STACK_SIZE );
+#endif
+#if defined TASK_STREAM_BUFFER
     vStartStreamBufferTasks();
+#endif
+#if defined TASK_STREAM_BUFF_INT
     vStartStreamBufferInterruptDemo();
+#endif
+#if defined TASK_MESSAGE_BUFF_AMP
     vStartMessageBufferAMPTasks( configMINIMAL_STACK_SIZE );
+#endif
 
     #if ( configUSE_QUEUE_SETS == 1 )
         {
-            vStartQueueSetTasks();
-            vStartQueueSetPollingTask();
+            #if defined TASK_QUEUE_SET
+                vStartQueueSetTasks();
+            #endif
+            #if defined TASK_QUEUE_SET_POLL
+                vStartQueueSetPollingTask();
+            #endif
         }
     #endif
 
     #if ( configSUPPORT_STATIC_ALLOCATION == 1 )
         {
-            vStartStaticallyAllocatedTasks();
+            #if defined TASK_STATIC_ALLOC
+                vStartStaticallyAllocatedTasks();
+            #endif
         }
     #endif
 
     #if ( configUSE_PREEMPTION != 0 )
         {
-            /* Don't expect these tasks to pass when preemption is not used. */
-            vStartTimerDemoTask( mainTIMER_TEST_PERIOD );
+            #if defined TASK_TIMER
+                /* Don't expect these tasks to pass when preemption is not used. */
+                vStartTimerDemoTask( mainTIMER_TEST_PERIOD );
+            #endif          
         }
     #endif
-
+    
+#if defined TASK_DEATH
     /* The suicide tasks must be created last as they need to know how many
      * tasks were running prior to their creation.  This then allows them to
      * ascertain whether or not the correct/expected number of tasks are running at
      * any given time. */
     vCreateSuicidalTasks( mainCREATOR_TASK_PRIORITY );
+#endif
 
+#if defined TEST_DELETE_MUTEX
     /* Create the semaphore that will be deleted in the idle task hook.  This
      * is done purely to test the use of vSemaphoreDelete(). */
     xMutexToDelete = xSemaphoreCreateMutex();
+#endif
 
     /* Start the scheduler itself. */
     vTaskStartScheduler();
@@ -310,19 +370,25 @@ void *pvAllocated;
     tasks waiting to be terminated by the idle task. */
     vSleepMS( ulMSToSleep );
 
+#if defined TASK_TASK_INTERNAL
     /* Demonstrate a few utility functions that are not demonstrated by any of
     the standard demo tasks. */
     prvDemonstrateTaskStateAndHandleGetFunctions();
+#endif
 
+#if defined TASK_PEND_FUNC_CALL
     /* Demonstrate the use of xTimerPendFunctionCall(), which is not
     demonstrated by any of the standard demo tasks. */
     prvDemonstratePendingFunctionCall();
+#endif
 
+#if defined TASK_TIMER_QUERY
     /* Demonstrate the use of functions that query information about a software
     timer. */
     prvDemonstrateTimerQueryFunctions();
+#endif
 
-
+#if defined TEST_DELETE_MUTEX
     /* If xMutexToDelete has not already been deleted, then delete it now.
     This is done purely to demonstrate the use of, and test, the
     vSemaphoreDelete() macro.  Care must be taken not to delete a semaphore
@@ -342,6 +408,7 @@ void *pvAllocated;
         vSemaphoreDelete( xMutexToDelete );
         xMutexToDelete = NULL;
     }
+#endif
 
     /* Exercise heap_5 a bit.  The malloc failed hook will trap failed
     allocations so there is no need to test here. */
@@ -354,7 +421,8 @@ void *pvAllocated;
 void vApplicationTickHook( void )
 {
 TaskHandle_t xTimerTask;
-
+    
+#if defined TIMER_PERIODIC_ISR_TESTS
     /* Call the periodic timer test, which tests the timer API functions that
     can be called from an ISR. */
     #if( configUSE_PREEMPTION != 0 )
@@ -363,35 +431,52 @@ TaskHandle_t xTimerTask;
 		vTimerPeriodicISRTests();
 	}
     #endif
+#endif
 
+#if defined QUEUE_OVERWRITE_PERIODIC_ISR
     /* Call the periodic queue overwrite from ISR demo. */
     vQueueOverwritePeriodicISRDemo();
+#endif
 
     #if( configUSE_QUEUE_SETS == 1 ) /* Remove the tests if queue sets are not defined. */
     {
 		/* Write to a queue that is in use as part of the queue set demo to
 		demonstrate using queue sets from an ISR. */
-		vQueueSetAccessQueueSetFromISR();
-		vQueueSetPollingInterruptAccess();
+        #if defined QUEUE_SET_ACCESS_ISR
+		    vQueueSetAccessQueueSetFromISR();
+        #endif
+        #if defined QUEUE_SET_ACCESS_POLL_ISR
+		    vQueueSetPollingInterruptAccess();
+        #endif
 	}
     #endif
-
+    
+#if defined EVENT_GROUP_ISR
     /* Exercise event groups from interrupts. */
     vPeriodicEventGroupsProcessing();
+#endif
 
+#if defined SEM_TEST_ISR
     /* Exercise giving mutexes from an interrupt. */
     vInterruptSemaphorePeriodicTest();
-
+#endif
+    
+#if defined NOTIFY_TASK_ISR
     /* Exercise using task notifications from an interrupt. */
     xNotifyTaskFromISR();
+#endif
 
+#if defined STREM_BUFFER_PROC
     /* Writes to stream buffer byte by byte to test the stream buffer trigger
     level functionality. */
     vPeriodicStreamBufferProcessing();
+#endif
 
+#if defined STREM_BUFFER_SEND_ISR
     /* Writes a string to a string buffer four bytes at a time to demonstrate
     a stream being sent from an interrupt to a task. */
     vBasicStreamBufferSendFromISR();
+#endif
 
     /* For code coverage purposes. */
     xTimerTask = xTimerGetTimerDaemonTaskHandle();
@@ -453,7 +538,7 @@ static void prvCheckTask( void * pvParameters )
 {
     TickType_t xNextWakeTime;
     const TickType_t xCycleFrequency = pdMS_TO_TICKS( 10000UL );
-    HeapStats_t xHeapStats;
+    //HeapStats_t xHeapStats;
 
     /* Just to remove compiler warning. */
     ( void ) pvParameters;
@@ -469,146 +554,196 @@ static void prvCheckTask( void * pvParameters )
         /* Check the standard demo tasks are running without error. */
 #if ( configUSE_PREEMPTION != 0 )
         {
-                /* These tasks are only created when preemption is used. */
-                if( xAreTimerDemoTasksStillRunning( xCycleFrequency ) != pdTRUE )
-                {
-                    pcStatusMessage = "Error: TimerDemo";
-                    xErrorCount++;
-                }
+                #if defined TASK_TIMER
+                    /* These tasks are only created when preemption is used. */
+                    if( xAreTimerDemoTasksStillRunning( xCycleFrequency ) != pdTRUE )
+                    {
+                        pcStatusMessage = "Error: TimerDemo";
+                        xErrorCount++;
+                    }
+                #endif
             }
 #endif
 
+#if defined TASK_STREAM_BUFFER
         if( xAreStreamBufferTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error:  StreamBuffer";
             xErrorCount++;
         }
-        else if( xAreMessageBufferTasksStillRunning() != pdTRUE )
+#endif
+#if defined TASK_MESSAGE_BUFFER
+        if( xAreMessageBufferTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error:  MessageBuffer";
             xErrorCount++;
         }
-        else if( xAreTaskNotificationTasksStillRunning() != pdTRUE )
+#endif
+#if defined TASK_TASK_NOTIFY
+        if( xAreTaskNotificationTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error:  Notification";
             xErrorCount++;
         }
+#endif
 
             /* else if( xAreTaskNotificationArrayTasksStillRunning() != pdTRUE )
              * {
              * pcStatusMessage = "Error:  NotificationArray";
              *  xErrorCount++;
              * } */
-        else if( xAreInterruptSemaphoreTasksStillRunning() != pdTRUE )
+#if defined TASK_INT_SEM_TEST
+        if( xAreInterruptSemaphoreTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: IntSem";
             xErrorCount++;
         }
-        else if( xAreEventGroupTasksStillRunning() != pdTRUE )
+#endif
+#if defined TASK_EVENT_GROUPS
+        if( xAreEventGroupTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: EventGroup";
             xErrorCount++;
         }
-        else if( xAreIntegerMathsTaskStillRunning() != pdTRUE )
+#endif
+#if defined TASK_INTEGER
+        if( xAreIntegerMathsTaskStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: IntMath";
             xErrorCount++;
         }
-        else if( xAreGenericQueueTasksStillRunning() != pdTRUE )
+#endif
+#if defined TASK_GEN_QUEUE
+        if( xAreGenericQueueTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: GenQueue";
             xErrorCount++;
         }
-        else if( xAreQueuePeekTasksStillRunning() != pdTRUE )
+#endif
+#if defined TASK_PEEK_QUEUE
+        if( xAreQueuePeekTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: QueuePeek";
             xErrorCount++;
         }
-        else if( xAreBlockingQueuesStillRunning() != pdTRUE )
+#endif
+#if defined TASK_BLOCKING_QUEUE
+        if( xAreBlockingQueuesStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: BlockQueue";
             xErrorCount++;
         }
-        else if( xAreSemaphoreTasksStillRunning() != pdTRUE )
+#endif
+#if defined TASK_SEM_TEST
+        if( xAreSemaphoreTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: SemTest";
             xErrorCount++;
         }
-        else if( xArePollingQueuesStillRunning() != pdTRUE )
+#endif
+#if defined TASK_POLL_QUEUE
+        if( xArePollingQueuesStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: PollQueue";
             xErrorCount++;
         }
-        else if( xAreMathsTaskStillRunning() != pdPASS )
+#endif
+#if defined TASK_FLOP
+        if( xAreMathsTaskStillRunning() != pdPASS )
         {
             pcStatusMessage = "Error: Flop";
             xErrorCount++;
         }
-        else if( xAreRecursiveMutexTasksStillRunning() != pdTRUE )
+#endif
+#if defined TASK_REC_MUTEX
+        if( xAreRecursiveMutexTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: RecMutex";
             xErrorCount++;
         }
-        else if( xAreCountingSemaphoreTasksStillRunning() != pdTRUE )
+#endif
+#if defined TASK_COUNT_SEM
+        if( xAreCountingSemaphoreTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: CountSem";
             xErrorCount++;
         }
-        else if( xIsCreateTaskStillRunning() != pdTRUE )
+#endif
+#if defined TASK_DEATH
+        if( xIsCreateTaskStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: Death";
             xErrorCount++;
         }
-        else if( xAreDynamicPriorityTasksStillRunning() != pdPASS )
+#endif
+#if defined TASK_DYNAMIC_PRIOR
+        if( xAreDynamicPriorityTasksStillRunning() != pdPASS )
         {
             pcStatusMessage = "Error: Dynamic";
             xErrorCount++;
         }
-        else if( xIsQueueOverwriteTaskStillRunning() != pdPASS )
+#endif
+#if defined TASK_QUEUE_OVERWRITE
+        if( xIsQueueOverwriteTaskStillRunning() != pdPASS )
         {
             pcStatusMessage = "Error: Queue overwrite";
             xErrorCount++;
         }
-        else if( xAreBlockTimeTestTasksStillRunning() != pdPASS )
+#endif
+#if defined TASK_BLOCK_TIM
+        if( xAreBlockTimeTestTasksStillRunning() != pdPASS )
         {
             pcStatusMessage = "Error: Block time";
             xErrorCount++;
         }
-        else if( xAreAbortDelayTestTasksStillRunning() != pdPASS )
+#endif
+#if defined TASK_ABORT_DELAY
+        if( xAreAbortDelayTestTasksStillRunning() != pdPASS )
         {
             pcStatusMessage = "Error: Abort delay";
             xErrorCount++;
         }
-        else if( xIsInterruptStreamBufferDemoStillRunning() != pdPASS )
+#endif
+#if defined STREM_BUFFER_SEND_ISR
+        if( xIsInterruptStreamBufferDemoStillRunning() != pdPASS )
         {
             pcStatusMessage = "Error: Stream buffer interrupt";
             xErrorCount++;
         }
-        else if( xAreMessageBufferAMPTasksStillRunning() != pdPASS )
+#endif
+#if defined TASK_MESSAGE_BUFF_AMP
+        if( xAreMessageBufferAMPTasksStillRunning() != pdPASS )
         {
             pcStatusMessage = "Error: Message buffer AMP";
             xErrorCount++;
         }
+#endif
 
 #if ( configUSE_QUEUE_SETS == 1 )
-        else if( xAreQueueSetTasksStillRunning() != pdPASS )
+        #if defined TASK_QUEUE_SET
+            if( xAreQueueSetTasksStillRunning() != pdPASS )
             {
                 pcStatusMessage = "Error: Queue set";
                 xErrorCount++;
             }
-            else if( xAreQueueSetPollTasksStillRunning() != pdPASS )
+        #endif
+        #if defined TASK_QUEUE_SET_POLL
+            if( xAreQueueSetPollTasksStillRunning() != pdPASS )
             {
                 pcStatusMessage = "Error: Queue set polling";
                 xErrorCount++;
             }
+        #endif
 #endif /* if ( configUSE_QUEUE_SETS == 1 ) */
 
 #if ( configSUPPORT_STATIC_ALLOCATION == 1 )
-        else if( xAreStaticAllocationTasksStillRunning() != pdPASS )
+    #if defined TASK_STATIC_ALLOC
+            if( xAreStaticAllocationTasksStillRunning() != pdPASS )
             {
                 xErrorCount++;
                 pcStatusMessage = "Error: Static allocation";
             }
+    #endif
 #endif /* configSUPPORT_STATIC_ALLOCATION */
 
         printf( "%s - tick count %zu \r\n",
