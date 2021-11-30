@@ -129,11 +129,18 @@ You can use CLion or do it manually.
 - Select the target
 - Build/Play
 - If you want to modify some options, open cmake-build-debug/CMakeCache.txt
-##### Manual cmake
+#### Manual cmake
 - go to the root folder
 - `cmake -S . -B build`
 - `cd build`
 - `make <target-name>`
+
+### Debug under Linux
+In order to debug under Linux (with CLion + gdb), you have to follow these steps:
+- Modify or create .gdbinit file in the home of the current user *~/.gdbinit*
+- Write the following code:  
+`set auto-load local-gdbinit on`  
+`add-auto-load-safe-path [full path to the project root]/.gdbinit`
 
 ## Windows
 Recommended IDE: Visual Studio Community 2019

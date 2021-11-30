@@ -22,8 +22,20 @@ set(SIMULATOR_INCLUDES
 file(GLOB SIMULATOR_SOURCES
         "${SIMULATOR_DIR}/*.c"
         "${SIMULATOR_DIR}/*.cpp"
-        "${FREERTOS_DIR}/Source/portable/MemMang/heap_4.c"
         )
+
+# Heap management (platform-dependent)
+if (WIN32)
+    file(GLOB SIMULATOR_SOURCES
+            ${SIMULATOR_SOURCES}
+            "${FREERTOS_DIR}/Source/portable/MemMang/heap_4.c"
+            )
+elseif(UNIX)
+    file(GLOB SIMULATOR_SOURCES
+            ${SIMULATOR_SOURCES}
+            "${FREERTOS_DIR}/Source/portable/MemMang/heap_3.c"
+            )
+endif()
 
 # Demo tasks sources
 file(GLOB SIMULATOR_SOURCES

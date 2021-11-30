@@ -40,6 +40,10 @@
  * http://www.freertos.org/a00110.html
  *----------------------------------------------------------*/
 
+#if defined __unix__
+    #include <pthread.h>
+#endif
+
 #define configUSE_PREEMPTION					1
 #if defined _WIN32
     #define configUSE_PORT_OPTIMISED_TASK_SELECTION	1
@@ -50,8 +54,12 @@
 #define configUSE_TICK_HOOK						1
 #define configUSE_DAEMON_TASK_STARTUP_HOOK		0
 #define configTICK_RATE_HZ						( 1000 ) /* In this non-real time simulated environment the tick frequency has to be at least a multiple of the Win32 tick frequency, and therefore very slow. */
-#define configMINIMAL_STACK_SIZE				( ( unsigned short ) 70 ) /* In this simulated case, the stack only has to hold one small structure as the real stack is part of the win32 thread. */
-#define configTOTAL_HEAP_SIZE					( ( size_t ) ( 52 * 1024 ) )
+#define configMINIMAL_STACK_SIZE			    ( ( unsigned short ) 70 ) /* In this simulated case, the stack only has to hold one small structure as the real stack is part of the win32 thread. */
+#if defined _WIN32
+    #define configTOTAL_HEAP_SIZE				( ( size_t ) ( 52 * 1024 ) )
+#elif defined __unix__
+    #define configTOTAL_HEAP_SIZE				( ( size_t ) ( 65 * 1024 ) )
+#endif
 #define configMAX_TASK_NAME_LEN					( 12 )
 #define configUSE_TRACE_FACILITY				1
 #define configUSE_16_BIT_TICKS					0
@@ -69,7 +77,9 @@
 /* #define configTASK_NOTIFICATION_ARRAY_ENTRIES		5 */
 #define configSUPPORT_STATIC_ALLOCATION			1
 #define configINITIAL_TICK_COUNT				( ( TickType_t ) 0 ) /* For test. */
-#define configSTREAM_BUFFER_TRIGGER_LEVEL_TEST_MARGIN 1 /* As there are a lot of tasks running. */
+#if defined _WIN32
+    #define configSTREAM_BUFFER_TRIGGER_LEVEL_TEST_MARGIN 1 /* As there are a lot of tasks running. */
+#endif
 
 /* Software timer related configuration options. */
 #define configUSE_TIMERS						1
@@ -88,6 +98,10 @@ format the raw data provided by the uxTaskGetSystemState() function in to human
 readable ASCII form.  See the notes in the implementation of vTaskList() within
 FreeRTOS/Source/tasks.c for limitations. */
 #define configUSE_STATS_FORMATTING_FUNCTIONS	0
+
+#if defined __unix__
+    #define configSTACK_DEPTH_TYPE              uint32_t
+#endif
 
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function.  In most cases the linker will remove unused
