@@ -70,3 +70,4 @@ file(GLOB FREERTOS_TRACE_SOURCES
         )
 
 add_subdirectory(FreeRTOS/FreeRTOS/Demo)
+add_subdirectory(FreeRTOS/Simulator)

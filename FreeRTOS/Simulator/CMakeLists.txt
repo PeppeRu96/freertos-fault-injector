@@ -1,35 +1,33 @@
-# ---- DEMO ----
+# ---- FreeRTOS Simulator ----
 
-option(BLINKY_DEMO "Build a blinky demo only rather than the full one" ON)
-
-configure_file(${FREERTOS_DIR}/Demo/demo_config.h.in demo_config.h)
+set(SIMULATOR_DIR ${PROJECT_SOURCE_DIR}/FreeRTOS/Simulator)
 
 # Request Threads library
 find_package(Threads REQUIRED)
 
 # Includes
-# Platform dependent include directories
-if (WIN32)
-    set(DEMO_INCLUDES
-            ${FREERTOS_DIR}/Demo/WIN32-MSVC
-            ${FREERTOS_DIR}/Demo/WIN32-MSVC/Trace_Recorder_Configuration
-    )
-elseif (UNIX)
-    set(DEMO_INCLUDES
-            ${FREERTOS_DIR}/Demo/Posix_GCC
-    )
-endif()
+set(SIMULATOR_INCLUDES
+        ${SIMULATOR_DIR}
+)
 
-# Platform independent include directories
-set(DEMO_INCLUDES
-        ${DEMO_INCLUDES}
+# Demo and configuration headers
+set(SIMULATOR_INCLUDES
+        ${SIMULATOR_INCLUDES}
         ${FREERTOS_DIR}/Demo/Common/include
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 # Sources
-# Platform-independent
-file(GLOB DEMO_ONLY_SOURCES
+# Simulator sources
+file(GLOB SIMULATOR_SOURCES
+        "${SIMULATOR_DIR}/*.c"
+        "${SIMULATOR_DIR}/*.cpp"
+        "${FREERTOS_DIR}/Source/portable/MemMang/heap_3.c"
+        )
+
+# Demo tasks sources
+file(GLOB SIMULATOR_SOURCES
+        ${SIMULATOR_SOURCES}
         "${FREERTOS_DIR}/Demo/Common/Minimal/AbortDelay.c"
         "${FREERTOS_DIR}/Demo/Common/Minimal/BlockQ.c"
         "${FREERTOS_DIR}/Demo/Common/Minimal/blocktim.c"
@@ -57,44 +55,15 @@ file(GLOB DEMO_ONLY_SOURCES
         "${FREERTOS_DIR}/Demo/Common/Minimal/TimerDemo.c"
         )
 
-# Platform-dependent
-if (WIN32)
-    file(GLOB DEMO_ONLY_SOURCES
-            ${DEMO_ONLY_SOURCES}
-            "${FREERTOS_DIR}/Demo/WIN32-MSVC/*.c"
-            "${FREERTOS_DIR}/Source/portable/MemMang/heap_5.c"
-            "${FREERTOS_DIR}/Demo/Common/Minimal/TaskNotifyArray.c"
-        )
-elseif(UNIX)
-    file(GLOB DEMO_ONLY_SOURCES
-            ${DEMO_ONLY_SOURCES}
-            "${FREERTOS_DIR}/Demo/Posix_GCC/*.c"
-            "${FREERTOS_DIR}/Source/portable/MemMang/heap_3.c"
-    )
-endif()
-
-set(DEMO_SOURCES
+set(SOURCES
         ${FREERTOS_SOURCES}
-        ${DEMO_ONLY_SOURCES}
-        ${FREERTOS_TRACE_SOURCES}
+        ${SIMULATOR_SOURCES}
         )
 
 # Targets
-add_executable(Demo ${DEMO_SOURCES})
+add_executable(FreeRTOS_Simulator ${SOURCES})
 
-target_include_directories(Demo PRIVATE ${DEMO_INCLUDES})
-
-# Compile options and definitions
-if (UNIX)
-    if(BLINKY_DEMO)
-        message("Blinky Demo")
-        target_compile_definitions(Demo PRIVATE USER_DEMO=0)
-    else()
-        message("Full Demo")
-        target_compile_definitions(Demo PRIVATE USER_DEMO=1)
-    endif()
-    target_compile_definitions(Demo PRIVATE projCOVERAGE_TEST=0)
-endif()
+target_include_directories(FreeRTOS_Simulator PRIVATE ${SIMULATOR_INCLUDES})
 
 # Link libraries to targets
-target_link_libraries(Demo PRIVATE Threads::Threads)
+target_link_libraries(FreeRTOS_Simulator PRIVATE Threads::Threads)

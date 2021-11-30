@@ -134,7 +134,7 @@ static void prvPermanentlyBlockingNotificationTask( void *pvParameters );
 /*-----------------------------------------------------------*/
 
 /* The variable into which error messages are latched. */
-static char *pcStatusMessage = "No errors";
+static char const *pcStatusMessage = "No errors";
 int xErrorCount = 0;
 
 /* This semaphore is created purely to test using the vSemaphoreDelete(). It has no other purpose. */
@@ -234,6 +234,40 @@ void vSleepMS(const unsigned long ulMSToSleep) {
 }
 /*-----------------------------------------------------------*/
 
+void vAssertCalled( unsigned long ulLine, const char * const pcFileName )
+{
+    static BaseType_t xPrinted = pdFALSE;
+    volatile uint32_t ulSetToNonZeroInDebuggerToContinue = 0;
+
+    /* Called if an assertion passed to configASSERT() fails.  See
+    http://www.freertos.org/a00110.html#configASSERT for more information. */
+
+    /* Parameters are not used. */
+    ( void ) ulLine;
+    ( void ) pcFileName;
+
+    printf( "ASSERT! Line %ld, file %s\n", ulLine, pcFileName );
+
+    taskENTER_CRITICAL();
+    {
+        #ifdef WIN32
+            /* Cause debugger break point if being debugged. */
+            __debugbreak();
+        #endif
+
+        /* You can step out of this function to debug the assertion by using
+        the debugger to set ulSetToNonZeroInDebuggerToContinue to a non-zero
+        value. */
+        while( ulSetToNonZeroInDebuggerToContinue == 0 )
+        {
+            __asm( "nop" );
+            __asm( "nop" );
+        }
+    }
+    taskEXIT_CRITICAL();
+}
+/*-----------------------------------------------------------*/
+
 void vApplicationMallocFailedHook( void )
 {
     /* vApplicationMallocFailedHook() will only be called if
@@ -312,7 +346,7 @@ void *pvAllocated;
 /*-----------------------------------------------------------*/
 
 /* Called by vApplicationTickHook(), which is defined in main.c. */
-void vFullDemoTickHookFunction( void )
+void vApplicationTickHook( void )
 {
 TaskHandle_t xTimerTask;
 
@@ -345,7 +379,6 @@ TaskHandle_t xTimerTask;
 
     /* Exercise using task notifications from an interrupt. */
     xNotifyTaskFromISR();
-    xNotifyArrayTaskFromISR();
 
     /* Writes to stream buffer byte by byte to test the stream buffer trigger
     level functionality. */
@@ -573,12 +606,9 @@ static void prvCheckTask( void * pvParameters )
             }
 #endif /* configSUPPORT_STATIC_ALLOCATION */
 
-        printf( "%s - tick count %zu - free heap %zu - min free heap %zu - largest free block %zu \r\n",
+        printf( "%s - tick count %zu \r\n",
                 pcStatusMessage,
-                xTaskGetTickCount(),
-                xHeapStats.xAvailableHeapSpaceInBytes,
-                xHeapStats.xMinimumEverFreeBytesRemaining,
-                xHeapStats.xSizeOfLargestFreeBlockInBytes );
+                xTaskGetTickCount());
         /*
         if( xErrorCount != 0 )
         {
