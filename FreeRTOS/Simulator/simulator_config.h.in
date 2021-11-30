@@ -38,5 +38,5 @@
 #cmakedefine EVENT_GROUP_ISR
 #cmakedefine SEM_TEST_ISR
 #cmakedefine NOTIFY_TASK_ISR
-#cmakedefine STREM_BUFFER_PROC
-#cmakedefine STREM_BUFFER_SEND_ISR
+#cmakedefine STREAM_BUFFER_PROC
+#cmakedefine STREAM_BUFFER_SEND_ISR

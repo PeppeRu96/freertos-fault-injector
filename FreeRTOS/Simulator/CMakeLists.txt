@@ -48,8 +48,8 @@ option(QUEUE_SET_ACCESS_POLL_ISR "Poll a queue set from an ISR." ON)
 option(EVENT_GROUP_ISR "Exercises event groups from ISR." ON)
 option(SEM_TEST_ISR "Exercises giving mutexes from ISR." ON)
 option(NOTIFY_TASK_ISR "Exercises notify task from ISR." ON)
-option(STREM_BUFFER_PROC "Writes to a stream buffer byte by byte to test the stream buffer trigger level functionalities." ON)
-option(STREM_BUFFER_SEND_ISR "Writes a string to a string buffer four bytes at a time to demonstrate a stream being sent from an interrupt to a task." ON)
+option(STREAM_BUFFER_PROC "Writes to a stream buffer byte by byte to test the stream buffer trigger level functionalities." ON)
+option(STREAM_BUFFER_SEND_ISR "Writes a string to a string buffer four bytes at a time to demonstrate a stream being sent from an interrupt to a task." ON)
 
 
 configure_file(${SIMULATOR_DIR}/simulator_config.h.in simulator_config.h)
