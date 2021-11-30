@@ -5,9 +5,9 @@
 #include <string.h>
 
 /* Platform-dependent. */
-#ifdef _WIN32
+#if defined _WIN32
     #include <conio.h>
-#elifdef __unix__
+#elif defined __unix__
     #include <unistd.h>
     #include <stdarg.h>
     #include <errno.h>
@@ -226,9 +226,9 @@ void vSleepMS(const unsigned long ulMSToSleep) {
         ts.tv_nsec = ulMSToSleep % 1000l * 1000000l;
     #endif
 
-    #ifdef _WIN32
+    #if defined _WIN32
         Sleep( ulMSToSleep );
-    #elifdef __unix__
+    #elif defined __unix__
         nanosleep( &ts, NULL );
     #endif
 }
@@ -260,8 +260,13 @@ void vAssertCalled( unsigned long ulLine, const char * const pcFileName )
         value. */
         while( ulSetToNonZeroInDebuggerToContinue == 0 )
         {
-            __asm( "nop" );
-            __asm( "nop" );
+            #if defined _WIN32
+                __asm { NOP };
+                __asm { NOP };
+            #elif defined __unix__
+                __asm("nop");
+                __asm("nop");
+            #endif
         }
     }
     taskEXIT_CRITICAL();

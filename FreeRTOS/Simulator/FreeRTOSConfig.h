@@ -41,9 +41,9 @@
  *----------------------------------------------------------*/
 
 #define configUSE_PREEMPTION					1
-#ifdef _WIN32
+#if defined _WIN32
     #define configUSE_PORT_OPTIMISED_TASK_SELECTION	1
-#elifdef __unix__
+#elif defined __unix__
     #define configUSE_PORT_OPTIMISED_TASK_SELECTION	0
 #endif
 #define configUSE_IDLE_HOOK						1

@@ -22,7 +22,7 @@ set(SIMULATOR_INCLUDES
 file(GLOB SIMULATOR_SOURCES
         "${SIMULATOR_DIR}/*.c"
         "${SIMULATOR_DIR}/*.cpp"
-        "${FREERTOS_DIR}/Source/portable/MemMang/heap_3.c"
+        "${FREERTOS_DIR}/Source/portable/MemMang/heap_4.c"
         )
 
 # Demo tasks sources
