@@ -1,6 +1,10 @@
 # Hints to FindBoost
 # Path to the boost root (it must be installed on your system)
 set(BOOST_ROOT "/usr/local/boost_1_77_0" CACHE STRING "The path to the root of boost on your system")
+#set(BOOST_LIBRARYDIR ${BOOST_ROOT}/stage/lib/)
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
 
 find_package(Boost 1.77.0 REQUIRED)
 

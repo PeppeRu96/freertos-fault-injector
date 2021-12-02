@@ -492,6 +492,24 @@
           "type": "BOOL"
         }
       ]
+    },
+    {
+      "name": "Win32-Debug-FaultInjector",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "buildRoot": "${projectDir}\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x86" ],
+      "variables": [
+        {
+          "name": "BOOST_ROOT",
+          "value": "C:/local/boost/boost_1_77_0",
+          "type": "STRING"
+        }
+      ]
     }
   ]
 }
