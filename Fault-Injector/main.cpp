@@ -15,11 +15,12 @@ int main()
     //std::string sim_path = "cmake --version";
 
     SimulatorRun sr;
-    std::cout << "Starting " << sim_path << " process" << std::endl;
+    std::cout << "Starting " << sim_path << " child process" << std::endl;
     sr.start(sim_path);
 
-    std::cout << "Waiting process to terminate.." << std::endl;
+    std::cout << "Waiting for child process to terminate.." << std::endl;
     sr.wait();
     std::cout << "Child process terminated" << std::endl;
+    std::cout << "Child output:" << std::endl;
     sr.show();
 }

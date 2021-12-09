@@ -125,9 +125,9 @@ file(GLOB SIMULATOR_SOURCES
 
 #set_source_files_properties(${FREERTOS_SOURCES} ${SIMULATOR_SOURCES} PROPERTIES LANGUAGE C)
 
-file (GLOB SIMULATOR_SOURCES_CPP
-        "{SIMULATOR_DIR}/*.cpp"
-)
+file(GLOB SIMULATOR_SOURCES_CPP
+        "${SIMULATOR_DIR}/*.cpp"
+        )
 
 set(SOURCES
         ${SIMULATOR_SOURCES_CPP}
@@ -137,7 +137,6 @@ set(SOURCES
 
 # Targets
 add_executable(FreeRTOS_Simulator ${SOURCES})
-
 
 target_include_directories(FreeRTOS_Simulator PRIVATE ${SIMULATOR_INCLUDES})
 

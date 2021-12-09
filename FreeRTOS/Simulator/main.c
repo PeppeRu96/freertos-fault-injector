@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 /* Platform-dependent. */
 #if defined _WIN32
     #include <conio.h>
@@ -51,6 +52,7 @@
 
 /* Local includes. */
 #include "console.h"
+#include "sync.h"
 
 /* Priorities at which the tasks are created. */
 #define mainCHECK_TASK_PRIORITY			( configMAX_PRIORITIES - 2 )
@@ -149,11 +151,10 @@ StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
 
 /*-----------------------------------------------------------*/
 
-void test_cpp();
-
 int main( void )
 {
-    test_cpp();
+    //test_cpp();
+    //console_print("test cpp console print");
 #if defined TASK_CHECK
     /* Start the check task as described at the top of this file. */
     xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
@@ -309,6 +310,8 @@ void vAssertCalled( unsigned long ulLine, const char * const pcFileName )
     /* Parameters are not used. */
     ( void ) ulLine;
     ( void ) pcFileName;
+    
+
 
     printf( "ASSERT! Line %ld, file %s\n", ulLine, pcFileName );
 
@@ -753,18 +756,20 @@ static void prvCheckTask( void * pvParameters )
     #endif
 #endif /* configSUPPORT_STATIC_ALLOCATION */
 
+/*
         printf( "%s - tick count %zu \r\n",
                 pcStatusMessage,
                 xTaskGetTickCount());
-        /*
+                */
+            console_print("%s\r\n", pcStatusMessage);
+        
         if( xErrorCount != 0 )
         {
-            exit( 1 );
+            vPortEndScheduler();
         }
-        */
 
         /* Reset the error condition */
-        pcStatusMessage = "OK: No errors";
+        pcStatusMessage = "No errors";
 
         if (count == 3)
             vPortEndScheduler();
