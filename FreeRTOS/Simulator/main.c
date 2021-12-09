@@ -149,8 +149,11 @@ StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
 
 /*-----------------------------------------------------------*/
 
+void test_cpp();
+
 int main( void )
 {
+    test_cpp();
 #if defined TASK_CHECK
     /* Start the check task as described at the top of this file. */
     xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );

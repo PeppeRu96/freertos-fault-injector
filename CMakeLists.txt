@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(FreeRTOS_FaultInjector)
+project(FreeRTOS_FaultInjector C CXX)
 
 set(FREERTOS_DIR ${PROJECT_SOURCE_DIR}/FreeRTOS/FreeRTOS)
 set(FREERTOS_PLUS_DIR ${PROJECT_SOURCE_DIR}/FreeRTOS/FreeRTOS-Plus)

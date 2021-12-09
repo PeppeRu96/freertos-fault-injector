@@ -76,8 +76,9 @@ set(SIMULATOR_INCLUDES
 # Simulator sources
 file(GLOB SIMULATOR_SOURCES
         "${SIMULATOR_DIR}/*.c"
-        "${SIMULATOR_DIR}/*.cpp"
         )
+
+
 
 # Heap management (platform-dependent)
 if (WIN32)
@@ -122,13 +123,21 @@ file(GLOB SIMULATOR_SOURCES
         "${FREERTOS_DIR}/Demo/Common/Minimal/TimerDemo.c"
         )
 
+#set_source_files_properties(${FREERTOS_SOURCES} ${SIMULATOR_SOURCES} PROPERTIES LANGUAGE C)
+
+file (GLOB SIMULATOR_SOURCES_CPP
+        "{SIMULATOR_DIR}/*.cpp"
+)
+
 set(SOURCES
+        ${SIMULATOR_SOURCES_CPP}
         ${FREERTOS_SOURCES}
         ${SIMULATOR_SOURCES}
         )
 
 # Targets
 add_executable(FreeRTOS_Simulator ${SOURCES})
+
 
 target_include_directories(FreeRTOS_Simulator PRIVATE ${SIMULATOR_INCLUDES})
 
