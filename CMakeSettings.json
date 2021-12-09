@@ -44,6 +44,11 @@
           "name": "TASK_CHECK",
           "value": "True",
           "type": "BOOL"
+        },
+        {
+          "name": "BOOST_ROOT",
+          "value": "C:/local/boost/x86/boost_1_77_0",
+          "type": "STRING"
         }
       ]
     },
@@ -490,6 +495,11 @@
           "name": "TASK_TASK_NOTIFY",
           "value": "False",
           "type": "BOOL"
+        },
+        {
+          "name": "BOOST_ROOT",
+          "value": "C:/local/boost/x86/boost_1_77_0",
+          "type": "STRING"
         }
       ]
     },
@@ -506,7 +516,7 @@
       "variables": [
         {
           "name": "BOOST_ROOT",
-          "value": "C:/local/boost/boost_1_77_0",
+          "value": "C:/local/boost/x86/boost_1_77_0",
           "type": "STRING"
         }
       ]

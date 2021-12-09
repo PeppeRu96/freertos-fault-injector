@@ -5,7 +5,8 @@
 #include "SimulatorRun.h"
 
 void SimulatorRun::start(std::string sim_path) {
-    bp::child new_child(sim_path, bp::std_out > this->pipe_stream);
+    //bp::child new_child(sim_path, bp::std_out > this->pipe_stream);
+    bp::child new_child(sim_path);
     this->begin_time = std::chrono::steady_clock::now();
     this->c = std::move(new_child);
 }

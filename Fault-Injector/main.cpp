@@ -10,14 +10,16 @@ int main()
     using namespace std::this_thread; // sleep_for, sleep_until
     using namespace std::chrono; // nanoseconds, system_clock, seconds
 
-    std::string sim_path = "/home/ruggeri/development/freertos_fault_injector/repo_project/cmake-build-debug/FreeRTOS/Simulator/FreeRTOS_Simulator";
+    std::string sim_path = "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/FreeRTOS_Simulator";
+    //std::string sim_path = "cmake --version";
+
     SimulatorRun sr;
 
 
     sr.start(sim_path);
-    sleep_for(seconds(10));
+    sleep_for(seconds(40));
     sr.terminate();
 
-    sr.wait();
-    sr.show();
+    //sr.wait();
+    //sr.show();
 }

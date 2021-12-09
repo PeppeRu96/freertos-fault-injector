@@ -272,6 +272,7 @@ int main( void )
 
     /* Start the scheduler itself. */
     vTaskStartScheduler();
+    
 
     /* Should never get here unless there was not enough heap space to create
      * the idle and other system tasks. */
@@ -538,6 +539,7 @@ static void prvCheckTask( void * pvParameters )
 {
     TickType_t xNextWakeTime;
     const TickType_t xCycleFrequency = pdMS_TO_TICKS( 10000UL );
+    int count = 0;
     //HeapStats_t xHeapStats;
 
     /* Just to remove compiler warning. */
@@ -548,6 +550,8 @@ static void prvCheckTask( void * pvParameters )
 
     for( ; ; )
     {
+        count++;
+
         /* Place this task in the blocked state until it is time to run again. */
         vTaskDelayUntil( &xNextWakeTime, xCycleFrequency );
 
@@ -758,6 +762,10 @@ static void prvCheckTask( void * pvParameters )
 
         /* Reset the error condition */
         pcStatusMessage = "OK: No errors";
+
+        if (count == 3)
+            vPortEndScheduler();
+        
     }
 }
 
