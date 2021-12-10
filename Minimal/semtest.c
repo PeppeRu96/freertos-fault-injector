@@ -84,6 +84,10 @@ typedef struct SEMAPHORE_PARAMETERS
 static volatile short sCheckVariables[ semtstNUM_TASKS ] = { 0 };
 static volatile short sNextCheckVariable = 0;
 
+/* TaskHandle_t for tasks */
+static TaskHandle_t xTaskPolSEM1, xTaskPolSEM2, xTaskBlkSEM1, xTaskBlkSEM2;
+
+
 /*-----------------------------------------------------------*/
 
 void vStartSemaphoreTasks( UBaseType_t uxPriority )
@@ -113,8 +117,8 @@ void vStartSemaphoreTasks( UBaseType_t uxPriority )
             pxFirstSemaphoreParameters->xBlockTime = ( TickType_t ) 0;
 
             /* Spawn the first two tasks.  As they poll they operate at the idle priority. */
-            xTaskCreate( prvSemaphoreTest, "PolSEM1", semtstSTACK_SIZE, ( void * ) pxFirstSemaphoreParameters, tskIDLE_PRIORITY, ( TaskHandle_t * ) NULL );
-            xTaskCreate( prvSemaphoreTest, "PolSEM2", semtstSTACK_SIZE, ( void * ) pxFirstSemaphoreParameters, tskIDLE_PRIORITY, ( TaskHandle_t * ) NULL );
+            xTaskCreate( prvSemaphoreTest, "PolSEM1", semtstSTACK_SIZE, ( void * ) pxFirstSemaphoreParameters, tskIDLE_PRIORITY, &xTaskPolSEM1 );
+            xTaskCreate( prvSemaphoreTest, "PolSEM2", semtstSTACK_SIZE, ( void * ) pxFirstSemaphoreParameters, tskIDLE_PRIORITY, &xTaskPolSEM2 );
 
             /* vQueueAddToRegistry() adds the semaphore to the registry, if one
              * is in use.  The registry is provided as a means for kernel aware
@@ -142,8 +146,8 @@ void vStartSemaphoreTasks( UBaseType_t uxPriority )
             *( pxSecondSemaphoreParameters->pulSharedVariable ) = semtstBLOCKING_EXPECTED_VALUE;
             pxSecondSemaphoreParameters->xBlockTime = xBlockTime / portTICK_PERIOD_MS;
 
-            xTaskCreate( prvSemaphoreTest, "BlkSEM1", semtstSTACK_SIZE, ( void * ) pxSecondSemaphoreParameters, uxPriority, ( TaskHandle_t * ) NULL );
-            xTaskCreate( prvSemaphoreTest, "BlkSEM2", semtstSTACK_SIZE, ( void * ) pxSecondSemaphoreParameters, uxPriority, ( TaskHandle_t * ) NULL );
+            xTaskCreate( prvSemaphoreTest, "BlkSEM1", semtstSTACK_SIZE, ( void * ) pxSecondSemaphoreParameters, uxPriority, &xTaskBlkSEM1 );
+            xTaskCreate( prvSemaphoreTest, "BlkSEM2", semtstSTACK_SIZE, ( void * ) pxSecondSemaphoreParameters, uxPriority, &xTaskBlkSEM2 );
 
             /* vQueueAddToRegistry() adds the semaphore to the registry, if one
              * is in use.  The registry is provided as a means for kernel aware
@@ -154,6 +158,20 @@ void vStartSemaphoreTasks( UBaseType_t uxPriority )
             vQueueAddToRegistry( ( QueueHandle_t ) pxSecondSemaphoreParameters->xSemaphore, "Counting_Sem_2" );
         }
     }
+
+    /* log the semaphore parameters */
+    struct_log("semtest_Polling_SemaphoreParameters", "xSemaphoreParameters", pxFirstSemaphoreParameters);
+    struct_log("semtest_Blocking_SemaphoreParameters", "xSemaphoreParameters", pxSecondSemaphoreParameters);
+
+    /* log the task handles */
+    struct_log("semtest_TaskPolSEM1", "TaskHandle_t", xTaskPolSEM1);
+    struct_log("semtest_TaskPolSEM2", "TaskHandle_t", xTaskPolSEM2);
+    struct_log("semtest_TaskBlkSEM1", "TaskHandle_t", xTaskBlkSEM1);
+    struct_log("semtest_TaskBlkSEM2", "TaskHandle_t", xTaskBlkSEM2);
+
+    /* log the semaphore handles */
+    struct_log("semtest_Semaphore1", "SemaphoreHandle_t", pxFirstSemaphoreParameters->xSemaphore);
+    struct_log("semtest_Semaphore2", "SemaphoreHanlde_t", pxSecondSemaphoreParameters->xSemaphore);
 }
 /*-----------------------------------------------------------*/
 

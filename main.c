@@ -163,6 +163,7 @@ int main( void )
     /* Start the check task as described at the top of this file. */
     xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, &xTaskCheck );
 
+    /* log the "Check" task handle */
     log_struct("CheckTask", "TaskHandle_t", xTaskCheck);
 #endif
 
@@ -218,16 +219,19 @@ int main( void )
 #if defined TASK_QUEUE_SPACE_AVAIL
     xTaskCreate( prvDemoQueueSpaceFunctions, "QSpace", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTaskQSpace );
 
+    /* log the "QSpace" task handle */
     log_struct("QSpaceTask", "TaskHandle_t", xTaskQSpace);
 #endif
 #if defined TASK_INDEF_DELAY_SEM
     xTaskCreate( prvPermanentlyBlockingSemaphoreTask, "BlockSem", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTaskBlockSem );
 
+    /* log the "BlockSem" task handle */
     log_struct("BlockSemTask", "TaskHandle_t", xTaskBlockSem);
 #endif
 #if defined TASK_INDEF_DELAY_NOTIF
     xTaskCreate( prvPermanentlyBlockingNotificationTask, "BlockNoti", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTaskBlockNoti );
 
+    /* log the "BlockNoti" task handle */
     log_struct("BlockNotiTask", "TaskHandle_t", xTaskBlockNoti);
 #endif
 
@@ -285,6 +289,7 @@ int main( void )
      * is done purely to test the use of vSemaphoreDelete(). */
     xMutexToDelete = xSemaphoreCreateMutex();
 
+    /* log the "xMutexToDelete" semaphore handle */
     log_struct("MutexToDelete", "SemaphoreHandle_t", xMutexToDelete);
 #endif
 

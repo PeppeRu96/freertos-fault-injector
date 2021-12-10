@@ -75,7 +75,7 @@ static volatile BaseType_t xErrorDetected = pdFALSE;
 static volatile uint32_t ulLoopCounter = 0;
 
 /* Handles to the test tasks. */
-TaskHandle_t xMediumPriorityTask, xHighPriorityTask, xHighestPriorityTask;
+TaskHandle_t xLowPriorityTask, xMediumPriorityTask, xHighPriorityTask, xHighestPriorityTask;
 /*-----------------------------------------------------------*/
 
 void vStartQueuePeekTasks( void )
@@ -98,10 +98,19 @@ void vStartQueuePeekTasks( void )
         /* Create the demo tasks and pass it the queue just created.  We are
          * passing the queue handle by value so it does not matter that it is declared
          * on the stack here. */
-        xTaskCreate( prvLowPriorityPeekTask, "PeekL", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekLOW_PRIORITY, NULL );
+        xTaskCreate( prvLowPriorityPeekTask, "PeekL", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekLOW_PRIORITY, &xLowPriorityTask );
         xTaskCreate( prvMediumPriorityPeekTask, "PeekM", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekMEDIUM_PRIORITY, &xMediumPriorityTask );
         xTaskCreate( prvHighPriorityPeekTask, "PeekH1", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekHIGH_PRIORITY, &xHighPriorityTask );
         xTaskCreate( prvHighestPriorityPeekTask, "PeekH2", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekHIGHEST_PRIORITY, &xHighestPriorityTask );
+
+        /* log the task handles */
+        log_struct("QPeek_TaskPeekL", "TaskHandle_t", xLowPriorityTask);
+        log_struct("QPeek_TaskPeekM", "TaskHandle_t", xMediumPriorityTask);
+        log_struct("QPeek_TaskPeekH1", "TaskHandle_t", xHighPriorityTask);
+        log_struct("QPeek_TaskPeekH2", "TaskHandle_t", xHighestPriorityTask);
+
+        /* log the queue handle */
+        log_struct("QPeek_Queue", "QueueHandle_t", xQueue);
     }
 }
 /*-----------------------------------------------------------*/
