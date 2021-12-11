@@ -16,6 +16,8 @@
     void console_print(const char* fmt,
         ...);
 
+    void write_output_to_file(void);
+
     #ifdef __cplusplus
         }
     #endif

@@ -1,26 +1,30 @@
 #include <iostream>
 #include <string>
-#include <chrono>
-#include <thread>
 
 #include "SimulatorRun.h"
 
+#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/";
+#define SIMULATOR_EXE_NAME "FreeRTOS_Simulator";
+
+
+std::string sim_folder_path = SIMULATOR_FOLDER_PATH;
+std::string sim_exe_name = SIMULATOR_EXE_NAME;
+std::string sim_path = sim_folder_path + sim_exe_name;
+
 int main()
 {
-    using namespace std::this_thread; // sleep_for, sleep_until
-    using namespace std::chrono; // nanoseconds, system_clock, seconds
 
-    //std::string sim_path = "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/FreeRTOS_Simulator";
-    std::string sim_path = "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/FreeRTOS_Simulator";
-    //std::string sim_path = "cmake --version";
+    // Start a simulator and save the golden execution
+    std::cout << "Executing the simulator and saving the golden execution..." << std::endl;
+    SimulatorRun golden_run;
+    golden_run.start(sim_path);
+    golden_run.wait();
 
-    SimulatorRun sr;
-    std::cout << "Starting " << sim_path << " child process" << std::endl;
-    sr.start(sim_path);
+    std::cout << "Golden execution output:" << std::endl;
+    golden_run.show_output();
 
-    std::cout << "Waiting for child process to terminate.." << std::endl;
-    sr.wait();
-    std::cout << "Child process terminated" << std::endl;
-    std::cout << "Child output:" << std::endl;
-    sr.show();
+
+    // Display user menu
+
+    // Perform selected operation
 }

@@ -40,3 +40,5 @@
 #cmakedefine NOTIFY_TASK_ISR
 #cmakedefine STREAM_BUFFER_PROC
 #cmakedefine STREAM_BUFFER_SEND_ISR
+
+#cmakedefine OUTPUT_FILE_PREFIX "${OUTPUT_FILE_PREFIX}"

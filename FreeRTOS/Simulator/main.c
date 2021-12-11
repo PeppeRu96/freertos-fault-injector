@@ -761,7 +761,7 @@ static void prvCheckTask( void * pvParameters )
                 pcStatusMessage,
                 xTaskGetTickCount());
                 */
-            console_print("%s\r\n", pcStatusMessage);
+            console_print("%s\n", pcStatusMessage);
         
         if( xErrorCount != 0 )
         {
@@ -771,8 +771,10 @@ static void prvCheckTask( void * pvParameters )
         /* Reset the error condition */
         pcStatusMessage = "No errors";
 
-        if (count == 3)
+        if (count == 3) {
+            write_output_to_file();
             vPortEndScheduler();
+        }
         
     }
 }

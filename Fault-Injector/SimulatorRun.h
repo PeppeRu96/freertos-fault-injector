@@ -6,27 +6,32 @@
 #define FREERTOS_FAULTINJECTOR_SIMULATORRUN_H
 
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <chrono>
 #include <string>
 #include <boost/process.hpp>
+#include <vector>
+
+#include "simulator_config.h"
 
 namespace bp = boost::process;
 
 class SimulatorRun {
 private:
     bp::child c;
-    bp::ipstream pipe_stream;
 
     std::chrono::steady_clock::time_point begin_time;
     std::chrono::steady_clock::time_point end_time;
 
 public:
+    // Delete copy constructor and copy assignment
+    // Allow only move constructor and assignment
     void start(std::string sim_path);
     auto duration();
     std::error_code wait();
     void terminate();
-    void show();
+    void show_output();
 };
 
 
