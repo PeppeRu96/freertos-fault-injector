@@ -160,18 +160,18 @@ void vStartSemaphoreTasks( UBaseType_t uxPriority )
     }
 
     /* log the semaphore parameters */
-    struct_log("semtest_Polling_SemaphoreParameters", "xSemaphoreParameters", pxFirstSemaphoreParameters);
-    struct_log("semtest_Blocking_SemaphoreParameters", "xSemaphoreParameters", pxSecondSemaphoreParameters);
+    log_struct("semtest_Polling_SemaphoreParameters", "xSemaphoreParameters", pxFirstSemaphoreParameters);
+    log_struct("semtest_Blocking_SemaphoreParameters", "xSemaphoreParameters", pxSecondSemaphoreParameters);
 
     /* log the task handles */
-    struct_log("semtest_TaskPolSEM1", "TaskHandle_t", xTaskPolSEM1);
-    struct_log("semtest_TaskPolSEM2", "TaskHandle_t", xTaskPolSEM2);
-    struct_log("semtest_TaskBlkSEM1", "TaskHandle_t", xTaskBlkSEM1);
-    struct_log("semtest_TaskBlkSEM2", "TaskHandle_t", xTaskBlkSEM2);
+    log_struct("semtest_TaskPolSEM1", "TaskHandle_t", xTaskPolSEM1);
+    log_struct("semtest_TaskPolSEM2", "TaskHandle_t", xTaskPolSEM2);
+    log_struct("semtest_TaskBlkSEM1", "TaskHandle_t", xTaskBlkSEM1);
+    log_struct("semtest_TaskBlkSEM2", "TaskHandle_t", xTaskBlkSEM2);
 
     /* log the semaphore handles */
-    struct_log("semtest_Semaphore1", "SemaphoreHandle_t", pxFirstSemaphoreParameters->xSemaphore);
-    struct_log("semtest_Semaphore2", "SemaphoreHanlde_t", pxSecondSemaphoreParameters->xSemaphore);
+    log_struct("semtest_Semaphore1", "SemaphoreHandle_t", pxFirstSemaphoreParameters->xSemaphore);
+    log_struct("semtest_Semaphore2", "SemaphoreHanlde_t", pxSecondSemaphoreParameters->xSemaphore);
 }
 /*-----------------------------------------------------------*/
 

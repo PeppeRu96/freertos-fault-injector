@@ -123,6 +123,7 @@ void vStartTaskNotifyTask( void )
 
     log_struct("TaskToNotify", "TaskHandle_t", xTaskToNotify);
     log_struct("TaskNotifyTimer", "TimerHandle_t", xTimer);
+
     /* Pseudo seed the random number generator. */
     uxNextRand = ( size_t ) prvRand;
 }

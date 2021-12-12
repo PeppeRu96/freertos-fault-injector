@@ -79,7 +79,7 @@ void vStartIntegerMathTasks( UBaseType_t uxPriority )
     }
 
     /* log the task handle */
-    struct_log("integer_TaskIntMath", "TaskHandle_t", xTaskIntMath);
+    log_struct("integer_TaskIntMath", "TaskHandle_t", xTaskIntMath);
 }
 /*-----------------------------------------------------------*/
 

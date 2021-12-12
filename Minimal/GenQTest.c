@@ -62,6 +62,8 @@
 #ifndef genqGENERIC_QUEUE_TEST_TASK_STACK_SIZE
     #define genqGENERIC_QUEUE_TEST_TASK_STACK_SIZE    configMINIMAL_STACK_SIZE
 #endif
+
+#include "structuresLog.h"
 /*-----------------------------------------------------------*/
 
 /*
@@ -201,19 +203,19 @@ void vStartGenericQueueTasks( UBaseType_t uxPriority )
     }
 
     /* log task handles */
-    struct_log("GenQTest_TaskGenQ", "TaskHandle_t", xTaskGenQ);
-    struct_log("GenQTest_TaskMuLow", "TaskHande_t", xTaskMuLow);
-    struct_log("GenQTest_TaskMuMed", "TaskHandle_t", xMediumPriorityMutexTask);
-    struct_log("GenQTest_TaskMuHigh", "TaskHandle_T", xHighPriorityMutexTask);
+    log_struct("GenQTest_TaskMuLow", "TaskHande_t", xTaskMuLow);
+    log_struct("GenQTest_TaskGenQ", "TaskHandle_t", xTaskGenQ);
+    log_struct("GenQTest_TaskMuMed", "TaskHandle_t", xMediumPriorityMutexTask);
+    log_struct("GenQTest_TaskMuHigh", "TaskHandle_T", xHighPriorityMutexTask);
     #if ( INCLUDE_xTaskAbortDelay == 1 )
         {
-            struct_log("GenQTest_TasKMuHigh2", "TaskHandle_t", xSecondMediumPriorityMutexTask);
+            log_struct("GenQTest_TasKMuHigh2", "TaskHandle_t", xSecondMediumPriorityMutexTask);
         }
     #endif /* INCLUDE_xTaskAbortDelay */
     
     /* log the queue handle and the mutex handle */
-    struct_log("GenQTest_Queue", "QueueHandle_t", xQueue);
-    struct_log("GenQTest_Mutex", "SemaphoreHandle_t", xMutex);
+    log_struct("GenQTest_Queue", "QueueHandle_t", xQueue);
+    log_struct("GenQTest_Mutex", "SemaphoreHandle_t", xMutex);
 }
 /*-----------------------------------------------------------*/
 

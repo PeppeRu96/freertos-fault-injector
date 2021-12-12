@@ -110,11 +110,11 @@ void vStartPolledQueueTasks( UBaseType_t uxPriority )
         xTaskCreate( vPolledQueueProducer, "QProdNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, &xTaskQProdNB );
 
         /* log the queue handle */
-        struct_log("PollQ_Queue", "QueueHandle_t", xPolledQueue);
+        log_struct("PollQ_Queue", "QueueHandle_t", xPolledQueue);
 
         /* log the task handles */
-        struct_log("PollQ_TaskQConsNB", "TaskHandle_t", xTaskQConsNB);
-        struct_log("PollQ_TaskQProdNB", "TaskHandle_t", xTaskQProdNB);
+        log_struct("PollQ_TaskQConsNB", "TaskHandle_t", xTaskQConsNB);
+        log_struct("PollQ_TaskQProdNB", "TaskHandle_t", xTaskQProdNB);
     }
 }
 /*-----------------------------------------------------------*/
