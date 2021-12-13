@@ -51,6 +51,7 @@
 
 /* Local includes. */
 #include "console.h"
+/*#include "structuresLog.h"*/
 
 /* Priorities at which the tasks are created. */
 #define mainCHECK_TASK_PRIORITY			( configMAX_PRIORITIES - 2 )
@@ -147,13 +148,23 @@ declared here, as a global, so it can be checked by a test that is implemented
 in a different file. */
 StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
 
+/* TaskHandle for the tasks created in main.c */
+TaskHandle_t xTaskCheck;
+TaskHandle_t xTaskQSpace;
+TaskHandle_t xTaskBlockSem;
+TaskHandle_t xTaskBlockNoti;
 /*-----------------------------------------------------------*/
 
 int main( void )
 {
+    log_start();
+
 #if defined TASK_CHECK
     /* Start the check task as described at the top of this file. */
-    xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+    xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, &xTaskCheck );
+
+    /* log the "Check" task handle */
+    log_struct("CheckTask", TYPE_TASK_HANDLE, xTaskCheck);
 #endif
 
     /* Create the standard demo tasks. */
@@ -206,13 +217,22 @@ int main( void )
     vCreateAbortDelayTasks();
 #endif
 #if defined TASK_QUEUE_SPACE_AVAIL
-    xTaskCreate( prvDemoQueueSpaceFunctions, "QSpace", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+    xTaskCreate( prvDemoQueueSpaceFunctions, "QSpace", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTaskQSpace );
+
+    /* log the "QSpace" task handle */
+    log_struct("QSpaceTask", TYPE_TASK_HANDLE, xTaskQSpace);
 #endif
 #if defined TASK_INDEF_DELAY_SEM
-    xTaskCreate( prvPermanentlyBlockingSemaphoreTask, "BlockSem", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+    xTaskCreate( prvPermanentlyBlockingSemaphoreTask, "BlockSem", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTaskBlockSem );
+
+    /* log the "BlockSem" task handle */
+    log_struct("BlockSemTask", TYPE_TASK_HANDLE, xTaskBlockSem);
 #endif
 #if defined TASK_INDEF_DELAY_NOTIF
-    xTaskCreate( prvPermanentlyBlockingNotificationTask, "BlockNoti", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+    xTaskCreate( prvPermanentlyBlockingNotificationTask, "BlockNoti", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTaskBlockNoti );
+
+    /* log the "BlockNoti" task handle */
+    log_struct("BlockNotiTask", TYPE_TASK_HANDLE, xTaskBlockNoti);
 #endif
 
 #if defined TASK_MESSAGE_BUFFER
@@ -268,7 +288,12 @@ int main( void )
     /* Create the semaphore that will be deleted in the idle task hook.  This
      * is done purely to test the use of vSemaphoreDelete(). */
     xMutexToDelete = xSemaphoreCreateMutex();
+
+    /* log the "xMutexToDelete" semaphore handle */
+    log_struct("MutexToDelete", TYPE_SEMAPHORE_HANDLE, xMutexToDelete);
 #endif
+
+    log_end();
 
     /* Start the scheduler itself. */
     vTaskStartScheduler();
