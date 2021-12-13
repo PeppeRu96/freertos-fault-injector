@@ -83,6 +83,9 @@ static portTASK_FUNCTION_PROTO( vPolledQueueConsumer, pvParameters );
  * errors. */
 static volatile BaseType_t xPollingConsumerCount = pollqINITIAL_VALUE, xPollingProducerCount = pollqINITIAL_VALUE;
 
+/* TaskHandle_t for tasks */
+static TaskHandle_t xTaskQConsNB, xTaskQProdNB;
+
 /*-----------------------------------------------------------*/
 
 void vStartPolledQueueTasks( UBaseType_t uxPriority )
@@ -103,8 +106,15 @@ void vStartPolledQueueTasks( UBaseType_t uxPriority )
         vQueueAddToRegistry( xPolledQueue, "Poll_Test_Queue" );
 
         /* Spawn the producer and consumer. */
-        xTaskCreate( vPolledQueueConsumer, "QConsNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, ( TaskHandle_t * ) NULL );
-        xTaskCreate( vPolledQueueProducer, "QProdNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, ( TaskHandle_t * ) NULL );
+        xTaskCreate( vPolledQueueConsumer, "QConsNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, &xTaskQConsNB );
+        xTaskCreate( vPolledQueueProducer, "QProdNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, &xTaskQProdNB );
+
+        /* log the queue handle */
+        log_struct("PollQ_Queue", TYPE_QUEUE_HANDLE, xPolledQueue);
+
+        /* log the task handles */
+        log_struct("PollQ_TaskQConsNB", TYPE_TASK_HANDLE, xTaskQConsNB);
+        log_struct("PollQ_TaskQProdNB", TYPE_TASK_HANDLE, xTaskQProdNB);
     }
 }
 /*-----------------------------------------------------------*/

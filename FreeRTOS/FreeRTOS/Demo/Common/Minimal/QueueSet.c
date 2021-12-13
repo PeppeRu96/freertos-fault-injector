@@ -224,6 +224,18 @@
              * added the queues to the queue set. */
             vTaskSuspend( xQueueSetSendingTask );
         }
+
+        /* log the task handles */
+        log_struct("QueueSet_TaskSetSend", TYPE_TASK_HANDLE, xQueueSetSendingTask);
+        log_struct("QueueSet_TaskSetReceive", TYPE_TASK_HANDLE, xQueueSetSendingTask);
+
+        /* log the queue set handle */
+        log_struct("QueueSet_QueueSet", TYPE_QUEUE_SET_HANDLE, xQueueSet);
+
+        /* log the individual queues */
+        log_struct("QueueSet_Queue1", TYPE_QUEUE_HANDLE, xQueues[0]);
+        log_struct("QueueSet_Queue2", TYPE_QUEUE_HANDLE, xQueues[1]);
+        log_struct("QueueSet_Queue3", TYPE_QUEUE_HANDLE, xQueues[2]);
     }
 /*-----------------------------------------------------------*/
 

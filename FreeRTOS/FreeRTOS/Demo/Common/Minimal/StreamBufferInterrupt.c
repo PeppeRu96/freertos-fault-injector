@@ -77,6 +77,8 @@ static BaseType_t xDemoStatus = pdPASS;
  * running as expected. */
 static uint32_t ulCycleCount = 0;
 
+static TaskHandle_t xTask;
+
 /*-----------------------------------------------------------*/
 
 void vStartStreamBufferInterruptDemo( void )
@@ -93,7 +95,13 @@ void vStartStreamBufferInterruptDemo( void )
                  configMINIMAL_STACK_SIZE, /* Stack size (in words!). */
                  NULL,                     /* Task parameter is not used. */
                  tskIDLE_PRIORITY + 2,     /* The priority at which the task is created. */
-                 NULL );                   /* No use for the task handle. */
+                 &xTask );                   /* No use for the task handle. */
+
+    /* log the task handle */
+    log_struct("StreamBufferInterrupt_TaskReceive", TYPE_TASK_HANDLE, xTask);
+
+    /* log the stream buffer handle */
+    log_struct("StreamBufferInterrupt_StreamBuffer", TYPE_STREAM_BUFFER_HANDLE, xStreamBuffer);
 }
 /*-----------------------------------------------------------*/
 

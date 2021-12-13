@@ -126,6 +126,8 @@ static uint8_t ucISROneShotTimerCounter = ( uint8_t ) 0;
  * period is configured by the parameter to vStartTimerDemoTask(). */
 static TickType_t xBasePeriod = 0;
 
+static TaskHandle_t xTaskTimer;
+
 /*-----------------------------------------------------------*/
 
 void vStartTimerDemoTask( TickType_t xBasePeriodIn )
@@ -149,8 +151,17 @@ void vStartTimerDemoTask( TickType_t xBasePeriodIn )
      * task, which will then preempt this task). */
     if( xTestStatus != pdFAIL )
     {
-        xTaskCreate( prvTimerTestTask, "Tmr Tst", tmrTIMER_TEST_TASK_STACK_SIZE, NULL, configTIMER_TASK_PRIORITY - 1, NULL );
+        xTaskCreate( prvTimerTestTask, "Tmr Tst", tmrTIMER_TEST_TASK_STACK_SIZE, NULL, configTIMER_TASK_PRIORITY - 1, &xTaskTimer );
     }
+
+    /* log the task handle */
+    log_struct("TimerDemo_TaskTimer", TYPE_TASK_HANDLE, xTaskTimer);
+
+    /* log the timer handles */
+    log_struct("TimerDemo_TimerOneShot", TYPE_TIMER_HANDLE, xOneShotTimer);
+    log_struct("TimerDemo_TimerOneShotISR", TYPE_TIMER_HANDLE, xISROneShotTimer);
+    log_struct("TimerDemo_TimerAutoReloadISR", TYPE_TIMER_HANDLE, xISRAutoReloadTimer);
+
 }
 /*-----------------------------------------------------------*/
 

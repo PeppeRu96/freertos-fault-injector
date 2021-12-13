@@ -121,6 +121,9 @@ void vStartTaskNotifyTask( void )
                  notifyTASK_PRIORITY,            /* Task priority, 0 is the lowest. */
                  &xTaskToNotify );               /* Used to pass a handle to the task out is needed, otherwise set to NULL. */
 
+    log_struct("TaskToNotify", TYPE_TASK_HANDLE, xTaskToNotify);
+    log_struct("TaskNotifyTimer", TYPE_TIMER_HANDLE, xTimer);
+
     /* Pseudo seed the random number generator. */
     uxNextRand = ( size_t ) prvRand;
 }

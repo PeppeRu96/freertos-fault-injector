@@ -104,6 +104,8 @@ typedef struct COUNT_SEM_STRUCT
 /* Two structures are defined, one is passed to each test task. */
 static xCountSemStruct xParameters[ countNUM_TEST_TASKS ];
 
+TaskHandle_t xTaskCNT1, xTaskCNT2;
+
 /*-----------------------------------------------------------*/
 
 void vStartCountingSemaphoreTasks( void )
@@ -132,9 +134,21 @@ void vStartCountingSemaphoreTasks( void )
         vQueueAddToRegistry( ( QueueHandle_t ) xParameters[ 1 ].xSemaphore, "Counting_Sem_2" );
 
         /* Create the demo tasks, passing in the semaphore to use as the parameter. */
-        xTaskCreate( prvCountingSemaphoreTask, "CNT1", configMINIMAL_STACK_SIZE, ( void * ) &( xParameters[ 0 ] ), tskIDLE_PRIORITY, NULL );
-        xTaskCreate( prvCountingSemaphoreTask, "CNT2", configMINIMAL_STACK_SIZE, ( void * ) &( xParameters[ 1 ] ), tskIDLE_PRIORITY, NULL );
+        xTaskCreate( prvCountingSemaphoreTask, "CNT1", configMINIMAL_STACK_SIZE, ( void * ) &( xParameters[ 0 ] ), tskIDLE_PRIORITY, &xTaskCNT1 );
+        xTaskCreate( prvCountingSemaphoreTask, "CNT2", configMINIMAL_STACK_SIZE, ( void * ) &( xParameters[ 1 ] ), tskIDLE_PRIORITY, &xTaskCNT2 );
     }
+
+    /* log the task handles */
+    log_struct("countsem_TaskCNT1", TYPE_TASK_HANDLE, xTaskCNT1);
+    log_struct("countsem_TaskCNT2", TYPE_TASK_HANDLE, xTaskCNT2);
+
+    /* log the counting semaphore structures */
+    log_struct("countsem_Params1", TYPE_COUNT_SEMAPHORE, &xParameters[0]);
+    log_struct("countsem_Params2", TYPE_COUNT_SEMAPHORE, &xParameters[1]);
+
+    /* log the semaphore handles */
+    log_struct("countsem_Semaphore1", TYPE_SEMAPHORE_HANDLE, xParameters[0].xSemaphore);
+    log_struct("countsem_Semaphore2", TYPE_SEMAPHORE_HANDLE, xParameters[1].xSemaphore);
 }
 /*-----------------------------------------------------------*/
 

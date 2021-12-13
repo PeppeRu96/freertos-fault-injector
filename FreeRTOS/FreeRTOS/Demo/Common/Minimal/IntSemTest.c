@@ -103,7 +103,7 @@ static volatile BaseType_t xErrorDetected = pdFALSE;
 static volatile uint32_t ulMasterLoops = 0, ulCountingSemaphoreLoops = 0;
 
 /* Handles of the test tasks that must be accessed from other test tasks. */
-static TaskHandle_t xSlaveHandle;
+static TaskHandle_t xSlaveHandle, xMasterHandle, xCountingHandle;
 
 /* A mutex which is given from an interrupt - although generally mutexes should
  * not be used given in interrupts (and definitely never taken in an interrupt)
@@ -144,10 +144,20 @@ void vStartInterruptSemaphoreTasks( void )
 
     /* Create the tasks that share mutexes between then and with interrupts. */
     xTaskCreate( vInterruptMutexSlaveTask, "IntMuS", configMINIMAL_STACK_SIZE, NULL, intsemSLAVE_PRIORITY, &xSlaveHandle );
-    xTaskCreate( vInterruptMutexMasterTask, "IntMuM", configMINIMAL_STACK_SIZE, NULL, intsemMASTER_PRIORITY, NULL );
+    xTaskCreate( vInterruptMutexMasterTask, "IntMuM", configMINIMAL_STACK_SIZE, NULL, intsemMASTER_PRIORITY, &xMasterHandle );
 
     /* Create the task that blocks on the counting semaphore. */
-    xTaskCreate( vInterruptCountingSemaphoreTask, "IntCnt", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+    xTaskCreate( vInterruptCountingSemaphoreTask, "IntCnt", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xCountingHandle );
+
+    /* log the semaphore handles */
+    log_struct("IntSemTest_ISRMutex", TYPE_SEMAPHORE_HANDLE, xISRMutex);
+    log_struct("IntSemTest_ISRCountSemaphore", TYPE_SEMAPHORE_HANDLE, xISRCountingSemaphore);
+    log_struct("IntSemTest_Mutex", TYPE_SEMAPHORE_HANDLE, xMasterSlaveMutex);
+
+    /* log the task handles */
+    log_struct("IntSemTest_TaskSlave", TYPE_TASK_HANDLE, xSlaveHandle);
+    log_struct("IntSemTest_TaskMaster", TYPE_TASK_HANDLE, xMasterHandle);
+    log_struct("IntSemTest_TaskCounting", TYPE_TASK_HANDLE, xCountingHandle);
 }
 /*-----------------------------------------------------------*/
 

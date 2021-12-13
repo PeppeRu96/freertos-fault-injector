@@ -138,6 +138,9 @@ static const char * pc55ByteString = "One two three four five six seven eight ni
  * initialisation time. */
 static configSTACK_DEPTH_TYPE xBlockingStackSize = 0;
 
+static TaskHandle_t xTaskEchoServerH, xTaskEchoServerL, xNoBlockSend, xNoBlockReceive, xStaticSend1, xStaticSend2;
+
+
 /*-----------------------------------------------------------*/
 
 void vStartMessageBufferTasks( configSTACK_DEPTH_TYPE xStackSize )
@@ -153,23 +156,27 @@ void vStartMessageBufferTasks( configSTACK_DEPTH_TYPE xStackSize )
     /* The echo servers sets up the message buffers before creating the echo
      * client tasks.  One set of tasks has the server as the higher priority, and
      * the other has the client as the higher priority. */
-    xTaskCreate( prvEchoServer, "1EchoServer", xBlockingStackSize, NULL, mbHIGHER_PRIORITY, NULL );
-    xTaskCreate( prvEchoServer, "2EchoServer", xBlockingStackSize, NULL, mbLOWER_PRIORITY, NULL );
+    xTaskCreate( prvEchoServer, "1EchoServer", xBlockingStackSize, NULL, mbHIGHER_PRIORITY, &xTaskEchoServerH );
+    xTaskCreate( prvEchoServer, "2EchoServer", xBlockingStackSize, NULL, mbLOWER_PRIORITY, &xTaskEchoServerL );
 
     /* The non blocking tasks run continuously and will interleave with each
      * other, so must be created at the lowest priority.  The message buffer they
      * use is created and passed in using the task's parameter. */
     xMessageBuffer = xMessageBufferCreate( mbMESSAGE_BUFFER_LENGTH_BYTES );
-    xTaskCreate( prvNonBlockingReceiverTask, "NonBlkRx", xStackSize, ( void * ) xMessageBuffer, tskIDLE_PRIORITY, NULL );
-    xTaskCreate( prvNonBlockingSenderTask, "NonBlkTx", xStackSize, ( void * ) xMessageBuffer, tskIDLE_PRIORITY, NULL );
+    xTaskCreate( prvNonBlockingReceiverTask, "NonBlkRx", xStackSize, ( void * ) xMessageBuffer, tskIDLE_PRIORITY, &xNoBlockReceive );
+    xTaskCreate( prvNonBlockingSenderTask, "NonBlkTx", xStackSize, ( void * ) xMessageBuffer, tskIDLE_PRIORITY, &xNoBlockSend );
 
     #if ( configSUPPORT_STATIC_ALLOCATION == 1 )
         {
             /* The sender tasks set up the message buffers before creating the
              * receiver tasks.  Priorities must be 0 and 1 as the priority is used to
              * index into the xStaticMessageBuffers and ucBufferStorage arrays. */
-            xTaskCreate( prvSenderTask, "1Sender", xBlockingStackSize, NULL, mbHIGHER_PRIORITY, NULL );
-            xTaskCreate( prvSenderTask, "2Sender", xBlockingStackSize, NULL, mbLOWER_PRIORITY, NULL );
+            xTaskCreate( prvSenderTask, "1Sender", xBlockingStackSize, NULL, mbHIGHER_PRIORITY, &xStaticSend1 );
+            xTaskCreate( prvSenderTask, "2Sender", xBlockingStackSize, NULL, mbLOWER_PRIORITY, &xStaticSend2 );
+
+            /* log the task handles */
+            log_struct("MessageBuffer_TaskStaticSender1", TYPE_TASK_HANDLE, xStaticSend1);
+            log_struct("MessageBuffer_TaskStaticSender2", TYPE_TASK_HANDLE, xStaticSend2);
         }
     #endif /* configSUPPORT_STATIC_ALLOCATION */
 
@@ -182,6 +189,15 @@ void vStartMessageBufferTasks( configSTACK_DEPTH_TYPE xStackSize )
             xTaskCreate( prvSpaceAvailableCoherenceTester, "mbsanity2", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
         }
     #endif
+
+    /* log the task handles */
+    log_struct("MessageBuffer_TaskEchoServerHighPriority", TYPE_TASK_HANDLE, xTaskEchoServerH);
+    log_struct("MessageBuffer_TaskEchoServerLowPriority", TYPE_TASK_HANDLE, xTaskEchoServerL);
+    log_struct("MessageBuffer_TaskNoBlockingReceive", TYPE_TASK_HANDLE, xNoBlockReceive);
+    log_struct("MessageBuffer_TaskNoBlockingSend", TYPE_TASK_HANDLE, xNoBlockSend);
+
+    /* log the message buffer handle */
+    log_struct("MessageBuffer_MessageBuffer", TYPE_MESSAGE_BUFFER_HANDLE, xMessageBuffer);
 }
 /*-----------------------------------------------------------*/
 

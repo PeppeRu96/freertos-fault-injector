@@ -59,6 +59,9 @@ static BaseType_t xISRTestStatus = pdPASS;
  * created inside the task itself. */
 static QueueHandle_t xISRQueue = NULL;
 
+/* task handle */
+static TaskHandle_t xTaskQOver;
+
 /*-----------------------------------------------------------*/
 
 void vStartQueueOverwriteTask( UBaseType_t uxPriority )
@@ -71,7 +74,13 @@ void vStartQueueOverwriteTask( UBaseType_t uxPriority )
 
     /* Create the test task.  The queue used by the test task is created inside
      * the task itself. */
-    xTaskCreate( prvQueueOverwriteTask, "QOver", configMINIMAL_STACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
+    xTaskCreate( prvQueueOverwriteTask, "QOver", configMINIMAL_STACK_SIZE, NULL, uxPriority, &xTaskQOver );
+
+    /* log the task handle */
+    log_struct("QueueOverwrite_TaskQOver", TYPE_TASK_HANDLE, xTaskQOver);
+
+    /* log the queue handle */
+    log_struct("QueueOverwrite_Queue", TYPE_QUEUE_HANDLE, xISRQueue);
 }
 /*-----------------------------------------------------------*/
 
