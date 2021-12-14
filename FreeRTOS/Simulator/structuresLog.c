@@ -6,7 +6,7 @@ FILE* structuresLog;
 int nextID;
 
 void log_struct(char* name, int type, void* address){
-    fprintf(structuresLog, "%d %d %s %p\n", nextID++, name, type, address);
+    fprintf(structuresLog, "%d %s %d %p\n", nextID++, name, type, address);
 }
 
 void log_start(){
