@@ -159,10 +159,6 @@ void vStartSemaphoreTasks( UBaseType_t uxPriority )
         }
     }
 
-    /* log the semaphore parameters */
-    log_struct("semtest_Polling_SemaphoreParameters", TYPE_SEMAPHORE_HANDLE, pxFirstSemaphoreParameters);
-    log_struct("semtest_Blocking_SemaphoreParameters", TYPE_SEMAPHORE_PARAMETERS, pxSecondSemaphoreParameters);
-
     /* log the task handles */
     log_struct("semtest_TaskPolSEM1", TYPE_TASK_HANDLE, xTaskPolSEM1);
     log_struct("semtest_TaskPolSEM2", TYPE_TASK_HANDLE, xTaskPolSEM2);

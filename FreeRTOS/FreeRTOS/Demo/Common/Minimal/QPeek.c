@@ -104,13 +104,13 @@ void vStartQueuePeekTasks( void )
         xTaskCreate( prvHighestPriorityPeekTask, "PeekH2", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekHIGHEST_PRIORITY, &xHighestPriorityTask );
 
         /* log the task handles */
-        log_struct("QPeek_TaskPeekL", TYPE_TASK_HANDLE, xLowPriorityTask);
-        log_struct("QPeek_TaskPeekM", TYPE_TASK_HANDLE, xMediumPriorityTask);
-        log_struct("QPeek_TaskPeekH1", TYPE_TASK_HANDLE, xHighPriorityTask);
-        log_struct("QPeek_TaskPeekH2", TYPE_TASK_HANDLE, xHighestPriorityTask);
+        log_struct("QPeek_TaskPeekL", "TaskHandle_t", xLowPriorityTask);
+        log_struct("QPeek_TaskPeekM", "TaskHandle_t", xMediumPriorityTask);
+        log_struct("QPeek_TaskPeekH1", "TaskHandle_t", xHighPriorityTask);
+        log_struct("QPeek_TaskPeekH2", "TaskHandle_t", xHighestPriorityTask);
 
         /* log the queue handle */
-        log_struct("QPeek_Queue", TYPE_QUEUE_HANDLE, xQueue);
+        log_struct("QPeek_Queue", "QueueHandle_t", xQueue);
     }
 }
 /*-----------------------------------------------------------*/

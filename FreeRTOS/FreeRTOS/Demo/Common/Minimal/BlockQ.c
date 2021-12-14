@@ -175,13 +175,6 @@ void vStartBlockingQueueTasks( UBaseType_t uxPriority )
     xTaskCreate( vBlockingQueueProducer, "QProdB5", blckqSTACK_SIZE, ( void * ) pxQueueParameters5, tskIDLE_PRIORITY, &xTaskQProdB5 );
     xTaskCreate( vBlockingQueueConsumer, "QConsB6", blckqSTACK_SIZE, ( void * ) pxQueueParameters6, tskIDLE_PRIORITY, &xTaskQConsB6 );
 
-    /* log the xBlockingQueueParameters addresses*/
-    log_struct("BlockQ_QueueParameters1", TYPE_BLOCKING_QUEUE_PARAMETERS, pxQueueParameters1);
-    log_struct("BlockQ_QueueParameters2", TYPE_BLOCKING_QUEUE_PARAMETERS, pxQueueParameters2);
-    log_struct("BlockQ_QueueParameters3", TYPE_BLOCKING_QUEUE_PARAMETERS, pxQueueParameters3);
-    log_struct("BlockQ_QueueParameters4", TYPE_BLOCKING_QUEUE_PARAMETERS, pxQueueParameters4);
-    log_struct("BlockQ_QueueParameters5", TYPE_BLOCKING_QUEUE_PARAMETERS, pxQueueParameters5);
-    log_struct("BlockQ_QueueParameters6", TYPE_BLOCKING_QUEUE_PARAMETERS, pxQueueParameters6);
 
     /* log the task handles */
     log_struct("BlockQ_TaskQConsB1", TYPE_TASK_HANDLE, xTaskQConsB1);

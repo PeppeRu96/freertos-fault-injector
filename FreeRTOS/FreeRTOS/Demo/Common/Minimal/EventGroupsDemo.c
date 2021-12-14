@@ -207,7 +207,8 @@ void vStartEventGroupTasks( void )
     log_struct("EventGroups_SyncTask1", TYPE_TASK_HANDLE, xSyncTask1);
     log_struct("EventGroups_SyncTask2", TYPE_TASK_HANDLE, xSyncTask2);
 
-    /* log the event group handle */
+    /* log the event group handles */
+    log_struct("EventGroups_EventGroup", TYPE_EVENT_GROUP_HANDLE, xEventGroup);
     log_struct("EventGroups_EventGroupISR", TYPE_EVENT_GROUP_HANDLE, xISREventGroup);
 }
 /*-----------------------------------------------------------*/

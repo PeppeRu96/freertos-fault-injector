@@ -158,6 +158,7 @@ void vStartTimerDemoTask( TickType_t xBasePeriodIn )
     log_struct("TimerDemo_TaskTimer", TYPE_TASK_HANDLE, xTaskTimer);
 
     /* log the timer handles */
+    log_struct("TimerDemo_TimerOneShot", TYPE_TIMER_HANDLE, xOneShotTimer);
     log_struct("TimerDemo_TimerOneShotISR", TYPE_TIMER_HANDLE, xISROneShotTimer);
     log_struct("TimerDemo_TimerAutoReloadISR", TYPE_TIMER_HANDLE, xISRAutoReloadTimer);
 
