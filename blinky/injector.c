@@ -12,7 +12,7 @@ void inject(unsigned long start_address, unsigned char * buffer, int target_size
 //pid_t simulator_pid;
 
 typedef struct{
-    char* name;
+    char name[80];
     int type;
     unsigned long address;
 } structure;
@@ -42,16 +42,18 @@ int main(){
     luogo = (int*) malloc(num * sizeof(int));
     tempo = (int*) malloc(num * sizeof(int));
 
+    fscanf(fp,"%*s %*s %*s %*s\n");
     printf("Le strutture che possono essere iniettate sono:\n");
     while(!feof(fp)){
-        fscanf(fp,"%d %s %d %lu\n", &id, struct_array[id].name, &struct_array[id].type, &struct_array[id].address );
+        fscanf(fp,"%d ",&id);
+        fscanf(fp,"%s %d %lx\n", struct_array[id].name, &struct_array[id].type, &struct_array[id].address );
         printf("%d ..... %s\n", id, struct_array[id].name);
     }
 
     fclose(fp);
     printf("\n\n");
 
-    for(i=0; i<num; i++){
+    for(i=1; i<=num; i++){
         printf("Inserire l'ID del luogo %d' che si vuole iniettare:\n",i);
         scanf("%d",&luogo[i]);
 
@@ -59,7 +61,7 @@ int main(){
         scanf("%d",&tempo[i]);
     }
 
-    for(i=0; i<num; i++){
+    for(i=1; i<=num; i++){
         printf("Iniziezione %d nella struttura %s entro %d ms\n", i, struct_array[luogo[i]].name, tempo[i]);
     }
 
