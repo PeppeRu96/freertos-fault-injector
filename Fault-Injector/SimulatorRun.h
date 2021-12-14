@@ -7,15 +7,19 @@
 
 #include <iostream>
 #include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
 #include <algorithm>
 #include <chrono>
 #include <string>
-#include <boost/process.hpp>
 #include <vector>
+#include <boost/process.hpp>
+#include <boost/interprocess/sync/named_semaphore.hpp>
 
 #include "simulator_config.h"
 
 namespace bp = boost::process;
+namespace bi = boost::interprocess;
 
 class SimulatorRun {
 private:
@@ -24,7 +28,13 @@ private:
     std::chrono::steady_clock::time_point begin_time;
     std::chrono::steady_clock::time_point end_time;
 
+    void read_data_structures();
+
 public:
+    SimulatorRun() {
+
+    }
+
     // Delete copy constructor and copy assignment
     // Allow only move constructor and assignment
     void start(std::string sim_path);

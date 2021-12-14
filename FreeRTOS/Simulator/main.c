@@ -52,6 +52,7 @@
 
 /* Local includes. */
 #include "console.h"
+#include "memory_logger.h"
 #include "sync.h"
 
 /* Priorities at which the tasks are created. */
@@ -153,8 +154,10 @@ StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
 
 int main( void )
 {
-    //test_cpp();
-    //console_print("test cpp console print");
+    /* Start the logging for the memory data structures */
+    log_data_structs_start();
+
+
 #if defined TASK_CHECK
     /* Start the check task as described at the top of this file. */
     xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
@@ -274,9 +277,17 @@ int main( void )
     xMutexToDelete = xSemaphoreCreateMutex();
 #endif
 
+    /* End the logging for the memory data structures*/
+    log_data_structs_end();
+
+    /* Signal to the FaultInjector that the data structures are ready */
+    signal_memory_log_finished();
+
+    /* Wait the signal from the FaultInjector before starting the scheduler */
+    wait_before_start();
+
     /* Start the scheduler itself. */
     vTaskStartScheduler();
-    
 
     /* Should never get here unless there was not enough heap space to create
      * the idle and other system tasks. */

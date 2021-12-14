@@ -59,6 +59,8 @@
 /* Demo program include files. */
 #include "BlockQ.h"
 
+#include "memory_logger.h"
+
 #define blckqSTACK_SIZE       configMINIMAL_STACK_SIZE
 #define blckqNUM_TASK_SETS    ( 3 )
 
@@ -89,6 +91,9 @@ static volatile short sBlockingConsumerCount[ blckqNUM_TASK_SETS ] = { ( uint16_
 /* Variable which are incremented each time an item is posted on a queue.   These
  * are used to check that the tasks are still running. */
 static volatile short sBlockingProducerCount[ blckqNUM_TASK_SETS ] = { ( uint16_t ) 0, ( uint16_t ) 0, ( uint16_t ) 0 };
+
+/* TaskHandle_t for tasks */
+static TaskHandle_t xTaskQConsB1, xTaskQProdB2, xTaskQConsB3, xTaskQProdB4, xTaskQProdB5, xTaskQConsB6;
 
 /*-----------------------------------------------------------*/
 
@@ -134,8 +139,8 @@ void vStartBlockingQueueTasks( UBaseType_t uxPriority )
 
     /* Note the producer has a lower priority than the consumer when the tasks are
      * spawned. */
-    xTaskCreate( vBlockingQueueConsumer, "QConsB1", blckqSTACK_SIZE, ( void * ) pxQueueParameters1, uxPriority, NULL );
-    xTaskCreate( vBlockingQueueProducer, "QProdB2", blckqSTACK_SIZE, ( void * ) pxQueueParameters2, tskIDLE_PRIORITY, NULL );
+    xTaskCreate( vBlockingQueueConsumer, "QConsB1", blckqSTACK_SIZE, ( void * ) pxQueueParameters1, uxPriority, &xTaskQConsB1);
+    xTaskCreate( vBlockingQueueProducer, "QProdB2", blckqSTACK_SIZE, ( void * ) pxQueueParameters2, tskIDLE_PRIORITY, &xTaskQProdB2);
 
 
 
@@ -152,8 +157,8 @@ void vStartBlockingQueueTasks( UBaseType_t uxPriority )
     pxQueueParameters4->xBlockTime = xBlockTime;
     pxQueueParameters4->psCheckVariable = &( sBlockingConsumerCount[ 1 ] );
 
-    xTaskCreate( vBlockingQueueConsumer, "QConsB3", blckqSTACK_SIZE, ( void * ) pxQueueParameters3, tskIDLE_PRIORITY, NULL );
-    xTaskCreate( vBlockingQueueProducer, "QProdB4", blckqSTACK_SIZE, ( void * ) pxQueueParameters4, uxPriority, NULL );
+    xTaskCreate( vBlockingQueueConsumer, "QConsB3", blckqSTACK_SIZE, ( void * ) pxQueueParameters3, tskIDLE_PRIORITY, &xTaskQConsB3);
+    xTaskCreate( vBlockingQueueProducer, "QProdB4", blckqSTACK_SIZE, ( void * ) pxQueueParameters4, uxPriority, &xTaskQProdB4 );
 
 
 
@@ -169,8 +174,21 @@ void vStartBlockingQueueTasks( UBaseType_t uxPriority )
     pxQueueParameters6->xBlockTime = xBlockTime;
     pxQueueParameters6->psCheckVariable = &( sBlockingConsumerCount[ 2 ] );
 
-    xTaskCreate( vBlockingQueueProducer, "QProdB5", blckqSTACK_SIZE, ( void * ) pxQueueParameters5, tskIDLE_PRIORITY, NULL );
-    xTaskCreate( vBlockingQueueConsumer, "QConsB6", blckqSTACK_SIZE, ( void * ) pxQueueParameters6, tskIDLE_PRIORITY, NULL );
+    xTaskCreate( vBlockingQueueProducer, "QProdB5", blckqSTACK_SIZE, ( void * ) pxQueueParameters5, tskIDLE_PRIORITY, &xTaskQProdB5);
+    xTaskCreate( vBlockingQueueConsumer, "QConsB6", blckqSTACK_SIZE, ( void * ) pxQueueParameters6, tskIDLE_PRIORITY, &xTaskQConsB6);
+
+    /* Log the TCBs */
+    log_struct("BlockQ_TaskQConsB1", TYPE_TASK_HANDLE, xTaskQConsB1);
+    log_struct("BlockQ_TaskQProdB2", TYPE_TASK_HANDLE, xTaskQProdB2);
+    log_struct("BlockQ_TaskQConsB3", TYPE_TASK_HANDLE, xTaskQConsB3);
+    log_struct("BlockQ_TaskQProdB4", TYPE_TASK_HANDLE, xTaskQProdB4);
+    log_struct("BlockQ_TaskQProdB5", TYPE_TASK_HANDLE, xTaskQProdB5);
+    log_struct("BlockQ_TaskQConsB6", TYPE_TASK_HANDLE, xTaskQConsB6);
+
+    /* Log the Queue data structures */
+    log_struct("BlockQ_Queue1-2", TYPE_QUEUE_HANDLE, pxQueueParameters1->xQueue);
+    log_struct("BlockQ_Queue3-4", TYPE_QUEUE_HANDLE, pxQueueParameters3->xQueue);
+    log_struct("BlockQ_Queue5-6", TYPE_QUEUE_HANDLE, pxQueueParameters5->xQueue);
 }
 /*-----------------------------------------------------------*/
 

@@ -8,9 +8,8 @@
 	extern "C" {
 	#endif
 
-
-		void test_cpp( void );
-
+		void signal_memory_log_finished();
+		void wait_before_start();
 
 
 	#if defined __cplusplus
