@@ -49,6 +49,9 @@ else()
 	message("Boost not found! You can build the demo anyway.")
 endif()
 
+# Request Threads library
+find_package(Threads REQUIRED)
+
 # Configuration variables and options
 
 # Kernel includes

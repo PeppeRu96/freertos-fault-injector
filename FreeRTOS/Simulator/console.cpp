@@ -27,6 +27,7 @@ void console_print(const char* fmt,
     //xSemaphoreTake(xStdioMutex, portMAX_DELAY);
 
     vprintf(fmt, vargs);
+    va_start(vargs, fmt);
     vsprintf(buffer, fmt, vargs);
 
     std::string s = buffer;
@@ -52,7 +53,8 @@ void write_output_to_file(void) {
         }
     }
     else {
-        std::cerr << "Unable to open " << path << "for writing the output." << std::endl;
+        std::cerr << "Unable to open " << path << " for writing the output." << std::endl;
+        exit(1);
     }
     out_file.close();
 }

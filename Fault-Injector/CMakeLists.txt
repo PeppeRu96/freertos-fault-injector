@@ -22,6 +22,8 @@ add_executable(FreeRTOS_FaultInjector ${FI_SOURCES})
 
 target_include_directories(FreeRTOS_FaultInjector PRIVATE ${FI_INCLUDES})
 
+target_link_libraries(FreeRTOS_FaultInjector PRIVATE Threads::Threads)
+
 if (${Boost_FOUND})
 	# Include header-only boost
 	target_include_directories(FreeRTOS_FaultInjector PRIVATE ${Boost_INCLUDE_DIRS})

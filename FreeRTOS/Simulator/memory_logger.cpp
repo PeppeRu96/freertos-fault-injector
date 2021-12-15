@@ -10,7 +10,8 @@ FILE *structures_log_fp;
 int nextID = 0;
 
 void log_struct(char *name, int type, void *address) {
-    fprintf(structures_log_fp, "%d %s %d %p\n", nextID++, name, type, address);
+    if (structures_log_fp != NULL)
+        fprintf(structures_log_fp, "%d %s %d %p\n", nextID++, name, type, address);
 }
 
 void log_data_structs_start() {

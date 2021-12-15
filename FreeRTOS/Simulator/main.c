@@ -725,7 +725,7 @@ static void prvCheckTask( void * pvParameters )
             xErrorCount++;
         }
 #endif
-#if defined STREM_BUFFER_SEND_ISR
+#if defined STREAM_BUFFER_SEND_ISR
         if( xIsInterruptStreamBufferDemoStillRunning() != pdPASS )
         {
             pcStatusMessage = "Error: Stream buffer interrupt";
@@ -773,11 +773,13 @@ static void prvCheckTask( void * pvParameters )
                 xTaskGetTickCount());
                 */
             console_print("%s\n", pcStatusMessage);
-        
+        /*
         if( xErrorCount != 0 )
         {
+            write_output_to_file();
             vPortEndScheduler();
         }
+        */
 
         /* Reset the error condition */
         pcStatusMessage = "No errors";

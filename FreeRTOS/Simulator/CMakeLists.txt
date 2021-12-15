@@ -56,10 +56,6 @@ configure_file(${SIMULATOR_DIR}/simulator_config.h.in simulator_config.h)
 
 # ---------------------------------------------------------------------
 
-
-# Request Threads library
-find_package(Threads REQUIRED)
-
 # Includes
 set(SIMULATOR_INCLUDES
         ${SIMULATOR_DIR}
