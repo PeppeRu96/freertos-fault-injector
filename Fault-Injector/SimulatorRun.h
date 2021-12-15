@@ -16,6 +16,7 @@
 #include <boost/process.hpp>
 #include <boost/interprocess/sync/named_semaphore.hpp>
 
+#include "DataStructure.h"
 #include "simulator_config.h"
 
 namespace bp = boost::process;
@@ -24,6 +25,10 @@ namespace bi = boost::interprocess;
 class SimulatorRun {
 private:
     bp::child c;
+
+    std::vector<DataStructure> data_structures;
+
+    std::vector<std::string> output;
 
     std::chrono::steady_clock::time_point begin_time;
     std::chrono::steady_clock::time_point end_time;
@@ -41,7 +46,10 @@ public:
     auto duration();
     std::error_code wait();
     void terminate();
+    void save_output();
     void show_output();
+
+    std::vector<DataStructure> get_data_structures() const;
 };
 
 

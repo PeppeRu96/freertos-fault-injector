@@ -43,14 +43,26 @@ void SimulatorRun::read_data_structures() {
     char struct_name[100];
     int struct_type;
     void *struct_address;
+
     char buffer[100];
     int n_read;
 
     fgets(buffer, 100, structures_log_fp);
-    std::cout << buffer;
+    //std::cout << buffer;
     while (fscanf(structures_log_fp, "%d %s %d %p\n", &struct_id, struct_name, &struct_type, &struct_address) == 4) {
-        printf("Id: %d, Name: %s, Type: %d, Address: %p\n", struct_id, struct_name, struct_type, struct_address);
+        // printf("Id: %d, Name: %s, Type: %d, Address: %p\n", struct_id, struct_name, struct_type, struct_address);
+        DataStructure ds(struct_id, struct_name, struct_type, struct_address);
+        this->data_structures.push_back(ds);
     }
+
+    // Debug
+    /*
+    for (auto const& ds : this->data_structures) {
+        std::cout << ds << std::endl;
+    }
+    */
+
+    fclose(structures_log_fp);
 }
 
 std::error_code SimulatorRun::wait() {
@@ -68,6 +80,29 @@ void SimulatorRun::terminate() {
     this->c.terminate();
 }
 
+void SimulatorRun::save_output() {
+    std::ifstream output_file;
+    std::string path = OUTPUT_FILE_PREFIX + std::to_string(this->c.id()) + ".txt";
+    std::string line;
+
+    output_file.open(path);
+    if (output_file.is_open()) {
+        while (std::getline(output_file, line))
+            this->output.push_back(line);
+    }
+    else {
+        std::cout << "Unable to open " << path << std::endl;
+    }
+
+    output_file.close();
+
+    // Debug
+    /*
+    for (auto const& s : this->output)
+        std::cout << s << std::endl;
+    */
+}       
+
 void SimulatorRun::show_output() {
     std::ifstream output_file;
     std::string path = OUTPUT_FILE_PREFIX + std::to_string(this->c.id()) + ".txt";
@@ -83,4 +118,8 @@ void SimulatorRun::show_output() {
     }
        
     output_file.close();
+}
+
+std::vector<DataStructure> SimulatorRun::get_data_structures() const {
+    return this->data_structures;
 }
