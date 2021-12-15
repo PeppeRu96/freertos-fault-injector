@@ -786,6 +786,7 @@ static void prvCheckTask( void * pvParameters )
 
         if (count == 3) {
             write_output_to_file();
+            exit(0);
             vPortEndScheduler();
         }
         
