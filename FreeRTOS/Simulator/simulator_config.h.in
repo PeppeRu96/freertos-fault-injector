@@ -1,3 +1,5 @@
+#define PROJECT_VER  "@PROJECT_VERSION@"
+
 #cmakedefine TASK_CHECK
 #cmakedefine TASK_TASK_NOTIFY
 #cmakedefine TASK_BLOCKING_QUEUE

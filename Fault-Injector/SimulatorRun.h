@@ -42,7 +42,8 @@ public:
 
     // Delete copy constructor and copy assignment
     // Allow only move constructor and assignment
-    void start(std::string sim_path);
+    void init(std::string sim_path);
+    void start();
     auto duration();
     std::error_code wait();
     void terminate();
@@ -50,6 +51,7 @@ public:
     void show_output();
 
     std::vector<DataStructure> get_data_structures() const;
+    DataStructure get_ds_by_id(int id) const;
 };
 
 

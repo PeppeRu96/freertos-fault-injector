@@ -4,22 +4,27 @@
 //
 #include "SimulatorRun.h"
 
-void SimulatorRun::start(std::string sim_path) {
+void SimulatorRun::init(std::string sim_path) {
     bp::child new_child(sim_path);
     this->c = std::move(new_child);
 
     std::string pid = std::to_string(this->c.id());
     std::string sem1_name = "binary_sem_log_struct_" + pid + "_1";
-    std::string sem2_name = "binary_sem_log_struct_" + pid + "_2";
 
     bi::named_semaphore s1(bi::open_or_create, sem1_name.c_str(), 0);
-    bi::named_semaphore s2(bi::open_or_create, sem2_name.c_str(), 0);
-    
+
     // Wait that the data structures are ready to be read
     s1.wait();
 
     // Read data structures
     this->read_data_structures();
+}
+
+void SimulatorRun::start() {
+    std::string pid = std::to_string(this->c.id());
+    std::string sem2_name = "binary_sem_log_struct_" + pid + "_2";
+
+    bi::named_semaphore s2(bi::open_or_create, sem2_name.c_str(), 0);
     
     // Signal to the simulator that it can start
     s2.post();
@@ -122,4 +127,13 @@ void SimulatorRun::show_output() {
 
 std::vector<DataStructure> SimulatorRun::get_data_structures() const {
     return this->data_structures;
+}
+
+DataStructure SimulatorRun::get_ds_by_id(int id) const {
+    for (auto ds : this->data_structures) {
+        if (ds.get_id() == id)
+            return ds;
+    }
+    std::cerr << "Error: Data structure with id: " << id << " not found." << std::endl;
+    exit(2);
 }
