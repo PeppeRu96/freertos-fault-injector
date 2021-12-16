@@ -137,3 +137,11 @@ DataStructure SimulatorRun::get_ds_by_id(int id) const {
     std::cerr << "Error: Data structure with id: " << id << " not found." << std::endl;
     exit(2);
 }
+
+std::chrono::steady_clock::time_point SimulatorRun::get_begin_time() const {
+    return this->begin_time;
+}
+
+long long SimulatorRun::get_pid() const {
+    return this->c.id();
+}

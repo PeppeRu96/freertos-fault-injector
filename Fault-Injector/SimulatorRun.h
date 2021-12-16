@@ -52,6 +52,8 @@ public:
 
     std::vector<DataStructure> get_data_structures() const;
     DataStructure get_ds_by_id(int id) const;
+    std::chrono::steady_clock::time_point get_begin_time() const;
+    long long get_pid() const;
 };
 
 

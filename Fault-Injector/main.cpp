@@ -9,8 +9,8 @@
 
 //#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/";
 //#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/"
-//#define SIMULATOR_FOLDER_PATH "/home/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
-#define SIMULATOR_FOLDER_PATH "/Users/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
+#define SIMULATOR_FOLDER_PATH "/home/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
+//#define SIMULATOR_FOLDER_PATH "/Users/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
 #define SIMULATOR_EXE_NAME "FreeRTOS_Simulator";
 
 
@@ -59,11 +59,11 @@ int main()
         SimulatorRun sr;
         sr.init(sim_path);
         DataStructure ds = sr.get_ds_by_id(conf.struct_id);
-        Injection inj(ds, conf.max_time_ms);
+        Injection inj(sr.get_pid(), ds, conf.max_time_ms);
 
         // Start
         sr.start();
-        inj.inject();
+        inj.inject(sr.get_begin_time());
 
         // TODO: The simulator may crash or be in deadlock! Handle these cases
         sr.wait();
