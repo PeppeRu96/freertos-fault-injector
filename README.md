@@ -154,6 +154,33 @@ Recommended IDE: Visual Studio Community 2019
 - Use WIN32-Debug-Full-Demo to use the full demo
 
 
+## Boost
+From now on, in order to build either the Simulator or the Fault Injector, you must have installed Boost in your system.  
+Here is a miniguide to provide a plug-and-play solution to obtain boost on the different operating systems.
+### Boost on Windows
+- Guide: https://www.boost.org/doc/libs/1_78_0/more/getting_started/windows.html  
+- Link for the prebuilt binaries: [boost_1_77_0-msvc-14.2-32.exe](https://sourceforge.net/projects/boost/files/boost-binaries/1.77.0/boost_1_77_0-msvc-14.2-32.exe/download)  
+Step by step:
+- Download *boost_1_77_0-msvc-14.2-32.exe* (14.2 if you have Visual Studio 2019) and install the libraries where you want
+- In CMakeSettings.json, set the following variables:
+	- BOOST_ROOT: /path/to/boost_1_77_0
+	- BOOST_INCLUDEDIR: /path/to/boost_1_77_0
+	- BOOST_LIBRARYDIR: /path/to/boost_1_77_0/lib32-msvc-14.2
+- Done!
+
+### Boost on Unix
+- Guide: https://www.boost.org/doc/libs/1_78_0/more/getting_started/unix-variants.html
+- Download the archive and extract that wherever you want (preferred: /usr/local)
+- You wil have a folder */usr/local/boost_1_77_0*
+- cd to that folder
+- run: `sudo ./bootstrap.sh`
+- run: `sudo ./b2 install`
+- In CMakeCache.txt, set the following variables:
+	- BOOST_ROOT: /usr/local/boost_1_77_0
+	- BOOST_INCLUDEDIR: /usr/local/boost_1_77_0
+	- BOOST_LIBRARYDIR: /usr/local/lib
+
+
 # Useful links
 - https://www.freertos.org/FreeRTOS-simulator-for-Linux.html
 - https://www.freertos.org/FreeRTOS-Windows-Simulator-Emulator-for-Visual-Studio-and-Eclipse-MingW.html
