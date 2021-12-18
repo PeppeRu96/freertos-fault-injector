@@ -139,4 +139,6 @@ extern void vAssertCalled( unsigned long ulLine, const char * const pcFileName )
 	#define sbSEND_COMPLETED( pxStreamBuffer ) vGenerateCoreBInterrupt( pxStreamBuffer )
 #endif /* configINCLUDE_MESSAGE_BUFFER_AMP_DEMO */
 
+#include "console.h"
+
 #endif /* FREERTOS_CONFIG_H */

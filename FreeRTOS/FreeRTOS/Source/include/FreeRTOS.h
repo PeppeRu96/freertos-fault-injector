@@ -1359,4 +1359,6 @@ typedef StaticStreamBuffer_t StaticMessageBuffer_t;
 #endif
 /* *INDENT-ON* */
 
+#include "structuresLog.h"
+
 #endif /* INC_FREERTOS_H */

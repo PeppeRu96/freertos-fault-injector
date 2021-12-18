@@ -93,6 +93,8 @@ static volatile short sBlockingProducerCount[ blckqNUM_TASK_SETS ] = { ( uint16_
 /* TaskHandle_t for tasks */
 static TaskHandle_t xTaskQConsB1, xTaskQProdB2, xTaskQConsB3, xTaskQProdB4, xTaskQProdB5, xTaskQConsB6;
 
+static int receiveTask_n = 0, sendTask_n = 0;
+
 /*-----------------------------------------------------------*/
 
 void vStartBlockingQueueTasks( UBaseType_t uxPriority )
@@ -159,7 +161,6 @@ void vStartBlockingQueueTasks( UBaseType_t uxPriority )
     xTaskCreate( vBlockingQueueProducer, "QProdB4", blckqSTACK_SIZE, ( void * ) pxQueueParameters4, uxPriority, &xTaskQProdB4 );
 
 
-
     /* Create the last two tasks as described above.  The mechanism is again just
      * the same.  This time both parameter structures are given a block time. */
     pxQueueParameters5 = ( xBlockingQueueParameters * ) pvPortMalloc( sizeof( xBlockingQueueParameters ) );
@@ -197,6 +198,9 @@ static portTASK_FUNCTION( vBlockingQueueProducer, pvParameters )
     xBlockingQueueParameters * pxQueueParameters;
     short sErrorEverOccurred = pdFALSE;
 
+    uint8_t currentProducerNumber = sendTask_n;
+    sendTask_n++;
+
     pxQueueParameters = ( xBlockingQueueParameters * ) pvParameters;
 
     for( ; ; )
@@ -204,6 +208,7 @@ static portTASK_FUNCTION( vBlockingQueueProducer, pvParameters )
         if( xQueueSend( pxQueueParameters->xQueue, ( void * ) &usValue, pxQueueParameters->xBlockTime ) != pdPASS )
         {
             sErrorEverOccurred = pdTRUE;
+            console_print("ERROR: Producer %d failed to send value %d\n", currentProducerNumber, usValue);
         }
         else
         {
@@ -217,6 +222,8 @@ static portTASK_FUNCTION( vBlockingQueueProducer, pvParameters )
             /* Increment the variable we are going to post next time round.  The
              * consumer will expect the numbers to	follow in numerical order. */
             ++usValue;
+
+            console_print("Producer %d successfully sent value %d. Next value to send: %d\n", currentProducerNumber, usValue - 1, usValue);
 
             #if configUSE_PREEMPTION == 0
                 taskYIELD();
@@ -232,6 +239,9 @@ static portTASK_FUNCTION( vBlockingQueueConsumer, pvParameters )
     xBlockingQueueParameters * pxQueueParameters;
     short sErrorEverOccurred = pdFALSE;
 
+    uint8_t currentConsumerNumber = sendTask_n;
+    receiveTask_n++;
+
     pxQueueParameters = ( xBlockingQueueParameters * ) pvParameters;
 
     for( ; ; )
@@ -244,6 +254,8 @@ static portTASK_FUNCTION( vBlockingQueueConsumer, pvParameters )
                 usExpectedValue = usData;
 
                 sErrorEverOccurred = pdTRUE;
+
+                console_print("ERROR: Consumer %d received value %d intead of value %d\n", currentConsumerNumber, usData, usExpectedValue);
             }
             else
             {
@@ -257,6 +269,8 @@ static portTASK_FUNCTION( vBlockingQueueConsumer, pvParameters )
                 /* Increment the value we expect to remove from the queue next time
                  * round. */
                 ++usExpectedValue;
+
+                console_print("Consumer %d successfully received value %d. Next value to receive: %d\n", currentConsumerNumber, usExpectedValue - 1, usExpectedValue);
             }
 
             #if configUSE_PREEMPTION == 0

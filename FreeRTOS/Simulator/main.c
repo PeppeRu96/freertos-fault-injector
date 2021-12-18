@@ -168,6 +168,7 @@ int main( void )
     printf("Size of QueueSetHandle: %d\n", sizeof(StaticQueue_t));
     printf("Size of the Static Stack: %d\n", configMINIMAL_STACK_SIZE * 2);
 
+    console_init();
     log_start();
 
 #if defined TASK_CHECK
