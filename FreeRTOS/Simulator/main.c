@@ -157,6 +157,17 @@ TaskHandle_t xTaskBlockNoti;
 
 int main( void )
 {
+    printf("Size of TaskHandle: %d\n", sizeof(StaticTask_t));
+    printf("Size of QueueHandle: %d\n", sizeof(StaticQueue_t));
+    printf("Size of TimerHandle: %d\n", sizeof(StaticTimer_t));
+    printf("Size of SemaphoreHandle: %d\n", sizeof(StaticSemaphore_t));
+    printf("Size of CountingSemaphore: %d\n", sizeof(StaticQueue_t));
+    printf("Size of EventGroupHandle: %d\n", sizeof(StaticEventGroup_t));
+    printf("Size of StreamBufferHandle: %d\n", sizeof(StaticStreamBuffer_t));
+    printf("Size of MessageBufferHandle: %d\n", sizeof(StaticMessageBuffer_t));
+    printf("Size of QueueSetHandle: %d\n", sizeof(StaticQueue_t));
+    printf("Size of the Static Stack: %d\n", configMINIMAL_STACK_SIZE * 2);
+
     log_start();
 
 #if defined TASK_CHECK
