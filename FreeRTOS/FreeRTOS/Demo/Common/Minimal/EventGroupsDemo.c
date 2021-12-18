@@ -169,7 +169,7 @@ static EventGroupHandle_t xEventGroup = NULL;
 static EventGroupHandle_t xISREventGroup = NULL;
 
 /* Handles to the tasks that only take part in the synchronisation calls. */
-static TaskHandle_t xSyncTask1 = NULL, xSyncTask2 = NULL;
+static TaskHandle_t xSyncTask1 = NULL, xSyncTask2 = NULL, xTestMasterTask;
 
 /*-----------------------------------------------------------*/
 
@@ -189,7 +189,7 @@ void vStartEventGroupTasks( void )
      * Create the test tasks as described at the top of this file.
      */
     xTaskCreate( prvTestSlaveTask, "WaitO", ebRENDESVOUS_TEST_TASK_STACK_SIZE, NULL, ebWAIT_BIT_TASK_PRIORITY, &xTestSlaveTaskHandle );
-    xTaskCreate( prvTestMasterTask, "SetB", ebEVENT_GROUP_SET_BITS_TEST_TASK_STACK_SIZE, ( void * ) xTestSlaveTaskHandle, ebSET_BIT_TASK_PRIORITY, NULL );
+    xTaskCreate( prvTestMasterTask, "SetB", ebEVENT_GROUP_SET_BITS_TEST_TASK_STACK_SIZE, ( void * ) xTestSlaveTaskHandle, ebSET_BIT_TASK_PRIORITY, &xTestMasterTask );
     xTaskCreate( prvSyncTask, "Rndv", ebRENDESVOUS_TEST_TASK_STACK_SIZE, ( void * ) ebRENDESVOUS_TASK_1_SYNC_BIT, ebWAIT_BIT_TASK_PRIORITY, &xSyncTask1 );
     xTaskCreate( prvSyncTask, "Rndv", ebRENDESVOUS_TEST_TASK_STACK_SIZE, ( void * ) ebRENDESVOUS_TASK_2_SYNC_BIT, ebWAIT_BIT_TASK_PRIORITY, &xSyncTask2 );
 
@@ -200,6 +200,16 @@ void vStartEventGroupTasks( void )
      * the tasks is created by the tasks themselves. */
     xISREventGroup = xEventGroupCreate();
     configASSERT( xISREventGroup );
+
+    /* log the task handles */
+    log_struct("EventGroups_SlaveTask", TYPE_TASK_HANDLE, xTestSlaveTaskHandle);
+    log_struct("EventGroups_MasterTask", TYPE_TASK_HANDLE, xTestMasterTask);
+    log_struct("EventGroups_SyncTask1", TYPE_TASK_HANDLE, xSyncTask1);
+    log_struct("EventGroups_SyncTask2", TYPE_TASK_HANDLE, xSyncTask2);
+
+    /* log the event group handles */
+    log_struct("EventGroups_EventGroup", TYPE_EVENT_GROUP_HANDLE, xEventGroup);
+    log_struct("EventGroups_EventGroupISR", TYPE_EVENT_GROUP_HANDLE, xISREventGroup);
 }
 /*-----------------------------------------------------------*/
 

@@ -133,13 +133,19 @@
  * should be within an acceptable upper bound. */
     const TickType_t xAllowableMargin = pdMS_TO_TICKS( 7 );
 
+static TaskHandle_t xTaskControlling, xTaskBlocking;
+
 /*-----------------------------------------------------------*/
 
     void vCreateAbortDelayTasks( void )
     {
         /* Create the two test tasks described above. */
-        xTaskCreate( prvControllingTask, pcControllingTaskName, configMINIMAL_STACK_SIZE, NULL, abtCONTROLLING_PRIORITY, NULL );
-        xTaskCreate( prvBlockingTask, pcBlockingTaskName, configMINIMAL_STACK_SIZE, NULL, abtBLOCKING_PRIORITY, NULL );
+        xTaskCreate( prvControllingTask, pcControllingTaskName, configMINIMAL_STACK_SIZE, NULL, abtCONTROLLING_PRIORITY, &xTaskControlling );
+        xTaskCreate( prvBlockingTask, pcBlockingTaskName, configMINIMAL_STACK_SIZE, NULL, abtBLOCKING_PRIORITY, &xTaskBlocking );
+
+        /* log the task handles */
+        log_struct("AbortDelay_TaskControlling", TYPE_TASK_HANDLE, xTaskControlling);
+        log_struct("AbortDelay_TaskBlocking", TYPE_TASK_HANDLE, xTaskBlocking);
     }
 /*-----------------------------------------------------------*/
 

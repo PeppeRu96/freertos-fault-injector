@@ -40,7 +40,10 @@
  * http://www.freertos.org/a00110.html
  *----------------------------------------------------------*/
 
+/* Custom includes */
 #include "simulator_config.h"
+#include "memory_logger.h"
+
 
 #if defined __unix__
     #include <pthread.h>

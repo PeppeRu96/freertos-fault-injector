@@ -2,14 +2,16 @@
 #include <iomanip>
 #include <string>
 #include <time.h>
+#include <algorithm>
 
 #include "SimulatorRun.h"
 #include "Injection.h"
 #include "simulator_config.h"
+#include "memory_logger.h"
 
-//#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/";
+#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/";
 //#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/"
-#define SIMULATOR_FOLDER_PATH "/home/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
+//#define SIMULATOR_FOLDER_PATH "/home/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
 //#define SIMULATOR_FOLDER_PATH "/Users/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
 #define SIMULATOR_EXE_NAME "FreeRTOS_Simulator";
 
@@ -94,18 +96,30 @@ void menu(InjectConf &conf) {
             cout << endl;
             continue;
         }
+        else if (op != 1) {
+            cout << "Invalid option. Try again." << endl;
+            continue;
+        }
 
         cout << "-- Injection configuration --" << endl;
         cout << "Injectable data structures:" << endl;
         cout << left << setw(20) << "\tId" << left << setw(40) << "Name" << left << setw(20) << "Type" << endl;
+        cout << "-------------------------------------------------------------------------------------" << endl;
         for (auto const& ds : golden_run.get_data_structures()) {
-            cout << left << setw(20) << "\t" + to_string(ds.get_id()) << left << setw(40) << ds.get_name() << left << setw(20) << ds.get_type() << endl;
+            cout << left << setw(20) << "\t" + to_string(ds.get_id()) << left << setw(40) << ds.get_name() << left << setw(20) << get_data_struct_type(ds.get_type()) << endl;
         }
         cout << endl;
+
+        auto structs = golden_run.get_data_structures();
+        auto max = std::max_element(structs.begin(), structs.end(), [](const DataStructure& a, const DataStructure& b) {
+            return a.get_id() < b.get_id();
+            });
+        int max_id = max->get_id();
+
         while (true) {
-            cout << "Conf1 -) Insert the Id of the data structure to inject: ";
+            cout << "Conf1 -) Insert the Id of the data structure to inject (0 - " << max_id << "): ";
             cin >> conf.struct_id;
-            if (conf.struct_id >= 0) {
+            if (conf.struct_id >= 0 && conf.struct_id <= max_id) {
                 break;
             }
             else {

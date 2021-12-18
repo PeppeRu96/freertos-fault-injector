@@ -23,6 +23,7 @@ extern "C" {
     void log_struct(char *name, int type, void *address);
     void log_data_structs_start();
     void log_data_structs_end();
+    char * get_data_struct_type(int dst);
 
 #ifdef __cplusplus
 }

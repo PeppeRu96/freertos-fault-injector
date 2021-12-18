@@ -178,6 +178,8 @@ static const char * pc54ByteString = "01234567891abcdefghijklmnopqrstuvwxyzABCDE
  * to a monitoring task ('check' task). */
 static BaseType_t xErrorStatus = pdPASS;
 
+static TaskHandle_t xTaskEchoServerH, xTaskEchoServerL, xNoBlockSend, xNoBlockReceive, xTriggerTask, xStaticSend1, xStaticSend2;
+
 /*-----------------------------------------------------------*/
 
 void vStartStreamBufferTasks( void )
@@ -187,31 +189,45 @@ void vStartStreamBufferTasks( void )
     /* The echo servers sets up the stream buffers before creating the echo
      * client tasks.  One set of tasks has the server as the higher priority, and
      * the other has the client as the higher priority. */
-    xTaskCreate( prvEchoServer, "1StrEchoServer", sbSMALLER_STACK_SIZE, NULL, sbHIGHER_PRIORITY, NULL );
-    xTaskCreate( prvEchoServer, "2StrEchoServer", sbSMALLER_STACK_SIZE, NULL, sbLOWER_PRIORITY, NULL );
+    xTaskCreate( prvEchoServer, "1StrEchoServer", sbSMALLER_STACK_SIZE, NULL, sbHIGHER_PRIORITY, &xTaskEchoServerH );
+    xTaskCreate( prvEchoServer, "2StrEchoServer", sbSMALLER_STACK_SIZE, NULL, sbLOWER_PRIORITY, &xTaskEchoServerL );
 
     /* The non blocking tasks run continuously and will interleave with each
      * other, so must be created at the lowest priority.  The stream buffer they
      * use is created and passed in using the task's parameter. */
     xStreamBuffer = xStreamBufferCreate( sbSTREAM_BUFFER_LENGTH_BYTES, sbTRIGGER_LEVEL_1 );
-    xTaskCreate( prvNonBlockingReceiverTask, "StrNonBlkRx", configMINIMAL_STACK_SIZE, ( void * ) xStreamBuffer, tskIDLE_PRIORITY, NULL );
-    xTaskCreate( prvNonBlockingSenderTask, "StrNonBlkTx", configMINIMAL_STACK_SIZE, ( void * ) xStreamBuffer, tskIDLE_PRIORITY, NULL );
+    xTaskCreate( prvNonBlockingReceiverTask, "StrNonBlkRx", configMINIMAL_STACK_SIZE, ( void * ) xStreamBuffer, tskIDLE_PRIORITY, &xNoBlockReceive );
+    xTaskCreate( prvNonBlockingSenderTask, "StrNonBlkTx", configMINIMAL_STACK_SIZE, ( void * ) xStreamBuffer, tskIDLE_PRIORITY, &xNoBlockSend );
 
     /* The task that receives bytes from an interrupt to test that it unblocks
      * at a specific trigger level must run at a high priority to minimise the risk
      * of it receiving more characters before it can execute again after being
      * unblocked. */
-    xTaskCreate( prvInterruptTriggerLevelTest, "StrTrig", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL );
+    xTaskCreate( prvInterruptTriggerLevelTest, "StrTrig", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, &xTriggerTask );
 
     #if ( configSUPPORT_STATIC_ALLOCATION == 1 )
         {
             /* The sender tasks set up the stream buffers before creating the
              * receiver tasks.  Priorities must be 0 and 1 as the priority is used to
              * index into the xStaticStreamBuffers and ucBufferStorage arrays. */
-            xTaskCreate( prvSenderTask, "Str1Sender", sbSMALLER_STACK_SIZE, NULL, sbHIGHER_PRIORITY, NULL );
-            xTaskCreate( prvSenderTask, "Str2Sender", sbSMALLER_STACK_SIZE, NULL, sbLOWER_PRIORITY, NULL );
+            xTaskCreate( prvSenderTask, "Str1Sender", sbSMALLER_STACK_SIZE, NULL, sbHIGHER_PRIORITY, &xStaticSend1 );
+            xTaskCreate( prvSenderTask, "Str2Sender", sbSMALLER_STACK_SIZE, NULL, sbLOWER_PRIORITY, &xStaticSend2 );
+
+            /* log the task handles */
+            log_struct("StreamBuffer_TaskStaticSender1", TYPE_TASK_HANDLE, xStaticSend1);
+            log_struct("StreamBuffer_TaskStaticSender2", TYPE_TASK_HANDLE, xStaticSend2);
         }
     #endif /* configSUPPORT_STATIC_ALLOCATION */
+
+    /* log the task handles */
+    log_struct("StreamBuffer_TaskEchoServerHighPriority", TYPE_TASK_HANDLE, xTaskEchoServerH);
+    log_struct("StreamBuffer_TaskEchoServerLowPriority", TYPE_TASK_HANDLE, xTaskEchoServerL);
+    log_struct("StreamBuffer_TaskNoBlockingReceive", TYPE_TASK_HANDLE, xNoBlockReceive);
+    log_struct("StreamBuffer_TaskNoBlockingSend", TYPE_TASK_HANDLE, xNoBlockSend);
+    log_struct("StreamBuffer_TaskTrigger", TYPE_TASK_HANDLE, xTriggerTask);
+
+    /* log the stream buffer handle */
+    log_struct("StreamBuffer_StreamBuffer", TYPE_STREAM_BUFFER_HANDLE, xStreamBuffer);
 }
 /*-----------------------------------------------------------*/
 

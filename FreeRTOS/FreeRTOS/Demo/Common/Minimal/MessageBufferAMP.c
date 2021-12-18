@@ -76,7 +76,7 @@
 #define mbaTASK_MESSAGE_BUFFER_SIZE       ( 60 )
 
 /* The number of instances of prvCoreBTasks that are created. */
-#define mbaNUMBER_OF_CORE_B_TASKS         2
+#define mbaNUMBER_OF_CORE_B_TASKS         1
 
 /* A block time of 0 simply means, don't block. */
 #define mbaDONT_BLOCK                     0
@@ -123,6 +123,8 @@ static uint32_t ulCycleCounters[ mbaNUMBER_OF_CORE_B_TASKS ];
  * that something might be wrong. */
 BaseType_t xDemoStatus = pdPASS;
 
+static TaskHandle_t xTaskCoreA, xTaskCoreB;
+
 /*-----------------------------------------------------------*/
 
 void vStartMessageBufferAMPTasks( configSTACK_DEPTH_TYPE xStackSize )
@@ -136,7 +138,7 @@ void vStartMessageBufferAMPTasks( configSTACK_DEPTH_TYPE xStackSize )
                  xStackSize,       /* Stack size (in words!). */
                  NULL,             /* Task parameter is not used. */
                  tskIDLE_PRIORITY, /* The priority at which the task is created. */
-                 NULL );           /* No use for the task handle. */
+                 &xTaskCoreA );           /* No use for the task handle. */
 
     for( x = 0; x < mbaNUMBER_OF_CORE_B_TASKS; x++ )
     {
@@ -151,8 +153,16 @@ void vStartMessageBufferAMPTasks( configSTACK_DEPTH_TYPE xStackSize )
                      xStackSize,
                      ( void * ) x,
                      tskIDLE_PRIORITY + 1,
-                     NULL );
+                     &xTaskCoreB );
     }
+
+    /* log the task handles */
+    log_struct("MessageBufferAMP_TaskCoreA", TYPE_TASK_HANDLE, xTaskCoreA);
+    log_struct("MessageBufferAMP_TaskCoreB", TYPE_TASK_HANDLE, xTaskCoreB);
+
+    /* log the message buffer handles */
+    log_struct("MessageBufferAMP_MessageBufferControl", TYPE_MESSAGE_BUFFER_HANDLE, xControlMessageBuffer);
+    log_struct("MessageBufferAMP_MessageBufferCoreB", TYPE_MESSAGE_BUFFER_HANDLE, xCoreBMessageBuffers[0]);
 }
 /*-----------------------------------------------------------*/
 

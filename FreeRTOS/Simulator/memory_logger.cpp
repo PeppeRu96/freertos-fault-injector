@@ -30,3 +30,31 @@ void log_data_structs_start() {
 void log_data_structs_end() {
     fclose(structures_log_fp);
 }
+
+char * get_data_struct_type(int dst) {
+    switch (dst)
+    {
+    case TYPE_TASK_HANDLE:
+        return "Task Control Block";
+    case TYPE_QUEUE_HANDLE:
+        return "Queue";
+    case TYPE_TIMER_HANDLE:
+        return "Timer";
+    case TYPE_SEMAPHORE_HANDLE:
+        return "Semaphore";
+    case TYPE_COUNT_SEMAPHORE:
+        return "Count Semaphore";
+    case TYPE_EVENT_GROUP_HANDLE:
+        return "Event Group";
+    case TYPE_MESSAGE_BUFFER_HANDLE:
+        return "Message Buffer";
+    case TYPE_STREAM_BUFFER_HANDLE:
+        return "Stream Buffer";
+    case TYPE_QUEUE_SET_HANDLE:
+        return "Queue Set";
+    case TYPE_STATIC_STACK:
+        return "Static Stack";
+    default:
+        return "Invalid type";
+    }
+}

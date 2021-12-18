@@ -47,17 +47,17 @@
         },
         {
           "name": "BOOST_ROOT",
-          "value": "D:/development/libraries/boost/x86/boost_1_77_0",
+          "value": "C:/local/boost/x86/boost_1_77_0",
           "type": "STRING"
         },
         {
           "name": "BOOST_LIBRARYDIR",
-          "value": "D:/development/libraries/boost/x86/boost_1_77_0/lib32-msvc-14.2",
+          "value": "C:/local/boost/x86/boost_1_77_0/lib32-msvc-14.2",
           "type": "STRING"
         },
         {
           "name": "BOOST_INCLUDEDIR",
-          "value": "D:/development/libraries/boost/x86/boost_1_77_0",
+          "value": "C:/local/boost/x86/boost_1_77_0",
           "type": "STRING"
         }
       ]
@@ -536,7 +536,7 @@
       "variables": [
         {
           "name": "BOOST_ROOT",
-          "value": "D:/development/libraries/boost/x86/boost_1_77_0",
+          "value": "C:/local/boost/x86/boost_1_77_0",
           "type": "STRING"
         },
         {
@@ -546,12 +546,12 @@
         },
         {
           "name": "BOOST_INCLUDEDIR",
-          "value": "D:/development/libraries/boost/x86/boost_1_77_0",
+          "value": "C:/local/boost/x86/boost_1_77_0",
           "type": "STRING"
         },
         {
           "name": "BOOST_LIBRARYDIR",
-          "value": "D:/development/libraries/boost/x86/boost_1_77_0/lib32-msvc-14.2",
+          "value": "C:/local/boost/x86/boost_1_77_0/lib32-msvc-14.2",
           "type": "STRING"
         }
       ]
