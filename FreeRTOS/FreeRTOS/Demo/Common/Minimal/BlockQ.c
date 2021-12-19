@@ -72,6 +72,7 @@ typedef struct BLOCKING_QUEUE_PARAMETERS
     QueueHandle_t xQueue;             /*< The queue to be used by the task. */
     TickType_t xBlockTime;            /*< The block time to use on queue reads/writes. */
     volatile short * psCheckVariable; /*< Incremented on each successful cycle to check the task is still running. */
+    int paramNumber;
 } xBlockingQueueParameters;
 
 /* Task function that creates an incrementing number and posts it on a queue. */
@@ -94,6 +95,8 @@ static volatile short sBlockingProducerCount[ blckqNUM_TASK_SETS ] = { ( uint16_
 static TaskHandle_t xTaskQConsB1, xTaskQProdB2, xTaskQConsB3, xTaskQProdB4, xTaskQProdB5, xTaskQConsB6;
 
 static int receiveTask_n = 0, sendTask_n = 0;
+
+static int limitValue = 5;
 
 /*-----------------------------------------------------------*/
 
@@ -136,6 +139,9 @@ void vStartBlockingQueueTasks( UBaseType_t uxPriority )
      * it is still running. */
     pxQueueParameters2->psCheckVariable = &( sBlockingProducerCount[ 0 ] );
 
+    pxQueueParameters1->paramNumber = 1;
+    pxQueueParameters2->paramNumber = 1;
+
 
     /* Note the producer has a lower priority than the consumer when the tasks are
      * spawned. */
@@ -157,6 +163,10 @@ void vStartBlockingQueueTasks( UBaseType_t uxPriority )
     pxQueueParameters4->xBlockTime = xBlockTime;
     pxQueueParameters4->psCheckVariable = &( sBlockingConsumerCount[ 1 ] );
 
+    pxQueueParameters3->paramNumber = 2;
+    pxQueueParameters4->paramNumber = 2;
+
+
     xTaskCreate( vBlockingQueueConsumer, "QConsB3", blckqSTACK_SIZE, ( void * ) pxQueueParameters3, tskIDLE_PRIORITY, &xTaskQConsB3 );
     xTaskCreate( vBlockingQueueProducer, "QProdB4", blckqSTACK_SIZE, ( void * ) pxQueueParameters4, uxPriority, &xTaskQProdB4 );
 
@@ -172,6 +182,10 @@ void vStartBlockingQueueTasks( UBaseType_t uxPriority )
     pxQueueParameters6->xQueue = pxQueueParameters5->xQueue;
     pxQueueParameters6->xBlockTime = xBlockTime;
     pxQueueParameters6->psCheckVariable = &( sBlockingConsumerCount[ 2 ] );
+
+    pxQueueParameters5->paramNumber = 3;
+    pxQueueParameters6->paramNumber = 3;
+
 
     xTaskCreate( vBlockingQueueProducer, "QProdB5", blckqSTACK_SIZE, ( void * ) pxQueueParameters5, tskIDLE_PRIORITY, &xTaskQProdB5 );
     xTaskCreate( vBlockingQueueConsumer, "QConsB6", blckqSTACK_SIZE, ( void * ) pxQueueParameters6, tskIDLE_PRIORITY, &xTaskQConsB6 );
@@ -198,10 +212,10 @@ static portTASK_FUNCTION( vBlockingQueueProducer, pvParameters )
     xBlockingQueueParameters * pxQueueParameters;
     short sErrorEverOccurred = pdFALSE;
 
-    uint8_t currentProducerNumber = sendTask_n;
-    sendTask_n++;
 
     pxQueueParameters = ( xBlockingQueueParameters * ) pvParameters;
+
+    uint8_t currentProducerNumber = pxQueueParameters->paramNumber;
 
     for( ; ; )
     {
@@ -228,6 +242,11 @@ static portTASK_FUNCTION( vBlockingQueueProducer, pvParameters )
             #if configUSE_PREEMPTION == 0
                 taskYIELD();
             #endif
+
+            if (usValue == limitValue) {
+                console_print("Producer %d stopped\n", currentProducerNumber);
+                vTaskDelete(NULL);
+            }
         }
     }
 }
@@ -239,10 +258,10 @@ static portTASK_FUNCTION( vBlockingQueueConsumer, pvParameters )
     xBlockingQueueParameters * pxQueueParameters;
     short sErrorEverOccurred = pdFALSE;
 
-    uint8_t currentConsumerNumber = sendTask_n;
-    receiveTask_n++;
 
     pxQueueParameters = ( xBlockingQueueParameters * ) pvParameters;
+
+    uint8_t currentConsumerNumber = pxQueueParameters->paramNumber;
 
     for( ; ; )
     {
@@ -281,6 +300,10 @@ static portTASK_FUNCTION( vBlockingQueueConsumer, pvParameters )
                     }
                 }
             #endif
+            if (usExpectedValue == limitValue) {
+                console_print("Consumer %d stopped\n", currentConsumerNumber);
+                vTaskDelete(NULL);
+            }
         }
     }
 }
