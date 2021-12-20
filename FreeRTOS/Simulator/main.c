@@ -163,7 +163,6 @@ int main( void )
     /* Start the logging for the memory data structures */
     log_data_structs_start();
 
-
 #if defined TASK_CHECK
     /* Start the check task as described at the top of this file. */
     xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, &xTaskCheck );
@@ -684,7 +683,7 @@ static void prvCheckTask( void * pvParameters )
         }
 #endif
 #if defined TASK_POLL_QUEUE
-        if( xArePollingQueuesStillRunning() != pdTRUE )
+        if( xArePollingQueuesAlive() == pdTRUE && xArePollingQueuesStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: PollQueue";
             xErrorCount++;
