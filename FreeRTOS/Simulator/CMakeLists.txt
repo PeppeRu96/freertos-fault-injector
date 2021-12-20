@@ -1,9 +1,12 @@
 # ---- FreeRTOS Simulator ----
 
 # Configuration
+option(USER_DEBUG "If on, it allows to break with the debugger on vAssertCalled. Otherwise it is treated as an unexpected behaviour and logged." ON)
+
 # Tasks to run
 option(TASK_CHECK "Task in charge of periodically checking the correct behaviour of all the other tasks. It is the only task which uses stdout to print some information." ON)
 option(TASK_TASK_NOTIFY "Tests the behaviour of direct task notifications." ON)
+option(TASK_TASK_NOTIFY_ARRAY "Tests the behaviour of direct task notifications through notify array. (Available only on Windows)" ON)
 option(TASK_BLOCKING_QUEUE "Test the blocking of a task while reading or writing from-to a queue." ON)
 option(TASK_SEM_TEST "Test the capability of a semaphore to guarantee the mutual exclusive access to a shared resource." ON)
 option(TASK_POLL_QUEUE "Test a queue with non-blocking calls in a consumer-produced scenario with fixed delay periods." ON)
@@ -64,7 +67,7 @@ set(SIMULATOR_INCLUDES
 # Demo and configuration headers
 set(SIMULATOR_INCLUDES
         ${SIMULATOR_INCLUDES}
-        ${FREERTOS_DIR}/Demo/Common/include
+        ${SIMULATOR_DIR}/Demo/include
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
@@ -74,7 +77,42 @@ file(GLOB SIMULATOR_SOURCES
         "${SIMULATOR_DIR}/*.c"
         )
 
+file(GLOB SIMULATOR_SOURCES
+        ${SIMULATOR_SOURCES}
+        "${SIMULATOR_DIR}/Demo/src/AbortDelay.c"
+        "${SIMULATOR_DIR}/Demo/src/BlockQ.c"
+        "${SIMULATOR_DIR}/Demo/src/blocktim.c"
+        "${SIMULATOR_DIR}/Demo/src/countsem.c"
+        "${SIMULATOR_DIR}/Demo/src/death.c"
+        "${SIMULATOR_DIR}/Demo/src/dynamic.c"
+        "${SIMULATOR_DIR}/Demo/src/EventGroupsDemo.c"
+        "${SIMULATOR_DIR}/Demo/src/flop.c"
+        "${SIMULATOR_DIR}/Demo/src/GenQTest.c"
+        "${SIMULATOR_DIR}/Demo/src/integer.c"
+        "${SIMULATOR_DIR}/Demo/src/IntSemTest.c"
+        "${SIMULATOR_DIR}/Demo/src/MessageBufferAMP.c"
+        "${SIMULATOR_DIR}/Demo/src/MessageBufferDemo.c"
+        "${SIMULATOR_DIR}/Demo/src/PollQ.c"
+        "${SIMULATOR_DIR}/Demo/src/QPeek.c"
+        "${SIMULATOR_DIR}/Demo/src/QueueOverwrite.c"
+        "${SIMULATOR_DIR}/Demo/src/QueueSet.c"
+        "${SIMULATOR_DIR}/Demo/src/QueueSetPolling.c"
+        "${SIMULATOR_DIR}/Demo/src/recmutex.c"
+        "${SIMULATOR_DIR}/Demo/src/semtest.c"
+        "${SIMULATOR_DIR}/Demo/src/StaticAllocation.c"
+        "${SIMULATOR_DIR}/Demo/src/StreamBufferDemo.c"
+        "${SIMULATOR_DIR}/Demo/src/StreamBufferInterrupt.c"
+        "${SIMULATOR_DIR}/Demo/src/TaskNotify.c"
+        "${SIMULATOR_DIR}/Demo/src/TimerDemo.c"
+        )
 
+# Task Notify Array only available on Windows
+if (WIN32)
+    file(GLOB SIMULATOR_SOURCES
+            ${SIMULATOR_SOURCES}
+            "${SIMULATOR_DIR}/Demo/src/TaskNotifyArray.c"
+            )
+endif()
 
 # Heap management (platform-dependent)
 if (WIN32)
@@ -89,41 +127,11 @@ elseif(UNIX)
             )
 endif()
 
-# Demo tasks sources
-file(GLOB SIMULATOR_SOURCES
-        ${SIMULATOR_SOURCES}
-        "${FREERTOS_DIR}/Demo/Common/Minimal/AbortDelay.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/BlockQ.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/blocktim.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/countsem.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/death.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/dynamic.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/EventGroupsDemo.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/flop.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/GenQTest.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/integer.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/IntSemTest.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/MessageBufferAMP.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/MessageBufferDemo.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/PollQ.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/QPeek.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/QueueOverwrite.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/QueueSet.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/QueueSetPolling.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/recmutex.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/semtest.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/StaticAllocation.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/StreamBufferDemo.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/StreamBufferInterrupt.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/TaskNotify.c"
-        "${FREERTOS_DIR}/Demo/Common/Minimal/TimerDemo.c"
-        )
-
-#set_source_files_properties(${FREERTOS_SOURCES} ${SIMULATOR_SOURCES} PROPERTIES LANGUAGE C)
-
+# C++ modules
 file(GLOB SIMULATOR_SOURCES_CPP
         "${SIMULATOR_DIR}/*.cpp"
         )
+
 
 set(SOURCES
         ${SIMULATOR_SOURCES_CPP}

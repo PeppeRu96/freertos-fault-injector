@@ -9,11 +9,20 @@
 #include "simulator_config.h"
 #include "memory_logger.h"
 
-//#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/";
-#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/";
+// PC fisso - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/"
+#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/"
+
+// PC portatile - Giuseppe
+//#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/";
+//#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/";
+
+// Ubuntu - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "/home/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
+
+// Mac - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "/Users/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
+
 #define SIMULATOR_EXE_NAME "FreeRTOS_Simulator";
 
 

@@ -44,7 +44,6 @@
 #include "simulator_config.h"
 #include "memory_logger.h"
 
-
 #if defined __unix__
     #include <pthread.h>
 #endif
@@ -79,7 +78,9 @@
 #define configUSE_ALTERNATIVE_API				0
 #define configUSE_QUEUE_SETS					1
 #define configUSE_TASK_NOTIFICATIONS			1
-/* #define configTASK_NOTIFICATION_ARRAY_ENTRIES		5 */
+#if defined _WIN32
+    #define configTASK_NOTIFICATION_ARRAY_ENTRIES	5 
+#endif
 #define configSUPPORT_STATIC_ALLOCATION			1
 #define configINITIAL_TICK_COUNT				( ( TickType_t ) 0 ) /* For test. */
 #if defined _WIN32
@@ -102,7 +103,11 @@
 format the raw data provided by the uxTaskGetSystemState() function in to human
 readable ASCII form.  See the notes in the implementation of vTaskList() within
 FreeRTOS/Source/tasks.c for limitations. */
-#define configUSE_STATS_FORMATTING_FUNCTIONS	0
+#if defined _WIN32
+    #define configUSE_STATS_FORMATTING_FUNCTIONS	1
+#elif defined __unix__
+    #define configUSE_STATS_FORMATTING_FUNCTIONS	0
+#endif
 
 #if defined __unix__
     #define configSTACK_DEPTH_TYPE              uint32_t
@@ -134,7 +139,9 @@ functions anyway. */
 /* It is a good idea to define configASSERT() while developing.  configASSERT()
 uses the same semantics as the standard C assert() macro. */
 extern void vAssertCalled( unsigned long ulLine, const char * const pcFileName );
+extern void vAssertCalledM(unsigned long ulLine, const char* const pcFileName, const char* const message);
 #define configASSERT( x ) if( ( x ) == 0 ) vAssertCalled( __LINE__, __FILE__ )
+#define configASSERTM( x, m ) if( ( x ) == 0 ) vAssertCalledM( __LINE__, __FILE__, m )
 
 #define configINCLUDE_MESSAGE_BUFFER_AMP_DEMO	0
 #if ( configINCLUDE_MESSAGE_BUFFER_AMP_DEMO == 1 )

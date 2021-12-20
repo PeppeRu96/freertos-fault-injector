@@ -41,6 +41,9 @@
 #include "EventGroupsDemo.h"
 #include "IntSemTest.h"
 #include "TaskNotify.h"
+#if defined _WIN32
+    #include "TaskNotifyArray.h"
+#endif
 #include "QueueSetPolling.h"
 #include "StaticAllocation.h"
 #include "blocktim.h"
@@ -174,6 +177,9 @@ int main( void )
     /* Create the standard demo tasks. */
 #if defined TASK_TASK_NOTIFY
     vStartTaskNotifyTask();
+#endif
+#if defined _WIN32 && defined TASK_TASK_NOTIFY_ARRAY
+    vStartTaskNotifyArrayTask();
 #endif
 #if defined TASK_BLOCKING_QUEUE
     vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
@@ -338,14 +344,9 @@ void vAssertCalled( unsigned long ulLine, const char * const pcFileName )
     /* Called if an assertion passed to configASSERT() fails.  See
     http://www.freertos.org/a00110.html#configASSERT for more information. */
 
-    /* Parameters are not used. */
-    ( void ) ulLine;
-    ( void ) pcFileName;
-    
+    fprintf(stderr, "Assertion failed on line %ld, file %s\n", ulLine, pcFileName);
 
-
-    printf( "ASSERT! Line %ld, file %s\n", ulLine, pcFileName );
-
+#if defined USER_DEBUG
     taskENTER_CRITICAL();
     {
         #ifdef WIN32
@@ -368,6 +369,44 @@ void vAssertCalled( unsigned long ulLine, const char * const pcFileName )
         }
     }
     taskEXIT_CRITICAL();
+#endif
+}
+/*-----------------------------------------------------------*/
+
+void vAssertCalledM(unsigned long ulLine, const char* const pcFileName, const char* const message)
+{
+    static BaseType_t xPrinted = pdFALSE;
+    volatile uint32_t ulSetToNonZeroInDebuggerToContinue = 0;
+
+    /* Called if an assertion passed to configASSERT() fails.  See
+    http://www.freertos.org/a00110.html#configASSERT for more information. */
+
+    console_print("Assertion failed on line %ld, file %s - ERROR: %s\n", ulLine, pcFileName, message);
+
+#if defined USER_DEBUG
+    taskENTER_CRITICAL();
+    {
+#ifdef WIN32
+        /* Cause debugger break point if being debugged. */
+        __debugbreak();
+#endif
+
+        /* You can step out of this function to debug the assertion by using
+        the debugger to set ulSetToNonZeroInDebuggerToContinue to a non-zero
+        value. */
+        while (ulSetToNonZeroInDebuggerToContinue == 0)
+        {
+#if defined _WIN32
+            __asm { NOP };
+            __asm { NOP };
+#elif defined __unix__
+            __asm("nop");
+            __asm("nop");
+#endif
+        }
+    }
+    taskEXIT_CRITICAL();
+#endif
 }
 /*-----------------------------------------------------------*/
 
@@ -459,14 +498,20 @@ void *pvAllocated;
 void vApplicationTickHook( void )
 {
 TaskHandle_t xTimerTask;
-    
+BaseType_t xTimerDemoAlive;
 #if defined TIMER_PERIODIC_ISR_TESTS
     /* Call the periodic timer test, which tests the timer API functions that
     can be called from an ISR. */
     #if( configUSE_PREEMPTION != 0 )
     {
 		/* Only created when preemption is used. */
-		vTimerPeriodicISRTests();
+        portENTER_CRITICAL();
+        xTimerDemoAlive = xAreTimerDemoTasksAlive();
+        portEXIT_CRITICAL();
+        if (xTimerDemoAlive == pdTRUE)
+        {
+            vTimerPeriodicISRTests();
+        }
 	}
     #endif
 #endif
@@ -502,6 +547,11 @@ TaskHandle_t xTimerTask;
 #if defined NOTIFY_TASK_ISR
     /* Exercise using task notifications from an interrupt. */
     xNotifyTaskFromISR();
+#endif
+
+#if defined _WIN32 && defined TASK_TASK_NOTIFY_ARRAY
+    /* Exercise using task notifications (notification array) from an interrupt. */
+    xNotifyArrayTaskFromISR();
 #endif
 
 #if defined STREAM_BUFFER_PROC
@@ -597,7 +647,7 @@ static void prvCheckTask( void * pvParameters )
         {
                 #if defined TASK_TIMER
                     /* These tasks are only created when preemption is used. */
-                    if( xAreTimerDemoTasksStillRunning( xCycleFrequency ) != pdTRUE )
+                    if( xAreTimerDemoTasksAlive() == pdTRUE && xAreTimerDemoTasksStillRunning( xCycleFrequency ) != pdTRUE )
                     {
                         pcStatusMessage = "Error: TimerDemo";
                         xErrorCount++;
@@ -627,12 +677,13 @@ static void prvCheckTask( void * pvParameters )
             xErrorCount++;
         }
 #endif
-
-            /* else if( xAreTaskNotificationArrayTasksStillRunning() != pdTRUE )
-             * {
-             * pcStatusMessage = "Error:  NotificationArray";
-             *  xErrorCount++;
-             * } */
+#if defined _WIN32 && defined TASK_TASK_NOTIFY_ARRAY
+        if (xAreTaskNotificationArrayTasksStillRunning() != pdTRUE)
+        {
+            pcStatusMessage = "Error:  NotificationArray";
+            xErrorCount++;
+        }
+#endif
 #if defined TASK_INT_SEM_TEST
         if( xAreInterruptSemaphoreTasksStillRunning() != pdTRUE )
         {
