@@ -90,13 +90,15 @@ static volatile short sBlockingConsumerCount[ blckqNUM_TASK_SETS ] = { ( uint16_
 /* Variable which are incremented each time an item is posted on a queue.   These
  * are used to check that the tasks are still running. */
 static volatile short sBlockingProducerCount[ blckqNUM_TASK_SETS ] = { ( uint16_t ) 0, ( uint16_t ) 0, ( uint16_t ) 0 };
+static short sBlockingTasksPAlive[blckqNUM_TASK_SETS] = { (uint16_t)1, (uint16_t)1, (uint16_t)1 }; /* producers */
+static short sBlockingTasksCAlive[blckqNUM_TASK_SETS] = { (uint16_t)1, (uint16_t)1, (uint16_t)1 }; /* consumers */
 
 /* TaskHandle_t for tasks */
 static TaskHandle_t xTaskQConsB1, xTaskQProdB2, xTaskQConsB3, xTaskQProdB4, xTaskQProdB5, xTaskQConsB6;
 
 static int receiveTask_n = 0, sendTask_n = 0;
 
-static int limitValue = 5;
+static int limitValue = 11;
 
 /*-----------------------------------------------------------*/
 
@@ -222,7 +224,7 @@ static portTASK_FUNCTION( vBlockingQueueProducer, pvParameters )
         if( xQueueSend( pxQueueParameters->xQueue, ( void * ) &usValue, pxQueueParameters->xBlockTime ) != pdPASS )
         {
             sErrorEverOccurred = pdTRUE;
-            console_print("ERROR: Producer %d failed to send value %d\n", currentProducerNumber, usValue);
+            console_print("BlockQ - ERROR: Producer %d failed to send value %d\n", currentProducerNumber, usValue);
         }
         else
         {
@@ -237,14 +239,15 @@ static portTASK_FUNCTION( vBlockingQueueProducer, pvParameters )
              * consumer will expect the numbers to	follow in numerical order. */
             ++usValue;
 
-            console_print("Producer %d successfully sent value %d. Next value to send: %d\n", currentProducerNumber, usValue - 1, usValue);
+            console_print("BlockQ - Producer %d successfully sent value %d. Next value to send: %d\n", currentProducerNumber, usValue - 1, usValue);
 
             #if configUSE_PREEMPTION == 0
                 taskYIELD();
             #endif
 
             if (usValue == limitValue) {
-                console_print("Producer %d stopped\n", currentProducerNumber);
+                console_print("BlockQ - Producer %d stopped\n", currentProducerNumber);
+                sBlockingTasksPAlive[currentProducerNumber - 1] = 0;
                 vTaskDelete(NULL);
             }
         }
@@ -274,7 +277,7 @@ static portTASK_FUNCTION( vBlockingQueueConsumer, pvParameters )
 
                 sErrorEverOccurred = pdTRUE;
 
-                console_print("ERROR: Consumer %d received value %d intead of value %d\n", currentConsumerNumber, usData, usExpectedValue);
+                console_print("BlockQ - ERROR: Consumer %d received value %d intead of value %d\n", currentConsumerNumber, usData, usExpectedValue);
             }
             else
             {
@@ -289,7 +292,7 @@ static portTASK_FUNCTION( vBlockingQueueConsumer, pvParameters )
                  * round. */
                 ++usExpectedValue;
 
-                console_print("Consumer %d successfully received value %d. Next value to receive: %d\n", currentConsumerNumber, usExpectedValue - 1, usExpectedValue);
+                console_print("BlockQ - Consumer %d successfully received value %d. Next value to receive: %d\n", currentConsumerNumber, usExpectedValue - 1, usExpectedValue);
             }
 
             #if configUSE_PREEMPTION == 0
@@ -301,7 +304,8 @@ static portTASK_FUNCTION( vBlockingQueueConsumer, pvParameters )
                 }
             #endif
             if (usExpectedValue == limitValue) {
-                console_print("Consumer %d stopped\n", currentConsumerNumber);
+                console_print("BlockQ - Consumer %d stopped\n", currentConsumerNumber);
+                sBlockingTasksCAlive[currentConsumerNumber -1] = 0;
                 vTaskDelete(NULL);
             }
         }
@@ -341,4 +345,9 @@ BaseType_t xAreBlockingQueuesStillRunning( void )
     }
 
     return xReturn;
+}
+
+BaseType_t xAreBlockingQueuesAlive(void)
+{
+    return (sBlockingTasksCAlive[0] + sBlockingTasksCAlive[1] + sBlockingTasksCAlive[2] + sBlockingTasksPAlive[0] + sBlockingTasksPAlive[1] + sBlockingTasksPAlive[2]) != 0;
 }
