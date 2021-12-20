@@ -223,6 +223,7 @@ static portTASK_FUNCTION( vPolledQueueConsumer, pvParameters )
         {
             console_print("PollQ - Consumer terminated.\n");
             xPollingTasksAlive = pdFALSE;
+            vQueueDelete(*( ( QueueHandle_t * ) pvParameters ));
             vTaskDelete(NULL);
         }
 
