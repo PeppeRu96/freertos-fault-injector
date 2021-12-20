@@ -43,6 +43,7 @@
 /* Custom includes */
 #include "simulator_config.h"
 #include "memory_logger.h"
+#include "console.h"
 
 #if defined __unix__
     #include <pthread.h>
