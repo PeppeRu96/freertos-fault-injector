@@ -665,7 +665,7 @@ static void prvCheckTask( void * pvParameters )
         }
 #endif
 #if defined TASK_BLOCKING_QUEUE
-        if( xAreBlockingQueuesStillRunning() != pdTRUE )
+        if( xAreBlockingQueuesAlive() == pdTRUE && xAreBlockingQueuesStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: BlockQueue";
             xErrorCount++;
@@ -679,7 +679,7 @@ static void prvCheckTask( void * pvParameters )
         }
 #endif
 #if defined TASK_POLL_QUEUE
-        if( xArePollingQueuesStillRunning() != pdTRUE )
+        if( xArePollingQueuesAlive() == pdTRUE && xArePollingQueuesStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: PollQueue";
             xErrorCount++;
