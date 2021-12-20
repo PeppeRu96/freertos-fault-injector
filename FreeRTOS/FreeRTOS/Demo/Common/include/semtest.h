@@ -30,5 +30,6 @@
 
 void vStartSemaphoreTasks( UBaseType_t uxPriority );
 BaseType_t xAreSemaphoreTasksStillRunning( void );
+BaseType_t xAreSemaphoresAlive(void);
 
 #endif
