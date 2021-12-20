@@ -672,7 +672,7 @@ static void prvCheckTask( void * pvParameters )
         }
 #endif
 #if defined TASK_SEM_TEST
-        if( xAreSemaphoreTasksStillRunning() != pdTRUE )
+        if( xAreSemaphoresAlive() == pdTRUE && xAreSemaphoreTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: SemTest";
             xErrorCount++;
