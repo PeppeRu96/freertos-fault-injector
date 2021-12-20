@@ -82,8 +82,6 @@
 /* Counter used to ensure the task is still running. */
     static uint32_t ulCycleCounter = 0;
 
-    TaskHandle_t xTaskSetPoll;
-
 /*-----------------------------------------------------------*/
 
     void vStartQueueSetPollingTask( void )
@@ -98,18 +96,8 @@
             xQueueAddToSet( xQueue, xQueueSet );
 
             /* Create the task. */
-            xTaskCreate( prvQueueSetReceivingTask, "SetPoll", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTaskSetPoll );
+            xTaskCreate( prvQueueSetReceivingTask, "SetPoll", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
         }
-
-        /* log the queue handle */
-        log_struct("QueueSetPolling_Queue", TYPE_QUEUE_HANDLE, xQueue);
-
-        /* log the queue set handle */
-        log_struct("QueueSetPolling_QueueSet", TYPE_QUEUE_SET_HANDLE, xQueueSet);
-
-        /* log the task handle */
-        log_struct("QueueSetPolling_TaskPollSet", TYPE_TASK_HANDLE, xTaskSetPoll);
-
     }
 /*-----------------------------------------------------------*/
 

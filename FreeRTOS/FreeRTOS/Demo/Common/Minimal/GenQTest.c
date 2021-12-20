@@ -62,7 +62,6 @@
 #ifndef genqGENERIC_QUEUE_TEST_TASK_STACK_SIZE
     #define genqGENERIC_QUEUE_TEST_TASK_STACK_SIZE    configMINIMAL_STACK_SIZE
 #endif
-
 /*-----------------------------------------------------------*/
 
 /*
@@ -131,8 +130,6 @@ static volatile uint32_t ulGuardedVariable = 0;
 /* Handles used in the mutex test to suspend and resume the high and medium
  * priority mutex test tasks. */
 static TaskHandle_t xHighPriorityMutexTask, xMediumPriorityMutexTask;
-static TaskHandle_t xTaskMuLow;
-static TaskHandle_t xTaskGenQ;
 
 /* If INCLUDE_xTaskAbortDelay is 1 additional tests are performed, requiring an
  * additional task. */
@@ -169,7 +166,7 @@ void vStartGenericQueueTasks( UBaseType_t uxPriority )
         /* Create the demo task and pass it the queue just created.  We are
          * passing the queue handle by value so it does not matter that it is
          * declared on the stack here. */
-        xTaskCreate( prvSendFrontAndBackTest, "GenQ", genqGENERIC_QUEUE_TEST_TASK_STACK_SIZE, ( void * ) xQueue, uxPriority, &xTaskGenQ );
+        xTaskCreate( prvSendFrontAndBackTest, "GenQ", genqGENERIC_QUEUE_TEST_TASK_STACK_SIZE, ( void * ) xQueue, uxPriority, NULL );
     }
 
     /* Create the mutex used by the prvMutexTest task. */
@@ -188,7 +185,7 @@ void vStartGenericQueueTasks( UBaseType_t uxPriority )
         /* Create the mutex demo tasks and pass it the mutex just created.  We
          * are passing the mutex handle by value so it does not matter that it is
          * declared on the stack here. */
-        xTaskCreate( prvLowPriorityMutexTask, "MuLow", genqMUTEX_TEST_TASK_STACK_SIZE, ( void * ) xMutex, genqMUTEX_LOW_PRIORITY, &xTaskMuLow );
+        xTaskCreate( prvLowPriorityMutexTask, "MuLow", genqMUTEX_TEST_TASK_STACK_SIZE, ( void * ) xMutex, genqMUTEX_LOW_PRIORITY, NULL );
         xTaskCreate( prvMediumPriorityMutexTask, "MuMed", configMINIMAL_STACK_SIZE, NULL, genqMUTEX_MEDIUM_PRIORITY, &xMediumPriorityMutexTask );
         xTaskCreate( prvHighPriorityMutexTask, "MuHigh", genqMUTEX_TEST_TASK_STACK_SIZE, ( void * ) xMutex, genqMUTEX_HIGH_PRIORITY, &xHighPriorityMutexTask );
 
@@ -200,21 +197,6 @@ void vStartGenericQueueTasks( UBaseType_t uxPriority )
             }
         #endif /* INCLUDE_xTaskAbortDelay */
     }
-
-    /* log task handles */
-    log_struct("GenQTest_TaskMuLow", TYPE_TASK_HANDLE, xTaskMuLow);
-    log_struct("GenQTest_TaskGenQ", TYPE_TASK_HANDLE, xTaskGenQ);
-    log_struct("GenQTest_TaskMuMed", TYPE_TASK_HANDLE, xMediumPriorityMutexTask);
-    log_struct("GenQTest_TaskMuHigh", TYPE_TASK_HANDLE, xHighPriorityMutexTask);
-    #if ( INCLUDE_xTaskAbortDelay == 1 )
-        {
-            log_struct("GenQTest_TasKMuHigh2", TYPE_TASK_HANDLE, xSecondMediumPriorityMutexTask);
-        }
-    #endif /* INCLUDE_xTaskAbortDelay */
-    
-    /* log the queue handle and the mutex handle */
-    log_struct("GenQTest_Queue", TYPE_QUEUE_HANDLE, xQueue);
-    log_struct("GenQTest_Mutex", TYPE_SEMAPHORE_HANDLE, xMutex);
 }
 /*-----------------------------------------------------------*/
 

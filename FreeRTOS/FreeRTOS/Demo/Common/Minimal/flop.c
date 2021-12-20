@@ -66,23 +66,14 @@ static portTASK_FUNCTION_PROTO( vCompetingMathTask4, pvParameters );
  * task gets a calculation wrong it will stop setting its check variable. */
 static uint16_t usTaskCheck[ mathNUMBER_OF_TASKS ] = { ( uint16_t ) 0 };
 
-/* TaskHandle for tasks */
-TaskHandle_t xTaskMath1, xTaskMath2, xTaskMath3, xTaskMath4;
-
 /*-----------------------------------------------------------*/
 
 void vStartMathTasks( UBaseType_t uxPriority )
 {
-    xTaskCreate( vCompetingMathTask1, "Math1", mathSTACK_SIZE, ( void * ) &( usTaskCheck[ 0 ] ), uxPriority, &xTaskMath1 );
-    xTaskCreate( vCompetingMathTask2, "Math2", mathSTACK_SIZE, ( void * ) &( usTaskCheck[ 1 ] ), uxPriority, &xTaskMath2 );
-    xTaskCreate( vCompetingMathTask3, "Math3", mathSTACK_SIZE, ( void * ) &( usTaskCheck[ 2 ] ), uxPriority, &xTaskMath3 );
-    xTaskCreate( vCompetingMathTask4, "Math4", mathSTACK_SIZE, ( void * ) &( usTaskCheck[ 3 ] ), uxPriority, &xTaskMath4 );
-
-    /* log the task handles */
-    log_struct("flop_TaskMath1", TYPE_TASK_HANDLE, xTaskMath1);
-    log_struct("flop_TaskMath2", TYPE_TASK_HANDLE, xTaskMath2);
-    log_struct("flop_TaskMath3", TYPE_TASK_HANDLE, xTaskMath3);
-    log_struct("flop_TaskMath4", TYPE_TASK_HANDLE, xTaskMath4);
+    xTaskCreate( vCompetingMathTask1, "Math1", mathSTACK_SIZE, ( void * ) &( usTaskCheck[ 0 ] ), uxPriority, NULL );
+    xTaskCreate( vCompetingMathTask2, "Math2", mathSTACK_SIZE, ( void * ) &( usTaskCheck[ 1 ] ), uxPriority, NULL );
+    xTaskCreate( vCompetingMathTask3, "Math3", mathSTACK_SIZE, ( void * ) &( usTaskCheck[ 2 ] ), uxPriority, NULL );
+    xTaskCreate( vCompetingMathTask4, "Math4", mathSTACK_SIZE, ( void * ) &( usTaskCheck[ 3 ] ), uxPriority, NULL );
 }
 /*-----------------------------------------------------------*/
 

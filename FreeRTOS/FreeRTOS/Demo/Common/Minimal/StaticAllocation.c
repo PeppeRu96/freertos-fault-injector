@@ -212,12 +212,6 @@
                            staticTASK_PRIORITY,                /* Priority of the task. */
                            &( uxCreatorTaskStackBuffer[ 0 ] ), /* The buffer to use as the task's stack. */
                            &xCreatorTaskTCBBuffer );           /* The variable that will hold the task's TCB. */
-
-        /* log the task handle */
-        log_struct("StaticAllocation_TaskStatic", TYPE_TASK_HANDLE, &xCreatorTaskTCBBuffer);
-
-        /* log the task stack */
-        log_struct("StaticAllocation_Stack", TYPE_STATIC_STACK, uxCreatorTaskStackBuffer);
     }
 /*-----------------------------------------------------------*/
 

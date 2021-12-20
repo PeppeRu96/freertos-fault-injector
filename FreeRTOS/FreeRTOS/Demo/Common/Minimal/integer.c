@@ -64,9 +64,6 @@ static portTASK_FUNCTION_PROTO( vCompeteingIntMathTask, pvParameters );
  * is called. */
 static BaseType_t xTaskCheck[ intgNUMBER_OF_TASKS ] = { ( BaseType_t ) pdFALSE };
 
-/* TaskHandle_t for task */
-static TaskHandle_t xTaskIntMath;
-
 /*-----------------------------------------------------------*/
 
 void vStartIntegerMathTasks( UBaseType_t uxPriority )
@@ -75,11 +72,8 @@ void vStartIntegerMathTasks( UBaseType_t uxPriority )
 
     for( sTask = 0; sTask < intgNUMBER_OF_TASKS; sTask++ )
     {
-        xTaskCreate( vCompeteingIntMathTask, "IntMath", intgSTACK_SIZE, ( void * ) &( xTaskCheck[ sTask ] ), uxPriority, &xTaskIntMath );
+        xTaskCreate( vCompeteingIntMathTask, "IntMath", intgSTACK_SIZE, ( void * ) &( xTaskCheck[ sTask ] ), uxPriority, ( TaskHandle_t * ) NULL );
     }
-
-    /* log the task handle */
-    log_struct("integer_TaskIntMath", TYPE_TASK_HANDLE, xTaskIntMath);
 }
 /*-----------------------------------------------------------*/
 

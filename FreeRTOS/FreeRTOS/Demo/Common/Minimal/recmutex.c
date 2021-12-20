@@ -103,7 +103,7 @@ static volatile UBaseType_t uxControllingCycles = 0, uxBlockingCycles = 0, uxPol
 
 /* Handles of the two higher priority tasks, required so they can be resumed
  * (unsuspended). */
-static TaskHandle_t xControllingTaskHandle, xBlockingTaskHandle, xTaskRec3;
+static TaskHandle_t xControllingTaskHandle, xBlockingTaskHandle;
 
 /*-----------------------------------------------------------*/
 
@@ -125,15 +125,7 @@ void vStartRecursiveMutexTasks( void )
 
         xTaskCreate( prvRecursiveMutexControllingTask, "Rec1", recmuRECURSIVE_MUTEX_TEST_TASK_STACK_SIZE, NULL, recmuCONTROLLING_TASK_PRIORITY, &xControllingTaskHandle );
         xTaskCreate( prvRecursiveMutexBlockingTask, "Rec2", recmuRECURSIVE_MUTEX_TEST_TASK_STACK_SIZE, NULL, recmuBLOCKING_TASK_PRIORITY, &xBlockingTaskHandle );
-        xTaskCreate( prvRecursiveMutexPollingTask, "Rec3", recmuRECURSIVE_MUTEX_TEST_TASK_STACK_SIZE, NULL, recmuPOLLING_TASK_PRIORITY, &xTaskRec3 );
-
-        /* log the task handles */
-        log_struct("recmutex_ControllingTask", TYPE_TASK_HANDLE, xControllingTaskHandle);
-        log_struct("recmutex_BlockingTask", TYPE_TASK_HANDLE, xBlockingTaskHandle);
-        log_struct("recmutex_PollinTask", TYPE_TASK_HANDLE, xTaskRec3);
-
-        /* log the mutex handle */
-        log_struct("recmutex_Mutex", TYPE_SEMAPHORE_HANDLE, xMutex);
+        xTaskCreate( prvRecursiveMutexPollingTask, "Rec3", recmuRECURSIVE_MUTEX_TEST_TASK_STACK_SIZE, NULL, recmuPOLLING_TASK_PRIORITY, NULL );
     }
 }
 /*-----------------------------------------------------------*/

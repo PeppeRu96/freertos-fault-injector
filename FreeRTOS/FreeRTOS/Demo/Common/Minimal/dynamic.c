@@ -119,7 +119,7 @@ static portTASK_FUNCTION_PROTO( vQueueSendWhenSuspendedTask, pvParameters );
 
 /* Handles to the two counter tasks.  These could be passed in as parameters
  * to the controller task to prevent them having to be file scope. */
-static TaskHandle_t xContinuousIncrementHandle, xLimitedIncrementHandle, xCounterControlHandle, xQueueSendWhenSuspendedHandle, xQueueReceiveWhenSuspendedHandle;
+static TaskHandle_t xContinuousIncrementHandle, xLimitedIncrementHandle;
 
 /* The shared counter variable.  This is passed in as a parameter to the two
  * counter variables for demonstration purposes. */
@@ -163,20 +163,10 @@ void vStartDynamicPriorityTasks( void )
 
         xTaskCreate( vContinuousIncrementTask, "CNT_INC", priSTACK_SIZE, ( void * ) &ulCounter, tskIDLE_PRIORITY, &xContinuousIncrementHandle );
         xTaskCreate( vLimitedIncrementTask, "LIM_INC", priSTACK_SIZE, ( void * ) &ulCounter, tskIDLE_PRIORITY + 1, &xLimitedIncrementHandle );
-        xTaskCreate( vCounterControlTask, "C_CTRL", priSUSPENDED_RX_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xCounterControlHandle );
-        xTaskCreate( vQueueSendWhenSuspendedTask, "SUSP_TX", priSTACK_SIZE, NULL, tskIDLE_PRIORITY, &xQueueSendWhenSuspendedHandle );
-        xTaskCreate( vQueueReceiveWhenSuspendedTask, "SUSP_RX", priSUSPENDED_RX_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xQueueReceiveWhenSuspendedHandle );
+        xTaskCreate( vCounterControlTask, "C_CTRL", priSUSPENDED_RX_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+        xTaskCreate( vQueueSendWhenSuspendedTask, "SUSP_TX", priSTACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+        xTaskCreate( vQueueReceiveWhenSuspendedTask, "SUSP_RX", priSUSPENDED_RX_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
     }
-
-    /* log the task handles */
-    log_struct("dynamic_TaskContinuousIncrement", TYPE_TASK_HANDLE, xContinuousIncrementHandle);
-    log_struct("dynamic_TaskLimitedIncrement", TYPE_TASK_HANDLE, xLimitedIncrementHandle);
-    log_struct("dynamic_TaskCounterControl", TYPE_TASK_HANDLE, xCounterControlHandle);
-    log_struct("dynamic_TaskSendWhenSuspended", TYPE_TASK_HANDLE, xQueueSendWhenSuspendedHandle);
-    log_struct("dynamic_TaskReceiveWhenSuspended", TYPE_TASK_HANDLE, xQueueReceiveWhenSuspendedHandle);
-
-    /* log the queue handle */
-    log_struct("dynamic_Queue", TYPE_QUEUE_HANDLE, xSuspendedTestQueue);
 }
 /*-----------------------------------------------------------*/
 

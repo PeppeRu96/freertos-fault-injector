@@ -87,7 +87,7 @@ static QueueHandle_t xTestQueue;
 
 /* Handle to the secondary task is required by the primary task for calls
  * to vTaskSuspend/Resume(). */
-static TaskHandle_t xSecondary, xPrimary;
+static TaskHandle_t xSecondary;
 
 /* Used to ensure that tasks are still executing without error. */
 static volatile BaseType_t xPrimaryCycles = 0, xSecondaryCycles = 0;
@@ -115,16 +115,9 @@ void vCreateBlockTimeTasks( void )
         vQueueAddToRegistry( xTestQueue, "Block_Time_Queue" );
 
         /* Create the two test tasks. */
-        xTaskCreate( vPrimaryBlockTimeTestTask, "BTest1", bktBLOCK_TIME_TASK_STACK_SIZE, NULL, bktPRIMARY_PRIORITY, &xPrimary );
+        xTaskCreate( vPrimaryBlockTimeTestTask, "BTest1", bktBLOCK_TIME_TASK_STACK_SIZE, NULL, bktPRIMARY_PRIORITY, NULL );
         xTaskCreate( vSecondaryBlockTimeTestTask, "BTest2", bktBLOCK_TIME_TASK_STACK_SIZE, NULL, bktSECONDARY_PRIORITY, &xSecondary );
     }
-
-    /* log the queue handle */
-    log_struct("blocktim_Queue", TYPE_QUEUE_HANDLE, xTestQueue);
-
-    /* log the task handles */
-    log_struct("blocktim_TaskTest1", TYPE_TASK_HANDLE, xPrimary);
-    log_struct("blocktim_TaskTest2", TYPE_TASK_HANDLE, xSecondary);
 }
 /*-----------------------------------------------------------*/
 

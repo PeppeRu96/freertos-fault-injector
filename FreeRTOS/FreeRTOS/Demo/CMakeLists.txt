@@ -3,7 +3,6 @@
 option(BLINKY_DEMO "Build a blinky demo only rather than the full one" ON)
 
 configure_file(${FREERTOS_DIR}/Demo/demo_config.h.in demo_config.h)
-configure_file(${SIMULATOR_DIR}/simulator_config.h.in simulator_config.h)
 
 # Request Threads library
 find_package(Threads REQUIRED)
@@ -26,7 +25,6 @@ set(DEMO_INCLUDES
         ${DEMO_INCLUDES}
         ${FREERTOS_DIR}/Demo/Common/include
         ${CMAKE_CURRENT_BINARY_DIR}
-        ${SIMULATOR_DIR}
 )
 
 # Sources
@@ -57,7 +55,6 @@ file(GLOB DEMO_ONLY_SOURCES
         "${FREERTOS_DIR}/Demo/Common/Minimal/StreamBufferInterrupt.c"
         "${FREERTOS_DIR}/Demo/Common/Minimal/TaskNotify.c"
         "${FREERTOS_DIR}/Demo/Common/Minimal/TimerDemo.c"
-        "${SIMULATOR_DIR}/memory_logger.cpp"
         )
 
 # Platform-dependent
@@ -101,10 +98,3 @@ endif()
 
 # Link libraries to targets
 target_link_libraries(Demo PRIVATE Threads::Threads)
-
-# Link Boost
-if (${Boost_FOUND})
-    # Include header-only boost
-    target_include_directories(Demo PRIVATE ${Boost_INCLUDE_DIRS})
-    target_link_directories(Demo PRIVATE ${Boost_LIBRARY_DIRS})
-endif()

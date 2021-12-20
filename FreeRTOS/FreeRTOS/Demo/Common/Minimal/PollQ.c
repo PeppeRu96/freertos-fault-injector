@@ -73,8 +73,6 @@
 #define pollqVALUES_TO_PRODUCE    ( ( BaseType_t ) 3 )
 #define pollqINITIAL_VALUE        ( ( BaseType_t ) 0 )
 
-#define pollqITERATIONS           ( ( BaseType_t ) 100 )
-
 /* The task that posts the incrementing number onto the queue. */
 static portTASK_FUNCTION_PROTO( vPolledQueueProducer, pvParameters );
 
@@ -84,10 +82,6 @@ static portTASK_FUNCTION_PROTO( vPolledQueueConsumer, pvParameters );
 /* Variables that are used to check that the tasks are still running with no
  * errors. */
 static volatile BaseType_t xPollingConsumerCount = pollqINITIAL_VALUE, xPollingProducerCount = pollqINITIAL_VALUE;
-static volatile BaseType_t xPollingTasksAlive = pdTRUE;
-
-/* TaskHandle_t for tasks */
-static TaskHandle_t xTaskQConsNB, xTaskQProdNB;
 
 /*-----------------------------------------------------------*/
 
@@ -109,15 +103,8 @@ void vStartPolledQueueTasks( UBaseType_t uxPriority )
         vQueueAddToRegistry( xPolledQueue, "Poll_Test_Queue" );
 
         /* Spawn the producer and consumer. */
-        xTaskCreate( vPolledQueueConsumer, "QConsNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, &xTaskQConsNB );
-        xTaskCreate( vPolledQueueProducer, "QProdNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, &xTaskQProdNB );
-
-        /* log the queue handle */
-        log_struct("PollQ_Queue", TYPE_QUEUE_HANDLE, xPolledQueue);
-
-        /* log the task handles */
-        log_struct("PollQ_TaskQConsNB", TYPE_TASK_HANDLE, xTaskQConsNB);
-        log_struct("PollQ_TaskQProdNB", TYPE_TASK_HANDLE, xTaskQProdNB);
+        xTaskCreate( vPolledQueueConsumer, "QConsNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, ( TaskHandle_t * ) NULL );
+        xTaskCreate( vPolledQueueProducer, "QProdNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, ( TaskHandle_t * ) NULL );
     }
 }
 /*-----------------------------------------------------------*/
@@ -126,48 +113,37 @@ static portTASK_FUNCTION( vPolledQueueProducer, pvParameters )
 {
     uint16_t usValue = ( uint16_t ) 0;
     BaseType_t xError = pdFALSE, xLoop;
-    BaseType_t xIterations;
 
     for( ; ; )
     {
-        for ( xIterations = 0; xIterations < pollqITERATIONS; xIterations++ )
+        for( xLoop = 0; xLoop < pollqVALUES_TO_PRODUCE; xLoop++ )
         {
-            for( xLoop = 0; xLoop < pollqVALUES_TO_PRODUCE; xLoop++ )
+            /* Send an incrementing number on the queue without blocking. */
+            if( xQueueSend( *( ( QueueHandle_t * ) pvParameters ), ( void * ) &usValue, pollqNO_DELAY ) != pdPASS )
             {
-                /* Send an incrementing number on the queue without blocking. */
-                if( xQueueSend( *( ( QueueHandle_t * ) pvParameters ), ( void * ) &usValue, pollqNO_DELAY ) != pdPASS )
-                {
-                    /* We should never find the queue full so if we get here there
-                     * has been an error. */
-                    xError = pdTRUE;
-
-                    console_print("PollQ - ERROR: Producer found the queue full while attempting to write value %d!\n", usValue);
-                }
-                else
-                {
-                    if( xError == pdFALSE )
-                    {
-                        /* If an error has ever been recorded we stop incrementing the
-                         * check variable. */
-                        portENTER_CRITICAL();
-                        xPollingProducerCount++;
-                        portEXIT_CRITICAL();
-                    }
-
-                    console_print("PollQ - Producer writes value %d on the queue.\n", usValue);
-
-                    /* Update the value we are going to post next time around. */
-                    usValue++;
-                }
+                /* We should never find the queue full so if we get here there
+                 * has been an error. */
+                xError = pdTRUE;
             }
+            else
+            {
+                if( xError == pdFALSE )
+                {
+                    /* If an error has ever been recorded we stop incrementing the
+                     * check variable. */
+                    portENTER_CRITICAL();
+                    xPollingProducerCount++;
+                    portEXIT_CRITICAL();
+                }
 
-            /* Wait before we start posting again to ensure the consumer runs and
-             * empties the queue. */
-            vTaskDelay( pollqPRODUCER_DELAY );
+                /* Update the value we are going to post next time around. */
+                usValue++;
+            }
         }
-        
-        console_print("PollQ - Producer terminated.\n");
-        vTaskDelete( NULL );
+
+        /* Wait before we start posting again to ensure the consumer runs and
+         * empties the queue. */
+        vTaskDelay( pollqPRODUCER_DELAY );
     }
 } /*lint !e818 Function prototype must conform to API. */
 /*-----------------------------------------------------------*/
@@ -190,8 +166,6 @@ static portTASK_FUNCTION( vPolledQueueConsumer, pvParameters )
                      * occurred. */
                     xError = pdTRUE;
 
-                    console_print("PollQ - ERROR: Consumer reads value %d while expecting value %d!\n", usData, usExpectedValue);
-
                     /* Catch-up to the value we received so our next expected
                      * value should again be correct. */
                     usExpectedValue = usData;
@@ -206,24 +180,11 @@ static portTASK_FUNCTION( vPolledQueueConsumer, pvParameters )
                         xPollingConsumerCount++;
                         portEXIT_CRITICAL();
                     }
-
-                    console_print("PollQ - Consumer reads value %d as expected.\n", usData);
                 }
 
                 /* Next time round we would expect the number to be one higher. */
                 usExpectedValue++;
             }
-            else
-            {
-                console_print("PollQ - ERROR: Unable to read from the queue even if the queue has some values in it!\n");
-            }
-        }
-
-        if (eTaskGetState(xTaskQProdNB) == eDeleted)
-        {
-            console_print("PollQ - Consumer terminated.\n");
-            xPollingTasksAlive = pdFALSE;
-            vTaskDelete(NULL);
         }
 
         /* Now the queue is empty we block, allowing the producer to place more
@@ -259,9 +220,4 @@ BaseType_t xArePollingQueuesStillRunning( void )
     xPollingProducerCount = pollqINITIAL_VALUE;
 
     return xReturn;
-}
-
-BaseType_t xArePollingQueuesAlive(void)
-{
-    return xPollingTasksAlive;
 }
