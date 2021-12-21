@@ -4,8 +4,22 @@
 //
 #include "SimulatorRun.h"
 
+SimulatorRun::SimulatorRun() {
+}
+
+SimulatorRun::~SimulatorRun() {
+    std::string pid = std::to_string(this->c.id());
+    std::string sem1_name = "binary_sem_log_struct_" + pid + "_1";
+    std::string sem2_name = "binary_sem_log_struct_" + pid + "_2";
+
+    boost::interprocess::shared_memory_object::remove(sem1_name.c_str());
+    boost::interprocess::shared_memory_object::remove(sem2_name.c_str());
+}
+
 void SimulatorRun::init(std::string sim_path) {
-    bp::child new_child(sim_path);
+    bp::child new_child(sim_path, bp::extend::on_error = [](auto& exec, const std::error_code& ec) {
+        std::cout << "Child on_error: " << ec << std::endl;
+        });
     this->c = std::move(new_child);
 
     std::string pid = std::to_string(this->c.id());
@@ -73,12 +87,20 @@ void SimulatorRun::read_data_structures() {
 std::error_code SimulatorRun::wait() {
     std::error_code error;
     this->c.wait(error);
+    this->end_time = std::chrono::steady_clock::now();
 
     return error;
 }
 
-auto SimulatorRun::duration() {
-    return (this->end_time - this->begin_time).count();
+bool SimulatorRun::wait_for(const std::chrono::steady_clock::duration& rel_time, std::error_code& ec) {
+    bool time_has_not_expired = this->c.wait_for(rel_time, ec);
+    this->end_time = std::chrono::steady_clock::now();
+
+    return time_has_not_expired;
+}
+
+std::chrono::steady_clock::duration SimulatorRun::duration() {
+    return (this->end_time - this->begin_time);
 }
 
 void SimulatorRun::terminate() {
@@ -145,3 +167,4 @@ std::chrono::steady_clock::time_point SimulatorRun::get_begin_time() const {
 long long SimulatorRun::get_pid() const {
     return this->c.id();
 }
+

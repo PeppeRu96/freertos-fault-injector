@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 #include <boost/process.hpp>
+#include <boost/process/extend.hpp>
+#include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/sync/named_semaphore.hpp>
 
 #include "DataStructure.h"
@@ -36,16 +38,16 @@ private:
     void read_data_structures();
 
 public:
-    SimulatorRun() {
-
-    }
+    SimulatorRun();
+    ~SimulatorRun();
 
     // Delete copy constructor and copy assignment
     // Allow only move constructor and assignment
     void init(std::string sim_path);
     void start();
-    auto duration();
+    std::chrono::steady_clock::duration duration();
     std::error_code wait();
+    bool wait_for(const std::chrono::steady_clock::duration& rel_time, std::error_code& ec);
     void terminate();
     void save_output();
     void show_output();

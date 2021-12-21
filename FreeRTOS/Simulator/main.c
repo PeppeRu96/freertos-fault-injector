@@ -642,6 +642,8 @@ static void prvCheckTask( void * pvParameters )
         /* Place this task in the blocked state until it is time to run again. */
         vTaskDelayUntil( &xNextWakeTime, xCycleFrequency );
 
+        abort();
+
         /* Check the standard demo tasks are running without error. */
 #if ( configUSE_PREEMPTION != 0 )
         {

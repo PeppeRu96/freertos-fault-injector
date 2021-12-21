@@ -23,7 +23,8 @@
 // Mac - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "/Users/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
 
-#define SIMULATOR_EXE_NAME "FreeRTOS_Simulator";
+#define SIMULATOR_EXE_NAME      "FreeRTOS_Simulator"
+#define DEADLOCK_TIME_FACTOR    2
 
 
 std::string sim_folder_path = SIMULATOR_FOLDER_PATH;
@@ -51,13 +52,12 @@ int main()
     // Start a simulator and save the golden execution
     std::cout << "Executing the simulator and saving the golden execution..." << std::endl;
 
-    golden_run.init(sim_path);
+    //golden_run.init(sim_path);
+    golden_run.init("D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/FreeRTOS_Simulator_gold");
     golden_run.start();
     golden_run.wait();
-
-    //std::cout << "Golden execution output:" << std::endl;
-    //golden_run.show_output();
     golden_run.save_output();
+    std::cout << "Golden run execution took " << std::chrono::duration_cast<std::chrono::seconds>(golden_run.duration()).count() << " seconds." << std::endl;
 
     InjectConf conf;
     // Display user menu
@@ -69,6 +69,9 @@ int main()
     for (int i = 0; i < conf.inject_n; i++) {
         std::cout << "Injection Try #" << i + 1 << " ..." << std::endl;
         SimulatorRun sr;
+        std::error_code ec;
+
+        // Init
         sr.init(sim_path);
         DataStructure ds = sr.get_ds_by_id(conf.struct_id);
         Injection inj(sr.get_pid(), ds, conf.max_time_ms);
@@ -77,12 +80,30 @@ int main()
         sr.start();
         inj.inject(sr.get_begin_time());
 
-        // TODO: The simulator may crash or be in deadlock! Handle these cases
-        sr.wait();
-        sr.save_output();
-        //sr.show_output();
+        // Wait && Log
+        if (sr.wait_for(golden_run.duration() * DEADLOCK_TIME_FACTOR, ec)) {
+            // The child exited and the timer has not expired yet
 
-        // TODO: compare the output and log the errors
+            // Perform comparison
+            std::cout << "Child exited and the timer has not expired yet." << std::endl;
+
+            if (ec) {
+                // Child process exited with some errors (maybe crash?)
+                std::cout << "Error code: " << ec << std::endl;
+            }
+            else {
+                // Child process exited with code 0 and everything should be ok
+                std::cout << "No errors. Proceed to do the the golden execution output comparison. Error code: " << ec << std::endl;
+                sr.save_output();
+            }
+        }
+        else {
+            // The child didn't exit and the timer has expired (possible deadlock)
+            sr.terminate();
+            std::cout << "Child didn't exit and the timer has expired. Possible deadlock recognized. Child process killed." << std::endl;
+            std::cout << "Error code: " << ec << std::endl;
+            // Classify as deadlock
+        }
     }
 }
 
