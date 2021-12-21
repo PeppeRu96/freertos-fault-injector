@@ -17,9 +17,7 @@ SimulatorRun::~SimulatorRun() {
 }
 
 void SimulatorRun::init(std::string sim_path) {
-    bp::child new_child(sim_path, bp::extend::on_error = [](auto& exec, const std::error_code& ec) {
-        std::cout << "Child on_error: " << ec << std::endl;
-        });
+    bp::child new_child(sim_path);
     this->c = std::move(new_child);
 
     std::string pid = std::to_string(this->c.id());
@@ -166,5 +164,9 @@ std::chrono::steady_clock::time_point SimulatorRun::get_begin_time() const {
 
 long long SimulatorRun::get_pid() const {
     return this->c.id();
+}
+
+int SimulatorRun::get_native_exit_code() const {
+    return this->c.native_exit_code();
 }
 

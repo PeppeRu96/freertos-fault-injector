@@ -56,6 +56,7 @@ public:
     DataStructure get_ds_by_id(int id) const;
     std::chrono::steady_clock::time_point get_begin_time() const;
     long long get_pid() const;
+    int get_native_exit_code() const;
 };
 
 

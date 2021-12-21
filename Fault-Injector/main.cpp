@@ -11,11 +11,11 @@
 
 // PC fisso - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/"
-#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/"
+//#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/"
 
 // PC portatile - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/";
-//#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/";
+#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/";
 
 // Ubuntu - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "/home/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
@@ -41,6 +41,7 @@ typedef struct {
 void menu(InjectConf &conf);
 
 SimulatorRun golden_run;
+std::error_code golden_run_ec;
 
 int main()
 {
@@ -52,10 +53,12 @@ int main()
     // Start a simulator and save the golden execution
     std::cout << "Executing the simulator and saving the golden execution..." << std::endl;
 
-    //golden_run.init(sim_path);
-    golden_run.init("D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/FreeRTOS_Simulator_gold");
+    golden_run.init(sim_path);
+    //golden_run.init("C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/FreeRTOS_Simulator_gold");
     golden_run.start();
-    golden_run.wait();
+    golden_run_ec = golden_run.wait();
+    // Handle the case in which the golden execution fails for some reason (integrate the error handling)
+    std::cout << "Golden execution native exit code: " << golden_run.get_native_exit_code() << std::endl;
     golden_run.save_output();
     std::cout << "Golden run execution took " << std::chrono::duration_cast<std::chrono::seconds>(golden_run.duration()).count() << " seconds." << std::endl;
 
@@ -83,23 +86,30 @@ int main()
         // Wait && Log
         if (sr.wait_for(golden_run.duration() * DEADLOCK_TIME_FACTOR, ec)) {
             // The child exited and the timer has not expired yet
+            int native_exit_code = sr.get_native_exit_code();
 
-            // Perform comparison
             std::cout << "Child exited and the timer has not expired yet." << std::endl;
 
-            if (ec) {
+            // Handle the error to check if the program crashed or if it is ok
+            std::cout << "Child native exit code: " << native_exit_code << std::endl;
+
+            if (native_exit_code) {
                 // Child process exited with some errors (maybe crash?)
-                std::cout << "Error code: " << ec << std::endl;
+                std::cout << "Child crashed!" << std::endl;
+                std::cout << "Error code: " << ec << ", native exit code: " << sr.get_native_exit_code() << std::endl;
             }
             else {
                 // Child process exited with code 0 and everything should be ok
                 std::cout << "No errors. Proceed to do the the golden execution output comparison. Error code: " << ec << std::endl;
                 sr.save_output();
+
+                // Perform comparison
             }
         }
         else {
             // The child didn't exit and the timer has expired (possible deadlock)
             sr.terminate();
+            // sr.wait() needed?
             std::cout << "Child didn't exit and the timer has expired. Possible deadlock recognized. Child process killed." << std::endl;
             std::cout << "Error code: " << ec << std::endl;
             // Classify as deadlock
