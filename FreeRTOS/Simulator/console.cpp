@@ -9,11 +9,17 @@
 #include <boost/interprocess/detail/os_thread_functions.hpp>
 #include "simulator_config.h"
 
+#include <FreeRTOS.h>
+#include <semphr.h>
+
+SemaphoreHandle_t xStdioMutex;
+StaticSemaphore_t xStdioMutexBuffer;
+
 std::vector<std::string> output;
 
 void console_init( void )
 {
-    // TODO: initialize the mutex
+    xStdioMutex = xSemaphoreCreateMutexStatic(&xStdioMutexBuffer);
 }
 
 void console_print(const char* fmt,
@@ -24,7 +30,7 @@ void console_print(const char* fmt,
 
     va_start(vargs, fmt);
 
-    //xSemaphoreTake(xStdioMutex, portMAX_DELAY);
+    xSemaphoreTake(xStdioMutex, portMAX_DELAY);
 
     vprintf(fmt, vargs);
     va_start(vargs, fmt);
@@ -33,10 +39,9 @@ void console_print(const char* fmt,
     std::string s = buffer;
     output.push_back(s);
 
-    //xSemaphoreGive(xStdioMutex);
+    xSemaphoreGive(xStdioMutex);
 
     va_end(vargs);
-    //std::cout << s << std::endl;
 }
 
 void write_output_to_file(void) {

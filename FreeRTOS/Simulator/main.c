@@ -163,6 +163,8 @@ TaskHandle_t xTaskBlockNoti;
 
 int main( void )
 {
+    console_init();
+
     /* Start the logging for the memory data structures */
     log_data_structs_start();
 
@@ -639,10 +641,12 @@ static void prvCheckTask( void * pvParameters )
     {
         count++;
 
+        if (count == 2) {
+            count = count / 0;
+        }
+
         /* Place this task in the blocked state until it is time to run again. */
         vTaskDelayUntil( &xNextWakeTime, xCycleFrequency );
-
-        abort();
 
         /* Check the standard demo tasks are running without error. */
 #if ( configUSE_PREEMPTION != 0 )
