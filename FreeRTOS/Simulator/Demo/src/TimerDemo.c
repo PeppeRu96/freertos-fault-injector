@@ -187,10 +187,10 @@ BaseType_t xAreTimerDemoTasksAlive()
     return xTimerDemoAlive;
 }
 /*-----------------------------------------------------------*/
+uint8_t iteration;
 
 static void prvTimerTestTask( void * pvParameters )
 {
-    uint8_t iteration;
     TickType_t xTimer;
 
     ( void ) pvParameters;
@@ -438,7 +438,7 @@ static void prvTest2_CheckTaskAndTimersInitialState( void )
         }
         else
         {
-            console_print("TimerDemo - AutoReload_Timer_%d is correctly active.\n", ucTimer);
+            console_print("TimerDemo (It: %d, LN: %d) - AutoReload_Timer_%d is correctly active.\n", iteration, __LINE__, ucTimer);
         }
     }
 
@@ -450,7 +450,7 @@ static void prvTest2_CheckTaskAndTimersInitialState( void )
     }
     else
     {
-        console_print("TimerDemo - AutoReload_Timer_%d is correctly unactive.\n", configTIMER_QUEUE_LENGTH);
+        console_print("TimerDemo (It: %d, LN: %d) - AutoReload_Timer_%d is correctly unactive.\n", iteration, __LINE__, configTIMER_QUEUE_LENGTH);
     }
 }
 /*-----------------------------------------------------------*/
@@ -495,7 +495,7 @@ static void prvTest3_CheckAutoReloadExpireRates( void )
         }
         else
         {
-            console_print("TimerDemo - AutoReload_Timer_%d counter is within the correct boundaries.\n", ucTimer);
+            console_print("TimerDemo (It: %d, LN: %d)  - AutoReload_Timer_%d counter is within the correct boundaries.\n", iteration, __LINE__, ucTimer);
         }
     }
 
@@ -545,7 +545,7 @@ static void prvTest4_CheckAutoReloadTimersCanBeStopped( void )
         }
         else
         {
-            console_print("TimerDemo - AutoReload_Timer_%d is correctly unactive after being stopped.\n", ucTimer);
+            console_print("TimerDemo (It: %d, LN: %d) - AutoReload_Timer_%d is correctly unactive after being stopped.\n", iteration, __LINE__, ucTimer);
         }
     }
 
@@ -563,7 +563,7 @@ static void prvTest4_CheckAutoReloadTimersCanBeStopped( void )
         }
         else
         {
-            console_print("TimerDemo - AutoReload_Timer_%d counter is correctly zero after being cleared.\n", configTIMER_QUEUE_LENGTH);
+            console_print("TimerDemo (It: %d, LN: %d) - AutoReload_Timer_%d counter is correctly zero after being cleared.\n", iteration, __LINE__, configTIMER_QUEUE_LENGTH);
         }
 
         /* Clear the timer callback count. */
@@ -585,7 +585,7 @@ static void prvTest4_CheckAutoReloadTimersCanBeStopped( void )
         }
         else
         {
-            console_print("TimerDemo - AutoReload_Timer_%d counter is correctly zero after being cleared.\n", ucTimer);
+            console_print("TimerDemo (It: %d, LN: %d) - AutoReload_Timer_%d counter is correctly zero after being cleared.\n", iteration, __LINE__, ucTimer);
         }
     }
 
@@ -640,7 +640,7 @@ static void prvTest5_CheckBasicOneShotTimerBehaviour( void )
     }
     else
     {
-        console_print("TimerDemo - OneShot Timer is correctly unactive after the delay because it is a one shot timer.\n");
+        console_print("TimerDemo (It: %d, LN: %d) - OneShot Timer is correctly unactive after the delay because it is a one shot timer.\n", iteration, __LINE__);
     }
 
     if( ucOneShotTimerCounter != ( uint8_t ) 1 )
@@ -651,7 +651,7 @@ static void prvTest5_CheckBasicOneShotTimerBehaviour( void )
     }
     else
     {
-        console_print("TimerDemo - OneShot Timer counter is correctly equals to 1 after being incremented.\n");
+        console_print("TimerDemo (It: %d, LN: %d) - OneShot Timer counter is correctly equals to 1 after being incremented.\n", iteration, __LINE__);
         /* Reset the one-shot timer callback count. */
         ucOneShotTimerCounter = ( uint8_t ) 0;
     }
@@ -682,7 +682,7 @@ static void prvTest6_CheckAutoReloadResetBehaviour( void )
     }
     else
     {
-        console_print("TimerDemo - OneShot Timer is correctly active after being started.\n");
+        console_print("TimerDemo (It: %d, LN: %d) - OneShot Timer is correctly active after being started.\n", iteration, __LINE__);
     }
 
     /* Restart one of the auto-reload timers and check that it reports its
@@ -697,7 +697,7 @@ static void prvTest6_CheckAutoReloadResetBehaviour( void )
     }
     else
     {
-        console_print("TimerDemo - AutoReload_Timer_%d is correctly active after being restarted.\n", configTIMER_QUEUE_LENGTH - 1);
+        console_print("TimerDemo (It: %d, LN: %d) - AutoReload_Timer_%d is correctly active after being restarted.\n", iteration, __LINE__, configTIMER_QUEUE_LENGTH - 1);
     }
 
     for( ucTimer = 0; ucTimer < tmrdemoNUM_TIMER_RESETS; ucTimer++ )
@@ -761,7 +761,7 @@ static void prvTest6_CheckAutoReloadResetBehaviour( void )
     }
     else
     {
-        console_print("TimerDemo - OneShot Timer counter is correctly equals to 1 after the callback has been called.\n");
+        console_print("TimerDemo (It: %d, LN: %d) - OneShot Timer counter is correctly equals to 1 after the callback has been called.\n", iteration, __LINE__);
     }
 
     if( ucAutoReloadTimerCounters[ configTIMER_QUEUE_LENGTH - 1 ] == 0 )
@@ -772,7 +772,7 @@ static void prvTest6_CheckAutoReloadResetBehaviour( void )
     }
     else
     {
-        console_print("TimerDemo - AutoReload_Timer_%d counter is correctly not zero after the callback has been called.\n", configTIMER_QUEUE_LENGTH - 1);
+        console_print("TimerDemo (It: %d, LN: %d) - AutoReload_Timer_%d counter is correctly not zero after the callback has been called.\n", iteration, __LINE__, configTIMER_QUEUE_LENGTH - 1);
     }
 
     /* The one-shot timer should no longer be active, while the auto-reload
@@ -801,7 +801,7 @@ static void prvTest6_CheckAutoReloadResetBehaviour( void )
     }
     else
     {
-        console_print("TimerDemo - AutoReload_Timer_%d is correctly unactive after being stopped.\n", configTIMER_QUEUE_LENGTH - 1);
+        console_print("TimerDemo (It: %d, LN: %d) - AutoReload_Timer_%d is correctly unactive after being stopped.\n", iteration, __LINE__, configTIMER_QUEUE_LENGTH - 1);
     }
 
     /* Clear the timer callback counts, ready for another iteration of these
@@ -852,7 +852,7 @@ static void prvTest7_CheckBacklogBehaviour( void )
     }
     else
     {
-        console_print("TimerDemo - AutoReload_Timer_%d is correctly active after being started.\n", 0);
+        console_print("TimerDemo (It: %d, LN: %d) - AutoReload_Timer_%d is correctly active after being started.\n", iteration, __LINE__, 0);
     }
 
     /* Arrange for the callback to execute late enough that it will execute
@@ -870,7 +870,7 @@ static void prvTest7_CheckBacklogBehaviour( void )
     }
     else
     {
-        console_print("TimerDemo - AutoReload_Timer_%d is correctly unactive after being stopped from backlogged callback.\n", 0);
+        console_print("TimerDemo (It: %d, LN: %d) - AutoReload_Timer_%d is correctly unactive after being stopped from backlogged callback.\n", iteration, __LINE__, 0);
     }
 
     /* Restore the standard timer period, and leave the timer inactive. */
@@ -930,6 +930,7 @@ static void prvResetStartConditionsForNextIteration( void )
 }
 /*-----------------------------------------------------------*/
 
+isr_it = 0;
 void vTimerPeriodicISRTests( void )
 {
     static TickType_t uxTick = ( TickType_t ) -1;
@@ -1015,7 +1016,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer and ISR OneShot Timer counters are both equal to zero because neither timer has expired yet.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer and ISR OneShot Timer counters are both equal to zero because neither timer has expired yet.\n", isr_it, __LINE__);
         }
     }
     else if( uxTick == ( xBasePeriod + xMargin ) )
@@ -1030,7 +1031,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer and ISR OneShot Timer counters are both equal to 1 because both timers have expired once.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer and ISR OneShot Timer counters are both equal to 1 because both timers have expired once.\n", isr_it, __LINE__);
         }
     }
     else if( uxTick == ( ( 2 * xBasePeriod ) - xMargin ) )
@@ -1046,7 +1047,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer and ISR OneShot Timer counters are both equal to 1 because both timers have expired once.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer and ISR OneShot Timer counters are both equal to 1 because both timers have expired once.\n", isr_it, __LINE__);
         }
     }
     else if( uxTick == ( ( 2 * xBasePeriod ) + xMargin ) )
@@ -1062,7 +1063,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer counter is equals to 2 because the timer has expired twice.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer counter is equals to 2 because the timer has expired twice.\n", isr_it, __LINE__);
         }
 
         if( ucISROneShotTimerCounter != 1 )
@@ -1073,7 +1074,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR OneShot Timer counter is equals to 1 because the timer has expired once.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR OneShot Timer counter is equals to 1 because the timer has expired once.\n", isr_it, __LINE__);
         }
     }
     else if( uxTick == ( ( 2 * xBasePeriod ) + ( xBasePeriod >> ( TickType_t ) 2U ) ) )
@@ -1089,7 +1090,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer counter is equals to 2 because the timer has expired twice.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer counter is equals to 2 because the timer has expired twice.\n", isr_it, __LINE__);
         }
 
         if( ucISROneShotTimerCounter != 1 )
@@ -1100,7 +1101,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR OneShot Timer counter is equals to 1 because the timer has expired once.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR OneShot Timer counter is equals to 1 because the timer has expired once.\n", isr_it, __LINE__);
         }
     }
     else if( uxTick == ( 3 * xBasePeriod ) )
@@ -1121,7 +1122,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n", isr_it, __LINE__);
         }
 
         if( ucISROneShotTimerCounter != 1 )
@@ -1132,7 +1133,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR OneShot Timer counter is equals to 1 because the timer has expired once.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR OneShot Timer counter is equals to 1 because the timer has expired once.\n", isr_it, __LINE__);
         }
 
         /* Now stop the auto-reload timer.  The one-shot timer was started
@@ -1152,7 +1153,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n", isr_it, __LINE__);
         }
 
         if( ucISROneShotTimerCounter != 1 )
@@ -1163,7 +1164,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR OneShot Timer counter is equals to 1 because the timer has expired once.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR OneShot Timer counter is equals to 1 because the timer has expired once.\n", isr_it, __LINE__);
         }
     }
     else if( uxTick == ( ( 4 * xBasePeriod ) + xMargin ) )
@@ -1179,7 +1180,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n", isr_it, __LINE__);
         }
 
         if( ucISROneShotTimerCounter != 2 )
@@ -1190,7 +1191,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR OneShot Timer counter is equals to 2 because the timer has expired twice.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR OneShot Timer counter is equals to 2 because the timer has expired twice.\n", isr_it, __LINE__);
         }
     }
     else if( uxTick == ( 8 * xBasePeriod ) )
@@ -1206,7 +1207,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n", isr_it, __LINE__);
         }
 
         if( ucISROneShotTimerCounter != 2 )
@@ -1217,7 +1218,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR OneShot Timer counter is equals to 2 because the timer has expired twice.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR OneShot Timer counter is equals to 2 because the timer has expired twice.\n", isr_it, __LINE__);
         }
 
         /* Now reset the one-shot timer. */
@@ -1236,7 +1237,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n", isr_it, __LINE__);
         }
 
         if( ucISROneShotTimerCounter != 2 )
@@ -1247,7 +1248,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR OneShot Timer counter is equals to 2 because the timer has expired twice.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR OneShot Timer counter is equals to 2 because the timer has expired twice.\n", isr_it, __LINE__);
         }
 
         xTimerResetFromISR( xISROneShotTimer, NULL );
@@ -1265,7 +1266,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n", isr_it, __LINE__);
         }
 
         if( ucISROneShotTimerCounter != 2 )
@@ -1276,7 +1277,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR OneShot Timer counter is equals to 2 because the timer has expired twice.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR OneShot Timer counter is equals to 2 because the timer has expired twice.\n", isr_it, __LINE__);
         }
 
         xTimerResetFromISR( xISROneShotTimer, NULL );
@@ -1294,7 +1295,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n", isr_it, __LINE__);
         }
 
         if( ucISROneShotTimerCounter != 2 )
@@ -1305,7 +1306,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR OneShot Timer counter is equals to 2 because the timer has expired twice.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR OneShot Timer counter is equals to 2 because the timer has expired twice.\n", isr_it, __LINE__);
         }
 
         xTimerResetFromISR( xISROneShotTimer, NULL );
@@ -1325,7 +1326,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n", isr_it, __LINE__);
         }
 
         if( ucISROneShotTimerCounter != 3 )
@@ -1336,7 +1337,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR OneShot Timer counter is equals to 3 because the timer has expired three times.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR OneShot Timer counter is equals to 3 because the timer has expired three times.\n", isr_it, __LINE__);
         }
     }
     else if( uxTick == ( 15 * xBasePeriod ) )
@@ -1352,7 +1353,7 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer counter is equals to 3 because the timer has expired three times.\n", isr_it, __LINE__);
         }
 
         if( ucISROneShotTimerCounter != 3 )
@@ -1363,16 +1364,18 @@ void vTimerPeriodicISRTests( void )
         }
         else
         {
-            console_print("TimerDemo - ISR OneShot Timer counter is equals to 3 because the timer has expired three times.\n");
+            console_print("TimerDemo (It: %d, LN: %d) - ISR OneShot Timer counter is equals to 3 because the timer has expired three times.\n", isr_it, __LINE__);
         }
 
         uxTick = ( TickType_t ) -1;
     }
+
+    isr_it++;
 }
 /*-----------------------------------------------------------*/
 
 /*** Timer callback functions are defined below here. ***/
-
+int autorelit = 0;
 static void prvAutoReloadTimerCallback( TimerHandle_t pxExpiredTimer )
 {
     size_t uxTimerID;
@@ -1380,7 +1383,7 @@ static void prvAutoReloadTimerCallback( TimerHandle_t pxExpiredTimer )
 
     uxTimerID = ( size_t ) pvTimerGetTimerID( pxExpiredTimer );
 
-    console_print("TimerDemo - AutoReload Timer (with ID: %d) callback.\n", uxTimerID);
+    console_print("TimerDemo (It: %d, LN: %d) - AutoReload Timer (with ID: %d) callback.\n", autorelit, __LINE__, uxTimerID);
 
     if( uxTimerID <= ( configTIMER_QUEUE_LENGTH + 1 ) )
     {
@@ -1400,9 +1403,10 @@ static void prvAutoReloadTimerCallback( TimerHandle_t pxExpiredTimer )
         sprintf(assertMessage, "TimerDemo - Timer ID appears to be unexpected. Timer ID: %d", uxTimerID);
         configASSERTM(xTestStatus, assertMessage);
     }
+    autorelit++;
 }
 /*-----------------------------------------------------------*/
-
+int oneshotit = 0;
 static void prvOneShotTimerCallback( TimerHandle_t pxExpiredTimer )
 {
 /* A count is kept of the number of times this callback function is executed.
@@ -1416,7 +1420,7 @@ static void prvOneShotTimerCallback( TimerHandle_t pxExpiredTimer )
     uxLastCallCount = ( size_t ) pvTimerGetTimerID( pxExpiredTimer );
     configASSERT( uxLastCallCount == uxCallCount );
 
-    console_print("TimerDemo - OneShot Timer (with ID: %d) callback.\n", uxLastCallCount);
+    console_print("TimerDemo (It: %d, LN: %d) - OneShot Timer (with ID: %d) callback.\n", oneshotit, __LINE__, uxLastCallCount);
 
     /* Increment the call count, then save it back as the timer's ID.  This is
      * only done to test the vTimerSetTimerID() API function. */
@@ -1425,29 +1429,32 @@ static void prvOneShotTimerCallback( TimerHandle_t pxExpiredTimer )
     uxCallCount++;
 
     ucOneShotTimerCounter++;
+    oneshotit++;
 }
 /*-----------------------------------------------------------*/
-
+int israutoit = 0;
 static void prvISRAutoReloadTimerCallback( TimerHandle_t pxExpiredTimer )
 {
     /* The parameter is not used in this case as only one timer uses this
      * callback function. */
     ( void ) pxExpiredTimer;
 
-    console_print("TimerDemo - ISR AutoReload Timer callback.\n");
+    console_print("TimerDemo (It: %d, LN: %d) - ISR AutoReload Timer callback.\n", israutoit, __LINE__);
 
     ucISRAutoReloadTimerCounter++;
+    israutoit++;
 }
 /*-----------------------------------------------------------*/
-
+int isroneshotit = 0;
 static void prvISROneShotTimerCallback( TimerHandle_t pxExpiredTimer )
 {
     /* The parameter is not used in this case as only one timer uses this
      * callback function. */
     ( void ) pxExpiredTimer;
 
-    console_print("TimerDemo - ISR OneShot Timer callback.\n");
+    console_print("TimerDemo (It: %d, LN: %d) - ISR OneShot Timer callback.\n", isroneshotit, __LINE__);
 
     ucISROneShotTimerCounter++;
+    isroneshotit++;
 }
 /*-----------------------------------------------------------*/

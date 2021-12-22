@@ -641,9 +641,9 @@ static void prvCheckTask( void * pvParameters )
     {
         count++;
 
-        if (count == 2) {
-            count = count / 0;
-        }
+        //if (count == 2) {
+        //    count = count / 0;
+        //}
 
         /* Place this task in the blocked state until it is time to run again. */
         vTaskDelayUntil( &xNextWakeTime, xCycleFrequency );

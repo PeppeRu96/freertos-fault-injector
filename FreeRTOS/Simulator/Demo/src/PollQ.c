@@ -141,7 +141,7 @@ static portTASK_FUNCTION( vPolledQueueProducer, pvParameters )
                      * has been an error. */
                     xError = pdTRUE;
 
-                    console_print("PollQ - ERROR: Producer found the queue full while attempting to write value %d!\n", usValue);
+                    console_print("PollQ (It: %d, LN: %d) - ERROR: Producer found the queue full while attempting to write value %d!\n", xIterations, __LINE__, usValue);
                 }
                 else
                 {
@@ -154,7 +154,7 @@ static portTASK_FUNCTION( vPolledQueueProducer, pvParameters )
                         portEXIT_CRITICAL();
                     }
 
-                    console_print("PollQ - Producer writes value %d on the queue.\n", usValue);
+                    console_print("PollQ (It: %d, LN: %d) - Producer writes value %d on the queue.\n", xIterations, __LINE__, usValue);
 
                     /* Update the value we are going to post next time around. */
                     usValue++;
@@ -166,7 +166,7 @@ static portTASK_FUNCTION( vPolledQueueProducer, pvParameters )
             vTaskDelay( pollqPRODUCER_DELAY );
         }
         
-        console_print("PollQ - Producer terminated.\n");
+        console_print("PollQ (LN: %d) - Producer terminated.\n", __LINE__);
         vTaskDelete( NULL );
     }
 } /*lint !e818 Function prototype must conform to API. */
@@ -190,7 +190,7 @@ static portTASK_FUNCTION( vPolledQueueConsumer, pvParameters )
                      * occurred. */
                     xError = pdTRUE;
 
-                    console_print("PollQ - ERROR: Consumer reads value %d while expecting value %d!\n", usData, usExpectedValue);
+                    console_print("PollQ (LN: %d) - ERROR: Consumer reads value %d while expecting value %d!\n", __LINE__, usData, usExpectedValue);
 
                     /* Catch-up to the value we received so our next expected
                      * value should again be correct. */
@@ -207,7 +207,7 @@ static portTASK_FUNCTION( vPolledQueueConsumer, pvParameters )
                         portEXIT_CRITICAL();
                     }
 
-                    console_print("PollQ - Consumer reads value %d as expected.\n", usData);
+                    console_print("PollQ (LN: %d) - Consumer reads value %d as expected.\n", __LINE__, usData);
                 }
 
                 /* Next time round we would expect the number to be one higher. */
@@ -215,13 +215,13 @@ static portTASK_FUNCTION( vPolledQueueConsumer, pvParameters )
             }
             else
             {
-                console_print("PollQ - ERROR: Unable to read from the queue even if the queue has some values in it!\n");
+                console_print("PollQ (LN: %d) - ERROR: Unable to read from the queue even if the queue has some values in it!\n", __LINE__);
             }
         }
 
         if (eTaskGetState(xTaskQProdNB) == eDeleted)
         {
-            console_print("PollQ - Consumer terminated.\n");
+            console_print("PollQ (LN: %d) - Consumer terminated.\n", __LINE__);
             xPollingTasksAlive = pdFALSE;
             vQueueDelete(*( ( QueueHandle_t * ) pvParameters ));
             vTaskDelete(NULL);
