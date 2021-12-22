@@ -27,7 +27,7 @@ if (WIN32)
 elseif(UNIX)
     file(GLOB FI_SOURCES
             ${FI_SOURCES}
-            "${FI_SOURCES}/Source/portable/MemMang/heap_3.c"
+            "${FREERTOS_DIR}/Source/portable/MemMang/heap_3.c"
             )
 endif()
 
@@ -46,6 +46,9 @@ add_executable(FreeRTOS_FaultInjector ${SOURCES})
 target_include_directories(FreeRTOS_FaultInjector PRIVATE ${FI_INCLUDES})
 
 target_link_libraries(FreeRTOS_FaultInjector PRIVATE Threads::Threads)
+if (UNIX)
+	target_link_libraries(FreeRTOS_FaultInjector PRIVATE rt)
+endif()
 
 if (${Boost_FOUND})
 	# Include header-only boost
