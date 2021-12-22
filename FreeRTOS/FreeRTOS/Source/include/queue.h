@@ -54,6 +54,8 @@ typedef struct QueueDefinition   * QueueHandle_t;
 size_t getQueue_FixedSize();
 size_t getQueue_CurrentExplodedSize(QueueHandle_t xHandle);
 void printQueueFields(QueueHandle_t xHandle);
+void getQueue_NextExpansion(QueueHandle_t xHandle, size_t byte_number, void** byte_to_inject, void** addr_to_read, size_t *size_to_read);
+
 
 /**
  * Type by which queue sets are referenced.  For example, a call to

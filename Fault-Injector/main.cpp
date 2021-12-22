@@ -11,7 +11,9 @@
 
 // PC fisso - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/"
-#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/"
+//#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/"
+#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-FaultInjector/FreeRTOS/Simulator/"
+
 
 // PC portatile - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/";
@@ -77,7 +79,7 @@ int main()
         // Init
         sr.init(sim_path);
         DataStructure ds = sr.get_ds_by_id(conf.struct_id);
-        Injection inj(sr.get_pid(), ds, conf.max_time_ms);
+        Injection inj(&sr, ds, conf.max_time_ms);
 
         // Start
         sr.start();

@@ -8,18 +8,12 @@
 #include <chrono>
 #include <thread>
 
-#if defined __unix__
-    #include <unistd.h>
-    #include <sys/uio.h>
-    #include <errno.h>
-#elif defined _WIN32
-	#include <Windows.h>
-#endif
-
+#include "SimulatorRun.h"
 #include "DataStructure.h"
 
 class Injection {
 private:
+	SimulatorRun* sr;
 	DataStructure ds;
     long long pid;
 
@@ -27,12 +21,12 @@ private:
 	unsigned long random_time_ms;
 
 	// Injection structures
+	void* injected_byte_addr;
 	char byte_buffer_before;
 	char byte_buffer_after;
-	char struct_buffer_before[500];
-	char struct_buffer_after[500];
 	unsigned int target_byte_number;
 	unsigned short target_bit_number;
+	size_t exploded_size;
 
 #if defined __linux__
 	pid_t linux_pid;
@@ -45,7 +39,7 @@ private:
 	void write_memory(void* address, char* buffer, size_t size);
 
 public:
-	Injection(long long pid, DataStructure ds, unsigned long max_time_ms);
+	Injection(SimulatorRun* sr, DataStructure ds, unsigned long max_time_ms);
 	~Injection();
 
 	void init();

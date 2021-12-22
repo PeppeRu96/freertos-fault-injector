@@ -1,7 +1,18 @@
 #include "Injection.h"
 
-Injection::Injection(long long pid, DataStructure ds, unsigned long max_time_ms) : ds(ds) {
-    this->pid = pid;
+#if defined __unix__
+#include <unistd.h>
+#include <sys/uio.h>
+#include <errno.h>
+#elif defined _WIN32
+#include <Windows.h>
+#endif
+
+#include "FreeRTOSInterface.h"
+
+Injection::Injection(SimulatorRun* sr, DataStructure ds, unsigned long max_time_ms) : ds(ds) {
+    this->sr = sr;
+    this->pid = sr->get_pid();
 	this->max_time_ms = max_time_ms;
 	this->random_time_ms = rand() % max_time_ms;
     this->target_bit_number = rand() % 8;
@@ -35,23 +46,59 @@ void Injection::close() {
 }
 
 void Injection::inject(std::chrono::steady_clock::time_point begin_time) {
-    // Temporary
-    target_byte_number = rand() % ds.get_fixed_size();
-    char* target_address = (char*)ds.get_address() + target_byte_number;
-
     // Wait
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - begin_time).count();
     std::this_thread::sleep_for(std::chrono::milliseconds(random_time_ms - ms));
 
     // Injection
+    // Check if the Simulator is still running (it may have crashed in the meanwhile..)
+    // However, in a normal situation, theoretically a non-injected simulator should not crash
+    if (!sr->is_running())
+        return;
+
     // 1. Read phase
-    read_memory((void*)target_address, &byte_buffer_before, 1);
+    // Read the entire data structure
+    char* struct_before = ds.get_struct_before();
+    read_memory(ds.get_address(), struct_before, ds.get_fixed_size());
+    std::cout << "Before injection queue:" << std::endl;
+    test_print(struct_before);
+    // Get the exploded data structure size (including items stored in lists etc.)
+    exploded_size = ds.get_exploded_size();
+
+    // Next, generate a random number in the virtual exploded size space
+    target_byte_number = rand() % exploded_size;
+
+    // Then, analyze FreeRTOS data structure to check where we are pointing with our random byte number:
+    //  1: If we are pointing to a field which does not need any expansion, we select this byte for the injeciton;
+    //  2: If we are pointing to a field in the expanded space, we need to follow some pointers to retrieve the real byte address to inject
+    if (target_byte_number < ds.get_fixed_size()) {
+        // 1
+        injected_byte_addr = (void *)( (char*)ds.get_address() + target_byte_number );
+        byte_buffer_before = struct_before[target_byte_number];
+    }
+    else {
+        // 2
+        void* addr_to_read;
+        size_t size_to_read;
+        ds.get_next_expansion(target_byte_number - ds.get_fixed_size(), &injected_byte_addr, &addr_to_read, &size_to_read);
+        if (addr_to_read == NULL) {
+            read_memory(injected_byte_addr, &byte_buffer_before, 1);
+        }
+        else {
+            // TODO (deeper linking)
+        }
+    }
 
     // 2. Flip phase
     byte_buffer_after = byte_buffer_before ^ (1 << target_bit_number);
 
     // 3. Write phase
-    write_memory((void*)target_address, &byte_buffer_after, 1);
+    write_memory(injected_byte_addr, &byte_buffer_after, 1);
+
+    char struct_after[500];
+    read_memory(ds.get_address(), struct_after, ds.get_fixed_size());
+    std::cout << "Queue after the injection: " << std::endl;
+    test_print(struct_after);
 }
 
 void Injection::print_stats() {
@@ -59,6 +106,8 @@ void Injection::print_stats() {
 
     cout << "Injection stats:" << endl;
     cout << "Performed after " << random_time_ms << " ms from the FreeRTOS simulator scheduler start" << endl;
+    cout << "Target data structure size (bytes): " << ds.get_fixed_size() << endl;
+    cout << "Target data structure expanded size (bytes): " << ds.get_exploded_size() << endl;
     cout << "Target byte: " << target_byte_number << endl;
     cout << "Target bit: " << target_bit_number << endl;
     cout << "Byte value as unsigned integer before injection: " << (unsigned int)byte_buffer_before << endl;

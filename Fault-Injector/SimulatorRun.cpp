@@ -170,3 +170,7 @@ int SimulatorRun::get_native_exit_code() const {
     return this->c.native_exit_code();
 }
 
+bool SimulatorRun::is_running() {
+    return this->c.running();
+}
+

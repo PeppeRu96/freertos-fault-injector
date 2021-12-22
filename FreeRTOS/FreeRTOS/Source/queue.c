@@ -138,6 +138,7 @@ typedef xQUEUE Queue_t;
 
 void printQueueFields(QueueHandle_t xHandle)
 {
+    int8_t* p;
     xQUEUE *q = (xQUEUE *)xHandle;
     printf("pcHead (int8_t *): %p\n", q->pcHead);
     printf("pcWriteTo (int8_t *): %p\n", q->pcWriteTo);
@@ -3108,6 +3109,21 @@ size_t getQueue_FixedSize()
 }
 size_t getQueue_CurrentExplodedSize(QueueHandle_t xHandle)
 {
-    // TODO
-    return sizeof(xQUEUE);
+    xQUEUE* q = (xQUEUE*)xHandle;
+    size_t static_struct_size = sizeof(xQUEUE);
+    size_t items_storage_size = abs(q->u.xQueue.pcTail - q->pcHead);
+    return static_struct_size + items_storage_size;
+}
+
+void getQueue_NextExpansion(QueueHandle_t xHandle, size_t byte_number, void ** byte_to_inject, void ** addr_to_read, size_t * size_to_read)
+{
+    xQUEUE* q = (xQUEUE*)xHandle;
+    if (q->pcHead < q->u.xQueue.pcTail) {
+        *byte_to_inject = q->pcHead + byte_number;
+    }
+    else {
+        *byte_to_inject = q->pcHead - byte_number;
+    }
+    *addr_to_read = NULL;
+    *size_to_read = 0;
 }
