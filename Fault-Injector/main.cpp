@@ -11,11 +11,11 @@
 
 // PC fisso - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/"
-//#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/"
+#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/"
 
 // PC portatile - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/";
-#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/";
+//#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/";
 
 // Ubuntu - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "/home/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
@@ -81,7 +81,10 @@ int main()
 
         // Start
         sr.start();
+        inj.init();
         inj.inject(sr.get_begin_time());
+        inj.close();
+        inj.print_stats();
 
         // Wait && Log
         if (sr.wait_for(golden_run.duration() * DEADLOCK_TIME_FACTOR, ec)) {
@@ -116,7 +119,7 @@ int main()
             std::cout << "Error code: " << ec << std::endl;
             // Classify as deadlock
         }
-        Sleep(30000);
+        //Sleep(30000);
     }
 }
 
