@@ -5440,3 +5440,13 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
     #endif
 
 #endif /* if ( configINCLUDE_FREERTOS_TASK_C_ADDITIONS_H == 1 ) */
+
+size_t getTCB_FixedSize()
+{
+    return sizeof(tskTCB);
+}
+size_t getTCB_CurrentExplodedSize(TaskHandle_t xHandle)
+{
+    // TODO: Perform analysis on lists and vectors...
+    return sizeof(xHandle);
+}

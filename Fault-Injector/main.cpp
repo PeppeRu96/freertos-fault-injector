@@ -105,6 +105,8 @@ int main()
 
                 // Perform comparison
             }
+            std::cout << "Injection #" << i+1 << " run execution took " << std::chrono::duration_cast<std::chrono::seconds>(sr.duration()).count() << " seconds.\n\n" << std::endl;
+
         }
         else {
             // The child didn't exit and the timer has expired (possible deadlock)
@@ -114,6 +116,7 @@ int main()
             std::cout << "Error code: " << ec << std::endl;
             // Classify as deadlock
         }
+        Sleep(30000);
     }
 }
 

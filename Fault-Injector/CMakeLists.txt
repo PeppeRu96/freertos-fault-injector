@@ -15,10 +15,33 @@ file(GLOB FI_SOURCES
 
 file(GLOB FI_SOURCES
 		${FI_SOURCES}
+		"${FAULT_INJECTOR_DIR}/*.c"
+)
+
+# Heap management (platform-dependent)
+if (WIN32)
+    file(GLOB FI_SOURCES
+            ${FI_SOURCES}
+            "${FREERTOS_DIR}/Source/portable/MemMang/heap_4.c"
+            )
+elseif(UNIX)
+    file(GLOB FI_SOURCES
+            ${FI_SOURCES}
+            "${FI_SOURCES}/Source/portable/MemMang/heap_3.c"
+            )
+endif()
+
+file(GLOB FI_SOURCES
+		${FI_SOURCES}
 		"${SIMULATOR_DIR}/memory_logger.cpp"
 )
 
-add_executable(FreeRTOS_FaultInjector ${FI_SOURCES})
+set(SOURCES
+		${FI_SOURCES}
+        ${FREERTOS_SOURCES}
+)
+
+add_executable(FreeRTOS_FaultInjector ${SOURCES})
 
 target_include_directories(FreeRTOS_FaultInjector PRIVATE ${FI_INCLUDES})
 

@@ -136,6 +136,34 @@ typedef struct QueueDefinition /* The old naming convention is used to prevent b
  * name below to enable the use of older kernel aware debuggers. */
 typedef xQUEUE Queue_t;
 
+void printQueueFields(QueueHandle_t xHandle)
+{
+    xQUEUE *q = (xQUEUE *)xHandle;
+    printf("pcHead (int8_t *): %p\n", q->pcHead);
+    printf("pcWriteTo (int8_t *): %p\n", q->pcWriteTo);
+    printf("xQueue(QueuePointers_t).pcTail (int8_t *): %p\n", q->u.xQueue.pcTail);
+    printf("xQueue(QueuePointers_t).pcReadFrom (int8_t *): %p\n", q->u.xQueue.pcReadFrom);
+    printf("xTasksWaitingToSend(List_t).uxNumberOfItems (UBaseType_t): %ul:\n", q->xTasksWaitingToSend.uxNumberOfItems);
+    printf("xTasksWaitingToReceive(List_t).uxNumberOfItems (UBaseType_t): %ul:\n", q->xTasksWaitingToReceive.uxNumberOfItems);
+    printf("uxMessagesWaiting (UBaseType_t): %ul\n", q->uxMessagesWaiting);
+    printf("uxLength (UBaseType_t): %ul\n", q->uxLength);
+    printf("uxItemSize (UBaseType_t): %ul\n", q->uxItemSize);
+    printf("cRxLock (int8_t): %d\n", q->cRxLock);
+    printf("cTxLock (int8_t): %d\n", q->cTxLock);
+#if ( ( configSUPPORT_STATIC_ALLOCATION == 1 ) && ( configSUPPORT_DYNAMIC_ALLOCATION == 1 ) )
+    printf("ucStaticallyAllocated (int8_t): %d\n", q->ucStaticallyAllocated);
+#endif
+
+#if ( configUSE_QUEUE_SETS == 1 )
+    printf("pxQueueSetContainer (QueueDefinition *): %p\n", q->pxQueueSetContainer);
+#endif
+
+#if ( configUSE_TRACE_FACILITY == 1 )
+    printf("uxQueueNumber (UBaseType_t): %ul\n", q->uxQueueNumber);
+    printf("ucQueueType (uint8_t): %hhu\n", q->ucQueueType);
+#endif
+}
+
 /*-----------------------------------------------------------*/
 
 /*
@@ -3073,3 +3101,13 @@ BaseType_t xQueueIsQueueFullFromISR( const QueueHandle_t xQueue )
     }
 
 #endif /* configUSE_QUEUE_SETS */
+
+size_t getQueue_FixedSize()
+{
+    return sizeof(xQUEUE);
+}
+size_t getQueue_CurrentExplodedSize(QueueHandle_t xHandle)
+{
+    // TODO
+    return sizeof(xQUEUE);
+}

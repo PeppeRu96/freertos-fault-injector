@@ -19,11 +19,8 @@ Injection::Injection(long long pid, DataStructure ds, long long max_time_ms) : d
         local[0].iov_base = &byte_buffer;
         local[0].iov_len = 1;
 
-        int target_byte_number = rand() % 168;
+        int target_byte_number = rand() % this->ds.get_fixed_size();
         int target_bit_number = rand() % 8;
-
-        printf("\tTarget byte number: %d\n", target_byte_number);
-        printf("\tTarget bit number: %d\n", target_bit_number);
 
         // Read the byte
         remote[0].iov_base = (void*)((char*)this->ds.get_address() + target_byte_number);
@@ -43,6 +40,9 @@ Injection::Injection(long long pid, DataStructure ds, long long max_time_ms) : d
             exit(1);
         }
 
+        std::cout << "\tData Structure fixed size: " << this->ds.get_fixed_size() << std::endl;
+        printf("\tTarget byte number: %d\n", target_byte_number);
+        printf("\tTarget bit number: %d\n", target_bit_number);
         printf("\tchar read before injection: %d\n", byte_buffer);
 
         // Flip bit
@@ -74,17 +74,16 @@ Injection::Injection(long long pid, DataStructure ds, long long max_time_ms) : d
         SIZE_T nwrite;
 
         char byte_buffer = 0;
+        char buffer[500];
 
-        int target_byte_number = rand() % 168;
+        int target_byte_number = rand() % this->ds.get_fixed_size();
         int target_bit_number = rand() % 8;
 
         // Open simulator Process, select the target byte and compute its address
         simProc = OpenProcess(PROCESS_ALL_ACCESS, false, this->pid);
 
-        printf("\tTarget byte number: %d\n", target_byte_number);
-        printf("\tTarget bit number: %d\n", target_bit_number);
-
         char* target_address = (char*)this->ds.get_address() + target_byte_number;
+        char* struct_address = (char*)this->ds.get_address();
 
         // Wait
         printf("\trandom_time_ms: %lld\n", this->random_time_ms);
@@ -93,6 +92,15 @@ Injection::Injection(long long pid, DataStructure ds, long long max_time_ms) : d
         std::this_thread::sleep_for(std::chrono::milliseconds(this->random_time_ms - ms));
         printf("\tafter waiting..\n");
 
+        // Debug
+        ReadProcessMemory(simProc, (void*)struct_address, &buffer, this->ds.get_fixed_size(), &nread);
+        if (nread == 0) {
+            std::cerr << "Can't read simulator memory" << std::endl;
+            exit(1);
+        }
+        std::cout << "\tQueue fields before injection:" << std::endl;
+        test_print((void*)buffer);
+
         // Injection
         // Read the byte
         ReadProcessMemory(simProc, (void*)target_address, &byte_buffer, 1, &nread);
@@ -100,7 +108,11 @@ Injection::Injection(long long pid, DataStructure ds, long long max_time_ms) : d
             std::cerr << "Can't read simulator memory" << std::endl;
             exit(1);
         }
+        
 
+        std::cout << "\tData Structure fixed size: " << this->ds.get_fixed_size() << std::endl;
+        printf("\tTarget byte number: %d\n", target_byte_number);
+        printf("\tTarget bit number: %d\n", target_bit_number);
         printf("\tchar read before injection: %d\n", byte_buffer);
 
         // Flip bit
@@ -123,6 +135,15 @@ Injection::Injection(long long pid, DataStructure ds, long long max_time_ms) : d
         }
 
         printf("\tchar read after injection: %d\n", byte_buffer);
+
+        // Debug
+        ReadProcessMemory(simProc, (void*)struct_address, &buffer, this->ds.get_fixed_size(), &nread);
+        if (nread == 0) {
+            std::cerr << "Can't read simulator memory" << std::endl;
+            exit(1);
+        }
+        std::cout << "\tQueue fields after injection:" << std::endl;
+        test_print((void*)buffer);
 
         CloseHandle(simProc);
     }

@@ -9,6 +9,7 @@
 
 #include <string>
 #include <iostream>
+#include "FreeRTOSInterface.h"
 
 class DataStructure {
 private:
@@ -16,9 +17,11 @@ private:
     std::string name;
 	int type;
 	void *address;
+	size_t fixed_size;
 public:
     DataStructure(int id, const char* name, int type, void* address);
 
+	size_t get_fixed_size() const;
 	int get_id() const;
 	std::string get_name() const;
 	int get_type() const;

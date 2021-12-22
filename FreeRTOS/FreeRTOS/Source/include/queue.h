@@ -50,6 +50,11 @@
 struct QueueDefinition; /* Using old naming convention so as not to break kernel aware debuggers. */
 typedef struct QueueDefinition   * QueueHandle_t;
 
+/* EXTENDED FUNCTIONS */
+size_t getQueue_FixedSize();
+size_t getQueue_CurrentExplodedSize(QueueHandle_t xHandle);
+void printQueueFields(QueueHandle_t xHandle);
+
 /**
  * Type by which queue sets are referenced.  For example, a call to
  * xQueueCreateSet() returns an xQueueSet variable that can then be used as a

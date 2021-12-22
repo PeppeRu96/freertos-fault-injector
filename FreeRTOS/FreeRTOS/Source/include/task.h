@@ -86,6 +86,12 @@
 struct tskTaskControlBlock; /* The old naming convention is used to prevent breaking kernel aware debuggers. */
 typedef struct tskTaskControlBlock * TaskHandle_t;
 
+/* EXTENDED FUNCTIONS */
+size_t getTCB_FixedSize();
+size_t getTCB_CurrentExplodedSize(TaskHandle_t xHandle);
+
+/* -------------------------------- */
+
 /*
  * Defines the prototype to which the application task hook function must
  * conform.
