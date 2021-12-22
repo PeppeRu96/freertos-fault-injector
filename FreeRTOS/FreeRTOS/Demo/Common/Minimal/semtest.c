@@ -60,8 +60,8 @@
 #include "semtest.h"
 
 /* The value to which the shared variables are counted. */
-#define semtstBLOCKING_EXPECTED_VALUE        ( ( uint32_t ) 0x80 ) /* 128 */
-#define semtstNON_BLOCKING_EXPECTED_VALUE    ( ( uint32_t ) 0x40 ) /* 64 */
+#define semtstBLOCKING_EXPECTED_VALUE        ( ( uint32_t ) 0x100 ) /* 256 */
+#define semtstNON_BLOCKING_EXPECTED_VALUE    ( ( uint32_t ) 0x80 ) /* 128 */
 
 #define semtstSTACK_SIZE                     configMINIMAL_STACK_SIZE
 
@@ -84,7 +84,7 @@ typedef struct SEMAPHORE_PARAMETERS
 /* Variables used to check that all the tasks are still running without errors. */
 static volatile short sCheckVariables[ semtstNUM_TASKS ] = { 0 };
 static volatile short sNextCheckVariable = 0;
-short sMaxIterations = 10;
+short sMaxIterations = 1;
 static short sTasksAlive[semtstNUM_TASKS] = { (uint16_t)1 };
 
 
