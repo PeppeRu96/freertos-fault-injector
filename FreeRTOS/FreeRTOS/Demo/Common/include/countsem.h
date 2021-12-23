@@ -30,5 +30,6 @@
 
 void vStartCountingSemaphoreTasks( void );
 BaseType_t xAreCountingSemaphoreTasksStillRunning( void );
+BaseType_t xAreCountSemAlive(void);
 
 #endif

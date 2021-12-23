@@ -307,6 +307,8 @@ int main( void )
 
     log_end();
 
+    printf("CIAOOOOO");
+
     /* Start the scheduler itself. */
     vTaskStartScheduler();
 
@@ -610,7 +612,7 @@ static void prvCheckTask( void * pvParameters )
         }
 #endif
 #if defined TASK_MESSAGE_BUFFER
-        if( xAreMessageBufferTasksStillRunning() != pdTRUE )
+        if( xAreMessageBuffersAlive() == pdTRUE && xAreMessageBufferTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error:  MessageBuffer";
             xErrorCount++;
@@ -700,7 +702,7 @@ static void prvCheckTask( void * pvParameters )
         }
 #endif
 #if defined TASK_COUNT_SEM
-        if( xAreCountingSemaphoreTasksStillRunning() != pdTRUE )
+        if(xAreCountSemAlive() == pdTRUE && xAreCountingSemaphoreTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: CountSem";
             xErrorCount++;

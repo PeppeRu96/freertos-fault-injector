@@ -39,7 +39,7 @@
 #include "countsem.h"
 
 /* The maximum count value that the semaphore used for the demo can hold. */
-#define countMAX_COUNT_VALUE       ( 200 )
+#define countMAX_COUNT_VALUE       ( 300 )
 
 /* Constants used to indicate whether or not the semaphore should have been
  * created with its maximum count value, or its minimum count value.  These
@@ -74,14 +74,16 @@ static void prvCountingSemaphoreTask( void * pvParameters );
  * countMAX_COUNT_VALUE.
  */
 static void prvIncrementSemaphoreCount( SemaphoreHandle_t xSemaphore,
-                                        volatile UBaseType_t * puxLoopCounter );
+                                        volatile UBaseType_t * puxLoopCounter,
+                                        uint8_t semNumber);
 
 /*
  * Utility function to decrement the semaphore count value up from
  * countMAX_COUNT_VALUE to zero.
  */
 static void prvDecrementSemaphoreCount( SemaphoreHandle_t xSemaphore,
-                                        volatile UBaseType_t * puxLoopCounter );
+                                        volatile UBaseType_t * puxLoopCounter,
+                                        uint8_t semNumber);
 
 /*-----------------------------------------------------------*/
 
@@ -99,12 +101,19 @@ typedef struct COUNT_SEM_STRUCT
     /* Incremented on each cycle of the demo task.  Used to detect a stalled
      * task. */
     volatile UBaseType_t uxLoopCounter;
+
+    /* semaphore number */
+    uint8_t number;
 } xCountSemStruct;
 
 /* Two structures are defined, one is passed to each test task. */
 static xCountSemStruct xParameters[ countNUM_TEST_TASKS ];
 
 TaskHandle_t xTaskCNT1, xTaskCNT2;
+
+static uint8_t maxIterations = 10;
+
+static uint8_t aliveTasks = 2;
 
 /*-----------------------------------------------------------*/
 
@@ -116,10 +125,12 @@ void vStartCountingSemaphoreTasks( void )
     xParameters[ 0 ].xSemaphore = xSemaphoreCreateCounting( countMAX_COUNT_VALUE, countMAX_COUNT_VALUE );
     xParameters[ 0 ].uxExpectedStartCount = countSTART_AT_MAX_COUNT;
     xParameters[ 0 ].uxLoopCounter = 0;
+    xParameters[ 0 ].number = 1;
 
     xParameters[ 1 ].xSemaphore = xSemaphoreCreateCounting( countMAX_COUNT_VALUE, 0 );
     xParameters[ 1 ].uxExpectedStartCount = 0;
     xParameters[ 1 ].uxLoopCounter = 0;
+    xParameters[ 1 ].number = 2;
 
     /* Were the semaphores created? */
     if( ( xParameters[ 0 ].xSemaphore != NULL ) || ( xParameters[ 1 ].xSemaphore != NULL ) )
@@ -142,10 +153,6 @@ void vStartCountingSemaphoreTasks( void )
     log_struct("countsem_TaskCNT1", TYPE_TASK_HANDLE, xTaskCNT1);
     log_struct("countsem_TaskCNT2", TYPE_TASK_HANDLE, xTaskCNT2);
 
-    /* log the counting semaphore structures */
-    log_struct("countsem_Params1", TYPE_COUNT_SEMAPHORE, &xParameters[0]);
-    log_struct("countsem_Params2", TYPE_COUNT_SEMAPHORE, &xParameters[1]);
-
     /* log the semaphore handles */
     log_struct("countsem_Semaphore1", TYPE_SEMAPHORE_HANDLE, xParameters[0].xSemaphore);
     log_struct("countsem_Semaphore2", TYPE_SEMAPHORE_HANDLE, xParameters[1].xSemaphore);
@@ -153,7 +160,8 @@ void vStartCountingSemaphoreTasks( void )
 /*-----------------------------------------------------------*/
 
 static void prvDecrementSemaphoreCount( SemaphoreHandle_t xSemaphore,
-                                        volatile UBaseType_t * puxLoopCounter )
+                                        volatile UBaseType_t * puxLoopCounter,
+                                        uint8_t semNumber)
 {
     UBaseType_t ux;
 
@@ -161,6 +169,7 @@ static void prvDecrementSemaphoreCount( SemaphoreHandle_t xSemaphore,
      * 'give' the semaphore. */
     if( xSemaphoreGive( xSemaphore ) == pdPASS )
     {
+        console_print("COUNTEM - ERROR: unexpected incrementing of semaphore %d before decrementing!\n", semNumber);
         xErrorDetected = pdTRUE;
     }
 
@@ -171,11 +180,13 @@ static void prvDecrementSemaphoreCount( SemaphoreHandle_t xSemaphore,
 
         if( xSemaphoreTake( xSemaphore, countDONT_BLOCK ) != pdPASS )
         {
+            console_print("COUNTSEM - ERROR: unable to decrement semaphore %d!\n", semNumber);
             /* We expected to be able to take the semaphore. */
             xErrorDetected = pdTRUE;
         }
 
         ( *puxLoopCounter )++;
+        console_print("COUNTSEM: semaphore %d decremented to value %d\n", semNumber, uxSemaphoreGetCount(xSemaphore));
     }
 
     #if configUSE_PREEMPTION == 0
@@ -188,13 +199,15 @@ static void prvDecrementSemaphoreCount( SemaphoreHandle_t xSemaphore,
 
     if( xSemaphoreTake( xSemaphore, countDONT_BLOCK ) == pdPASS )
     {
+        console_print("COUNTEM - ERROR: unexpected decrementing of semaphore %d after decrementing!\n", semNumber);
         xErrorDetected = pdTRUE;
     }
 }
 /*-----------------------------------------------------------*/
 
 static void prvIncrementSemaphoreCount( SemaphoreHandle_t xSemaphore,
-                                        volatile UBaseType_t * puxLoopCounter )
+                                        volatile UBaseType_t * puxLoopCounter,
+                                        uint8_t semNumber)
 {
     UBaseType_t ux;
 
@@ -202,6 +215,7 @@ static void prvIncrementSemaphoreCount( SemaphoreHandle_t xSemaphore,
      * the semaphore. */
     if( xSemaphoreTake( xSemaphore, countDONT_BLOCK ) == pdPASS )
     {
+        console_print("COUNTEM - ERROR: unexpected decrementing of semaphore %d before incrementing!\n", semNumber);
         xErrorDetected = pdTRUE;
     }
 
@@ -212,11 +226,13 @@ static void prvIncrementSemaphoreCount( SemaphoreHandle_t xSemaphore,
 
         if( xSemaphoreGive( xSemaphore ) != pdPASS )
         {
+            console_print("COUNTSEM - ERROR: unable to increment semaphore %d!\n", semNumber);
             /* We expected to be able to take the semaphore. */
             xErrorDetected = pdTRUE;
         }
 
         ( *puxLoopCounter )++;
+        console_print("COUNTSEM: semaphore %d incremented to value %d\n", semNumber, uxSemaphoreGetCount(xSemaphore));
     }
 
     #if configUSE_PREEMPTION == 0
@@ -227,6 +243,7 @@ static void prvIncrementSemaphoreCount( SemaphoreHandle_t xSemaphore,
      * 'give' the semaphore. */
     if( xSemaphoreGive( xSemaphore ) == pdPASS )
     {
+        console_print("COUNTEM - ERROR: unexpected incrementing of semaphore %d after incrementing!\n", semNumber);
         xErrorDetected = pdTRUE;
     }
 }
@@ -252,7 +269,8 @@ static void prvCountingSemaphoreTask( void * pvParameters )
      * at zero? */
     if( pxParameter->uxExpectedStartCount == countSTART_AT_MAX_COUNT )
     {
-        prvDecrementSemaphoreCount( pxParameter->xSemaphore, &( pxParameter->uxLoopCounter ) );
+        console_print("COUNTSEM: decrementing semaphore %d\n", pxParameter->number);
+        prvDecrementSemaphoreCount( pxParameter->xSemaphore, &( pxParameter->uxLoopCounter ), pxParameter->number );
     }
 
     /* Now we expect the semaphore count to be 0, so this time there is an
@@ -264,8 +282,15 @@ static void prvCountingSemaphoreTask( void * pvParameters )
 
     for( ; ; )
     {
-        prvIncrementSemaphoreCount( pxParameter->xSemaphore, &( pxParameter->uxLoopCounter ) );
-        prvDecrementSemaphoreCount( pxParameter->xSemaphore, &( pxParameter->uxLoopCounter ) );
+        console_print("COUNTSEM: incrementing semaphore %d\n", pxParameter->number);
+        prvIncrementSemaphoreCount( pxParameter->xSemaphore, &( pxParameter->uxLoopCounter ), pxParameter->number);
+
+        console_print("COUNTSEM: decrementing semaphore %d\n", pxParameter->number);
+        prvDecrementSemaphoreCount( pxParameter->xSemaphore, &( pxParameter->uxLoopCounter ), pxParameter->number);
+
+        console_print("COUNTSEM: operations completed on semaphore %d. Ending task.\n", pxParameter->number);
+        aliveTasks--;
+        vTaskDelete(NULL);
     }
 }
 /*-----------------------------------------------------------*/
@@ -302,4 +327,8 @@ BaseType_t xAreCountingSemaphoreTasksStillRunning( void )
     }
 
     return xReturn;
+}
+
+BaseType_t xAreCountSemAlive(void) {
+    return aliveTasks != 0;
 }
