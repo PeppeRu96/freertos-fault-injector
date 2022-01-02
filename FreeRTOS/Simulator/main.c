@@ -307,8 +307,6 @@ int main( void )
 
     log_end();
 
-    printf("CIAOOOOO");
-
     /* Start the scheduler itself. */
     vTaskStartScheduler();
 
@@ -605,7 +603,7 @@ static void prvCheckTask( void * pvParameters )
 #endif
 
 #if defined TASK_STREAM_BUFFER
-        if( xAreStreamBufferTasksStillRunning() != pdTRUE )
+        if(xAreStreamBuffersAlive() == pdTRUE && xAreStreamBufferTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error:  StreamBuffer";
             xErrorCount++;

@@ -32,4 +32,6 @@ void vStartStreamBufferTasks( void );
 BaseType_t xAreStreamBufferTasksStillRunning( void );
 void vPeriodicStreamBufferProcessing( void );
 
+BaseType_t xAreStreamBuffersAlive(void);
+
 #endif /* STREAM_BUFFER_TEST_H */

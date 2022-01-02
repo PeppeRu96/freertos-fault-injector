@@ -44,6 +44,206 @@
           "name": "TASK_CHECK",
           "value": "True",
           "type": "BOOL"
+        },
+        {
+          "name": "TASK_REC_MUTEX",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_TIMER_QUERY",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TIMER_PERIODIC_ISR_TESTS",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_INT_SEM_TEST",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_PEEK_QUEUE",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_PEND_FUNC_CALL",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_COUNT_SEM",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_MESSAGE_BUFFER",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_MESSAGE_BUFF_AMP",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_QUEUE_SET",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_POLL_QUEUE",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_QUEUE_OVERWRITE",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_SEM_TEST",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_QUEUE_SET_POLL",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_QUEUE_SPACE_AVAIL",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_STATIC_ALLOC",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_STREAM_BUFF_INT",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_TASK_INTERNAL",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_TASK_NOTIFY",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_TIMER",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_INTEGER",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_INDEF_DELAY_SEM",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_INDEF_DELAY_NOTIF",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_GEN_QUEUE",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "NOTIFY_TASK_ISR",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "EVENT_GROUP_ISR",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "QUEUE_OVERWRITE_PERIODIC_ISR",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "QUEUE_SET_ACCESS_ISR",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "SEM_TEST_ISR",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "QUEUE_SET_ACCESS_POLL_ISR",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TEST_DELETE_MUTEX",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "STREAM_BUFFER_PROC",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_ABORT_DELAY",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_BLOCKING_QUEUE",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_BLOCK_TIM",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_DEATH",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_DYNAMIC_PRIOR",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_EVENT_GROUPS",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "TASK_FLOP",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "STREAM_BUFFER_SEND_ISR",
+          "value": "True",
+          "type": "BOOL"
         }
       ]
     },
