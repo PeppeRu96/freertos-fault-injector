@@ -244,6 +244,11 @@
           "name": "STREAM_BUFFER_SEND_ISR",
           "value": "True",
           "type": "BOOL"
+        },
+        {
+          "name": "TASK_STREAM_BUFFER",
+          "value": "True",
+          "type": "BOOL"
         }
       ]
     },

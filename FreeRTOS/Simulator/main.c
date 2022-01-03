@@ -167,6 +167,7 @@ int main( void )
     printf("Size of MessageBufferHandle: %d\n", sizeof(StaticMessageBuffer_t));
     printf("Size of QueueSetHandle: %d\n", sizeof(StaticQueue_t));
     printf("Size of the Static Stack: %d\n", configMINIMAL_STACK_SIZE * 2);
+    printf("Size of a Queue Registry Item: %d\n", queue_registry_item_size());
 
     console_init();
     log_start();
@@ -304,6 +305,11 @@ int main( void )
     /* log the "xMutexToDelete" semaphore handle */
     log_struct("MutexToDelete", TYPE_SEMAPHORE_HANDLE, xMutexToDelete);
 #endif
+
+    /* log the OS structures that were creatred during the creation of the tasks */
+    log_queue_registry();
+    log_timers_struct();
+    log_tasks_struct();
 
     log_end();
 
@@ -506,7 +512,7 @@ TaskHandle_t xTimerTask;
 #if defined STREAM_BUFFER_PROC
     /* Writes to stream buffer byte by byte to test the stream buffer trigger
     level functionality. */
-    vPeriodicStreamBufferProcessing();
+    //vPeriodicStreamBufferProcessing();
 #endif
 
 #if defined STREAM_BUFFER_SEND_ISR

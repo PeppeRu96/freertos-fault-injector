@@ -15,7 +15,9 @@
 #define TYPE_STREAM_BUFFER_HANDLE 7
 #define TYPE_QUEUE_SET_HANDLE 8
 #define TYPE_STATIC_STACK 9
-
+#define TYPE_QUEUE_REGISTRY 10
+#define TYPE_LIST 11
+#define TYPE_LIST_ITEM 12
 
 void log_struct(char* name, int type, void* address);
 void log_start();

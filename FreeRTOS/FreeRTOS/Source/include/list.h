@@ -490,6 +490,9 @@ void vListInsertEnd( List_t * const pxList,
  */
 UBaseType_t uxListRemove( ListItem_t * const pxItemToRemove ) PRIVILEGED_FUNCTION;
 
+size_t list_size(void);
+size_t list_item_size(void);
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
     }

@@ -5440,3 +5440,19 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
     #endif
 
 #endif /* if ( configINCLUDE_FREERTOS_TASK_C_ADDITIONS_H == 1 ) */
+
+
+        void log_tasks_struct(void) {
+            log_struct("ReadyTasksList", TYPE_LIST, pxReadyTasksLists);
+            log_struct("DelayedTasksList1", TYPE_LIST, &xDelayedTaskList1);
+            log_struct("DelayedTasksList2", TYPE_LIST, &xDelayedTaskList2);
+            log_struct("PendindTasksList", TYPE_LIST, &xPendingReadyList);
+
+#if ( INCLUDE_vTaskDelete == 1 )
+            log_struct("TerminatingTasksList", TYPE_LIST, &xTasksWaitingTermination);
+#endif
+
+#if ( INCLUDE_vTaskSuspend == 1 )
+            log_struct("SuspendedTasksList", TYPE_LIST, &xSuspendedTaskList);
+#endif
+        }

@@ -3073,3 +3073,17 @@ BaseType_t xQueueIsQueueFullFromISR( const QueueHandle_t xQueue )
     }
 
 #endif /* configUSE_QUEUE_SETS */
+
+    void log_queue_registry(void) {
+        /*log the queue registry address
+        * TODO: log directly all the queues contained in the registry (avoid those log in the demos)*/
+
+        #if ( configQUEUE_REGISTRY_SIZE > 0 )
+            log_struct("QueueRegistry", TYPE_QUEUE_REGISTRY, &xQueueRegistry);
+            //console_print("QueueRegistry %d %p\n", TYPE_QUEUE_REGISTRY, &xQueueRegistry);
+        #endif
+    }
+
+    size_t queue_registry_item_size(void) {
+        return sizeof(QueueRegistryItem_t);
+    }
