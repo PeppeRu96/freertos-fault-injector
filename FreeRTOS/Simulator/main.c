@@ -643,7 +643,7 @@ static void prvCheckTask( void * pvParameters )
         }
 #endif
 #if defined TASK_EVENT_GROUPS
-        if( xAreEventGroupTasksStillRunning() != pdTRUE )
+        if(xAreEventGroupTasksAlive() == pdTRUE && xAreEventGroupTasksStillRunning() != pdTRUE )
         {
             pcStatusMessage = "Error: EventGroup";
             xErrorCount++;
