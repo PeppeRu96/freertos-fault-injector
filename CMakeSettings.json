@@ -430,7 +430,7 @@
         },
         {
           "name": "TASK_QUEUE_SET",
-          "value": "False",
+          "value": "True",
           "type": "BOOL"
         },
         {

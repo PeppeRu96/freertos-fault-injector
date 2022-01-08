@@ -206,12 +206,20 @@
 /* The task handles are stored so their priorities can be changed. */
     TaskHandle_t xQueueSetSendingTask, xQueueSetReceivingTask;
 
+
+/* The maximum value to send into the Queues, and also the number of iterations of the Sending task */
+#define queueset_MAX_TX_VALUE 0x00ffUL
+
+    /* a flag to tell the receiving task to stop when the maximum value is received and checked */
+    static BaseType_t rx_stop = pdFALSE;
+
+    static uint8_t taskAlive = 2;
 /*-----------------------------------------------------------*/
 
     void vStartQueueSetTasks( void )
     {
         /* Create the tasks. */
-        xTaskCreate( prvQueueSetSendingTask, "SetTx", configMINIMAL_STACK_SIZE, NULL, queuesetMEDIUM_PRIORITY, &xQueueSetSendingTask );
+        xTaskCreate( prvQueueSetSendingTask, "SetTx", configMINIMAL_STACK_SIZE, NULL, queuesetMEDIUM_PRIORITY+1, &xQueueSetSendingTask );
 
         if( xQueueSetSendingTask != NULL )
         {
@@ -296,6 +304,7 @@
         {
             /* Generate the index for the queue to which a value is to be sent. */
             uxQueueToWriteTo = prvRand() % queuesetNUM_QUEUES_IN_SET;
+            console_print("QUEUESET: sending task using queue n. %d\n", uxQueueToWriteTo);
             xQueueInUse = xQueues[ uxQueueToWriteTo ];
 
             /* Note which index is being written to to ensure all the queues are
@@ -308,7 +317,11 @@
             {
                 /* The send should always pass as an infinite block time was
                  * used. */
+                console_print("QUEUESET - ERROR: unable to send value %d into queue n. %d!\n", ulTaskTxValue, uxQueueToWriteTo);
                 xQueueSetTasksStatus = pdFAIL;
+            }
+            else {
+                console_print("QUEUESET: successfully sent value %d into queue n. %d\n", ulTaskTxValue, uxQueueToWriteTo);
             }
 
             #if ( configUSE_PREEMPTION == 0 )
@@ -319,14 +332,17 @@
 
             /* If the Tx value has reached the range used by the ISR then set it
              * back to 0. */
-            if( ulTaskTxValue == queuesetINITIAL_ISR_TX_VALUE )
+            if( ulTaskTxValue == queueset_MAX_TX_VALUE)
             {
-                ulTaskTxValue = 0;
+                console_print("QUEUESET: sending task stopped.\n");
+                taskAlive--;
+                vTaskDelete(NULL);
             }
 
             /* Increase test coverage by occasionally change the priorities of the
-             * two tasks relative to each other. */
+             * two tasks relative to each other. 
             prvChangeRelativePriorities();
+            */
         }
     }
 /*-----------------------------------------------------------*/
@@ -419,6 +435,7 @@
                 {
                     /* This should not happen as an infinite delay was used. */
                     xQueueSetTasksStatus = pdFAIL;
+                    console_print("QUEUESET - ERROR: failed to receive values from any queue in QueueSet!\n");
                 }
             }
             else
@@ -429,6 +446,7 @@
                 if( xQueueReceive( xActivatedQueue, &ulReceived, queuesetDONT_BLOCK ) != pdPASS )
                 {
                     xQueueSetTasksStatus = pdFAIL;
+                    console_print("QUEUESET - ERROR: could not read a value from queues!\n");
                 }
 
                 /* Ensure the value received was the value expected.  This function
@@ -442,7 +460,14 @@
 
                 if( xQueueSetTasksStatus == pdPASS )
                 {
+                    console_print("QUEUESET: correctly received value %d\n", ulReceived);
                     ulCycleCounter++;
+                }
+
+                if (rx_stop == pdTRUE) {
+                    console_print("QUEUESET: receiving task stopped.\n");
+                    taskAlive--;
+                    vTaskDelete(NULL);
                 }
             }
         }
@@ -549,9 +574,9 @@
             /* It is expected to receive an incrementing number. */
             ulExpectedReceivedFromTask++;
 
-            if( ulExpectedReceivedFromTask >= queuesetINITIAL_ISR_TX_VALUE )
+            if( ulExpectedReceivedFromTask >= queueset_MAX_TX_VALUE )
             {
-                ulExpectedReceivedFromTask = 0;
+                rx_stop = pdTRUE;
             }
         }
     }
@@ -1163,4 +1188,7 @@
         uxNextRand = uxSeed;
     }
 
+    BaseType_t xAreQueueSetsAlive(void) {
+        return taskAlive != 0;
+    }
 #endif /* ( configUSE_QUEUE_SETS == 1 ) */

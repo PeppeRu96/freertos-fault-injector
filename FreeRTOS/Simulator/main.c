@@ -764,7 +764,7 @@ static void prvCheckTask( void * pvParameters )
 
 #if ( configUSE_QUEUE_SETS == 1 )
         #if defined TASK_QUEUE_SET
-            if( xAreQueueSetTasksStillRunning() != pdPASS )
+            if( xAreQueueSetsAlive() == pdTRUE && xAreQueueSetTasksStillRunning() != pdPASS )
             {
                 pcStatusMessage = "Error: Queue set";
                 xErrorCount++;
