@@ -76,12 +76,14 @@ int main()
         SimulatorRun sr;
         std::error_code ec;
 
-        // Init
+        // Spawn a simulator instance to be injected and load its data structures
         sr.init(sim_path);
+
+        // Retrieve the data structure to be injected
         DataStructure ds = sr.get_ds_by_id(conf.struct_id);
         Injection inj(&sr, ds, conf.max_time_ms);
 
-        // Start
+        // Signal to the simulator instance that it can start the scheduler
         sr.start();
         inj.init();
         inj.inject(sr.get_begin_time());

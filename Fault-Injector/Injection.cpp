@@ -61,6 +61,7 @@ void Injection::inject(std::chrono::steady_clock::time_point begin_time) {
     char* struct_before = ds.get_struct_before();
     read_memory(ds.get_address(), struct_before, ds.get_fixed_size());
     std::cout << "Before injection queue:" << std::endl;
+    std::cout << "----------------------" << std::endl;
     test_print(struct_before);
     // Get the exploded data structure size (including items stored in lists etc.)
     exploded_size = ds.get_exploded_size();
@@ -97,8 +98,11 @@ void Injection::inject(std::chrono::steady_clock::time_point begin_time) {
 
     char struct_after[500];
     read_memory(ds.get_address(), struct_after, ds.get_fixed_size());
+
+    std::cout << "\n----------------------------" << std::endl;
     std::cout << "Queue after the injection: " << std::endl;
     test_print(struct_after);
+    std::cout << "\n" << std::endl;
 }
 
 void Injection::print_stats() {

@@ -30,5 +30,6 @@
 
 void vStartMessageBufferTasks( configSTACK_DEPTH_TYPE xStackSize );
 BaseType_t xAreMessageBufferTasksStillRunning( void );
+BaseType_t xAreMessageBuffersAlive(void);
 
 #endif /* MESSAGE_BUFFER_TEST_H */

@@ -1347,6 +1347,8 @@ BaseType_t xTimerGenericCommand( TimerHandle_t xTimer,
 
 #endif
 
+    void log_timers_struct(void);
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
     }

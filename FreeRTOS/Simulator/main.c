@@ -60,7 +60,7 @@
 
 /* Priorities at which the tasks are created. */
 #define mainCHECK_TASK_PRIORITY			( configMAX_PRIORITIES - 2 )
-#define mainQUEUE_POLL_PRIORITY			( tskIDLE_PRIORITY + 1 )
+#define mainQUEUE_POLL_PRIORITY			( tskIDLE_PRIORITY + 2 )
 #define mainSEM_TEST_PRIORITY			( tskIDLE_PRIORITY + 1 )
 #define mainBLOCK_Q_PRIORITY			( tskIDLE_PRIORITY + 2 )
 #define mainCREATOR_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
@@ -304,6 +304,10 @@ int main( void )
     /* log the "xMutexToDelete" semaphore handle */
     log_struct("MutexToDelete", TYPE_SEMAPHORE_HANDLE, xMutexToDelete);
 #endif
+    
+    /* log internal kernel data structures*/
+    log_timers_struct();
+    log_tasks_struct();
 
     /* End the logging for the memory data structures*/
     log_data_structs_end();
@@ -670,8 +674,9 @@ static void prvCheckTask( void * pvParameters )
         }
 #endif
 #if defined TASK_MESSAGE_BUFFER
-        if( xAreMessageBufferTasksStillRunning() != pdTRUE )
+        if( xAreMessageBuffersAlive() == pdTRUE && xAreMessageBufferTasksStillRunning() != pdTRUE )
         {
+            console_print("Alive: %d, Still running: %d", xAreMessageBuffersAlive(), xAreMessageBufferTasksStillRunning());
             pcStatusMessage = "Error:  MessageBuffer";
             xErrorCount++;
         }

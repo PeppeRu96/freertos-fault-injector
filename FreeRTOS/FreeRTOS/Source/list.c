@@ -213,3 +213,10 @@ UBaseType_t uxListRemove( ListItem_t * const pxItemToRemove )
     return pxList->uxNumberOfItems;
 }
 /*-----------------------------------------------------------*/
+
+size_t getLIST_FixedSize(void) {
+    return sizeof(List_t);
+}
+size_t list_item_size(void) {
+    return sizeof(ListItem_t);
+}

@@ -1,6 +1,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "list.h"
 #include "memory_logger.h"
 
 size_t get_fixed_sizeof_struct(int type) {
@@ -34,6 +35,10 @@ size_t get_fixed_sizeof_struct(int type) {
 	else if (type == TYPE_STATIC_STACK) {
 		return configMINIMAL_STACK_SIZE * 2;
 	}
+	else if (type == TYPE_LIST) {
+		return getLIST_FixedSize();
+	}
+
 	return 0;
 }
 
@@ -68,6 +73,11 @@ size_t get_exploded_sizeof_struct(int type, void* ds) {
 	else if (type == TYPE_STATIC_STACK) {
 		return configMINIMAL_STACK_SIZE * 2;
 	}
+	else if (type == TYPE_LIST) {
+		// TODO: expanded?
+		return getLIST_FixedSize();
+	}
+
 	return 0;
 }
 

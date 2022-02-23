@@ -178,7 +178,7 @@ static const char * pc54ByteString = "01234567891abcdefghijklmnopqrstuvwxyzABCDE
  * to a monitoring task ('check' task). */
 static BaseType_t xErrorStatus = pdPASS;
 
-static TaskHandle_t xTaskEchoServerH, xTaskEchoServerL, xNoBlockSend, xNoBlockReceive, xTriggerTask, xStaticSend1, xStaticSend2;
+static TaskHandle_t xTaskEchoServer1, xTaskEchoServer2, xNoBlockSend, xNoBlockReceive, xTriggerTask, xStaticSend1, xStaticSend2;
 
 /*-----------------------------------------------------------*/
 
@@ -189,8 +189,8 @@ void vStartStreamBufferTasks( void )
     /* The echo servers sets up the stream buffers before creating the echo
      * client tasks.  One set of tasks has the server as the higher priority, and
      * the other has the client as the higher priority. */
-    xTaskCreate( prvEchoServer, "1StrEchoServer", sbSMALLER_STACK_SIZE, NULL, sbHIGHER_PRIORITY, &xTaskEchoServerH );
-    xTaskCreate( prvEchoServer, "2StrEchoServer", sbSMALLER_STACK_SIZE, NULL, sbLOWER_PRIORITY, &xTaskEchoServerL );
+    xTaskCreate( prvEchoServer, "1StrEchoServer", sbSMALLER_STACK_SIZE, NULL, sbHIGHER_PRIORITY, &xTaskEchoServer1 );
+    xTaskCreate( prvEchoServer, "2StrEchoServer", sbSMALLER_STACK_SIZE, NULL, sbLOWER_PRIORITY, &xTaskEchoServer2 );
 
     /* The non blocking tasks run continuously and will interleave with each
      * other, so must be created at the lowest priority.  The stream buffer they
@@ -220,8 +220,8 @@ void vStartStreamBufferTasks( void )
     #endif /* configSUPPORT_STATIC_ALLOCATION */
 
     /* log the task handles */
-    log_struct("StreamBuffer_TaskEchoServerHighPriority", TYPE_TASK_HANDLE, xTaskEchoServerH);
-    log_struct("StreamBuffer_TaskEchoServerLowPriority", TYPE_TASK_HANDLE, xTaskEchoServerL);
+    log_struct("StreamBuffer_TaskEchoServerHighPriority", TYPE_TASK_HANDLE, xTaskEchoServer1);
+    log_struct("StreamBuffer_TaskEchoServerLowPriority", TYPE_TASK_HANDLE, xTaskEchoServer2);
     log_struct("StreamBuffer_TaskNoBlockingReceive", TYPE_TASK_HANDLE, xNoBlockReceive);
     log_struct("StreamBuffer_TaskNoBlockingSend", TYPE_TASK_HANDLE, xNoBlockSend);
     log_struct("StreamBuffer_TaskTrigger", TYPE_TASK_HANDLE, xTriggerTask);

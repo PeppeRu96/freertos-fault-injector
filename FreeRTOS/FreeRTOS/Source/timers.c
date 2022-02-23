@@ -1113,6 +1113,17 @@
     #endif /* configUSE_TRACE_FACILITY */
 /*-----------------------------------------------------------*/
 
+    void log_timers_struct(void) {
+        log_struct("ActiveTimersList1", TYPE_LIST, &xActiveTimerList1);
+        log_struct("ActiveTimersList2", TYPE_LIST, &xActiveTimerList2);
+        log_struct("CurrentTimerList", TYPE_LIST, pxCurrentTimerList);
+        log_struct("OverflowTimerList", TYPE_LIST, pxOverflowTimerList);
+
+        log_struct("TimerQueue", TYPE_QUEUE_HANDLE, xTimerQueue);
+        log_struct("TimerTaskHandle", TYPE_TASK_HANDLE, xTimerTaskHandle);
+
+    }
+
 /* This entire source file will be skipped if the application is not configured
  * to include software timer functionality.  If you want to include software timer
  * functionality then ensure configUSE_TIMERS is set to 1 in FreeRTOSConfig.h. */

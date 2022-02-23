@@ -1,6 +1,14 @@
 #ifndef FREERTOS_INTERFACE_H
 #define FREERTOS_INTERFACE_H
 
+/*
+* This provides an interface to the FreeRTOS internal data structures.
+* Since the injection system copy the data structures from the FreeRTOS simulator
+* instances to the local memory in order to perform the injection, we need a way
+* to inject complex data structures (like Queues, Lists, and so on).
+* Therefore, it is required to have control over the data structures to be injected.
+*/
+
 #ifdef __cplusplus
 extern "C" {
 #endif
