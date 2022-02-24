@@ -696,7 +696,7 @@
         },
         {
           "name": "TASK_MESSAGE_BUFFER",
-          "value": "True",
+          "value": "False",
           "type": "BOOL"
         },
         {
@@ -711,7 +711,7 @@
         },
         {
           "name": "TASK_POLL_QUEUE",
-          "value": "False",
+          "value": "True",
           "type": "BOOL"
         },
         {

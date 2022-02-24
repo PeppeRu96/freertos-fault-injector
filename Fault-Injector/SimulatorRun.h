@@ -24,6 +24,14 @@
 namespace bp = boost::process;
 namespace bi = boost::interprocess;
 
+enum SimulatorError {
+    MASKED,
+    SDC,
+    DELAY,
+    HANG,
+    CRASH
+};
+
 class SimulatorRun {
 private:
     bp::child c;
@@ -51,6 +59,8 @@ public:
     void terminate();
     void save_output();
     void show_output();
+
+    SimulatorError compare_with_golden(const SimulatorRun& golden);
 
     std::vector<DataStructure> get_data_structures() const;
     DataStructure get_ds_by_id(int id) const;

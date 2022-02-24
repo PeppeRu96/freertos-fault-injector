@@ -145,6 +145,35 @@ void SimulatorRun::show_output() {
     output_file.close();
 }
 
+SimulatorError SimulatorRun::compare_with_golden(const SimulatorRun& golden) {
+    // Output out-of-order -> Delay
+    // Output different -> SDC
+    // Output equal -> Masked
+
+    if (this->output.size() != golden.output.size())
+        return SDC;
+
+    bool masked = true;
+    for (int i = 0; i < this->output.size(); i++) {
+        if (this->output[i] == golden.output[i])
+            continue;
+        masked = false;
+        bool out_of_order = false;
+        for (auto s : golden.output) {
+            if (this->output[i] == s) {
+                out_of_order = true;
+                break;
+            }
+        }
+        if (out_of_order == false)
+            return SDC;
+    }
+    if (masked)
+        return MASKED;
+    
+    return DELAY;
+}
+
 std::vector<DataStructure> SimulatorRun::get_data_structures() const {
     return this->data_structures;
 }

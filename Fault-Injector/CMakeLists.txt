@@ -11,6 +11,7 @@ set(FI_INCLUDES
 # Sources
 file(GLOB FI_SOURCES
 		"${FAULT_INJECTOR_DIR}/*.cpp"
+		"${FAULT_INJECTOR_DIR}/*.hpp"
 )
 
 file(GLOB FI_SOURCES

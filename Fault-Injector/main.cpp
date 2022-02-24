@@ -9,6 +9,9 @@
 #include "simulator_config.h"
 #include "memory_logger.h"
 
+#include "loguru.hpp"
+#include "logger.h"
+
 // PC fisso - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/"
 //#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/"
@@ -45,10 +48,14 @@ void menu(InjectConf &conf);
 SimulatorRun golden_run;
 std::error_code golden_run_ec;
 
-int main()
+int main(int argc, char ** argv)
 {
     std::cout << "######### FreeRTOS FaultInjector v" << PROJECT_VER << " #########" << std::endl;
     std::cout << std::endl;
+
+    log_init();
+
+    // LOG_F(INFO, "I'm hungry for some %.3f!", 3.14159);
 
     srand((unsigned)time(NULL));
 
@@ -104,6 +111,8 @@ int main()
                 // Child process exited with some errors (maybe crash?)
                 std::cout << "Child crashed!" << std::endl;
                 std::cout << "Error code: " << ec << ", native exit code: " << sr.get_native_exit_code() << std::endl;
+
+                std::cout << "\n---------------- CRASH -----------------\n\n" << std::endl;
             }
             else {
                 // Child process exited with code 0 and everything should be ok
@@ -111,6 +120,16 @@ int main()
                 sr.save_output();
 
                 // Perform comparison
+                SimulatorError se = sr.compare_with_golden(golden_run);
+                if (se == MASKED) {
+                    std::cout << "\n---------------- MASKED -----------------\n\n" << std::endl;
+                }
+                else if (se == SDC) {
+                    std::cout << "\n---------------- Silence Data Corruption -----------------\n\n" << std::endl;
+                }
+                else if (se == DELAY) {
+                    std::cout << "\n---------------- DELAY -----------------\n\n" << std::endl;
+                }
             }
             std::cout << "Injection #" << i+1 << " run execution took " << std::chrono::duration_cast<std::chrono::seconds>(sr.duration()).count() << " seconds.\n\n" << std::endl;
 
@@ -122,6 +141,8 @@ int main()
             std::cout << "Child didn't exit and the timer has expired. Possible deadlock recognized. Child process killed." << std::endl;
             std::cout << "Error code: " << ec << std::endl;
             // Classify as deadlock
+
+            std::cout << "\n---------------- DEADLOCK -----------------\n\n" << std::endl;
         }
         //Sleep(30000);
     }
