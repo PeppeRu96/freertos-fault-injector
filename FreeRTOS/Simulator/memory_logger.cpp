@@ -54,6 +54,8 @@ char * get_data_struct_type(int dst) {
         return "Queue Set";
     case TYPE_STATIC_STACK:
         return "Static Stack";
+    case TYPE_LIST:
+        return "List";
     default:
         return "Invalid type";
     }

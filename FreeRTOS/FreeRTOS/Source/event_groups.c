@@ -775,3 +775,14 @@ static BaseType_t prvTestWaitCondition( const EventBits_t uxCurrentEventBits,
 
 #endif /* configUSE_TRACE_FACILITY */
 /*-----------------------------------------------------------*/
+
+    size_t getEventGroup_FixedSize()
+    {
+        return sizeof(EventGroup_t);
+    }
+
+    size_t getEventGroup_CurrentExplodedSize(EventGroupHandle_t xHandle)
+    {
+        EventGroup_t* o = (EventGroup_t*)xHandle;
+        return sizeof(*o);
+    }

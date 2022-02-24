@@ -1113,7 +1113,8 @@
     #endif /* configUSE_TRACE_FACILITY */
 /*-----------------------------------------------------------*/
 
-    void log_timers_struct(void) {
+    void log_timers_struct(void)
+    {
         log_struct("ActiveTimersList1", TYPE_LIST, &xActiveTimerList1);
         log_struct("ActiveTimersList2", TYPE_LIST, &xActiveTimerList2);
         log_struct("CurrentTimerList", TYPE_LIST, pxCurrentTimerList);
@@ -1122,6 +1123,17 @@
         log_struct("TimerQueue", TYPE_QUEUE_HANDLE, xTimerQueue);
         log_struct("TimerTaskHandle", TYPE_TASK_HANDLE, xTimerTaskHandle);
 
+    }
+
+    size_t getTimer_FixedSize()
+    {
+        return sizeof(xTIMER);
+    }
+
+    size_t getTimer_CurrentExplodedSize(TimerHandle_t xHandle)
+    {
+        xTIMER* p = (xTIMER*)xHandle;
+        return sizeof(*p);
     }
 
 /* This entire source file will be skipped if the application is not configured

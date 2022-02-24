@@ -1349,6 +1349,10 @@ BaseType_t xTimerGenericCommand( TimerHandle_t xTimer,
 
     void log_timers_struct(void);
 
+    size_t getTimer_FixedSize();
+
+    size_t getTimer_CurrentExplodedSize(TimerHandle_t xHandle);
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
     }

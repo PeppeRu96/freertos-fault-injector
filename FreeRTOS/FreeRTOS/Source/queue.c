@@ -3110,7 +3110,7 @@ size_t getQueue_FixedSize()
 size_t getQueue_CurrentExplodedSize(QueueHandle_t xHandle)
 {
     xQUEUE* q = (xQUEUE*)xHandle;
-    size_t static_struct_size = sizeof(xQUEUE);
+    size_t static_struct_size = sizeof(*q);
     size_t items_storage_size = abs(q->u.xQueue.pcTail - q->pcHead);
     return static_struct_size + items_storage_size;
 }

@@ -860,6 +860,10 @@ size_t xStreamBufferNextMessageLengthBytes( StreamBufferHandle_t xStreamBuffer )
     uint8_t ucStreamBufferGetStreamBufferType( StreamBufferHandle_t xStreamBuffer ) PRIVILEGED_FUNCTION;
 #endif
 
+size_t getStreamBuffer_FixedSize();
+
+size_t getStreamBuffer_CurrentExplodedSize(StreamBufferHandle_t xHandle);
+
 /* *INDENT-OFF* */
 #if defined( __cplusplus )
     }

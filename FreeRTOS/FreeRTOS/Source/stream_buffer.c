@@ -1305,3 +1305,15 @@ static void prvInitialiseNewStreamBuffer( StreamBuffer_t * const pxStreamBuffer,
 
 #endif /* configUSE_TRACE_FACILITY */
 /*-----------------------------------------------------------*/
+
+    size_t getStreamBuffer_FixedSize()
+    {
+        return sizeof(StreamBuffer_t);
+    }
+
+    size_t getStreamBuffer_CurrentExplodedSize(StreamBufferHandle_t xHandle)
+    {
+        StreamBuffer_t* p = (StreamBuffer_t*)xHandle;
+        return sizeof(*p);
+    }
+

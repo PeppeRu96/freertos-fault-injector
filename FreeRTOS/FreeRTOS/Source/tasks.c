@@ -5463,5 +5463,7 @@ size_t getTCB_FixedSize()
 size_t getTCB_CurrentExplodedSize(TaskHandle_t xHandle)
 {
     // TODO: Perform analysis on lists and vectors...
-    return sizeof(xHandle);
+
+    tskTCB* p = (tskTCB*)xHandle;
+    return sizeof(*p);
 }

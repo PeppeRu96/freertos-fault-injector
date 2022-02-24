@@ -2,6 +2,9 @@
 #include "task.h"
 #include "queue.h"
 #include "list.h"
+#include "timers.h"
+#include "event_groups.h"
+#include "stream_buffer.h"
 #include "memory_logger.h"
 
 size_t get_fixed_sizeof_struct(int type) {
@@ -12,22 +15,22 @@ size_t get_fixed_sizeof_struct(int type) {
 		return getQueue_FixedSize();
 	}
 	else if (type == TYPE_TIMER_HANDLE) {
-		return sizeof(StaticTimer_t);
+		return getTimer_FixedSize();
 	}
 	else if (type == TYPE_SEMAPHORE_HANDLE) {
-		return sizeof(StaticSemaphore_t);
+		return getQueue_FixedSize();
 	}
 	else if (type == TYPE_COUNT_SEMAPHORE) {
-		return sizeof(StaticQueue_t);
+		return getQueue_FixedSize();
 	}
 	else if (type == TYPE_EVENT_GROUP_HANDLE) {
-		return sizeof(StaticEventGroup_t);
+		return getEventGroup_FixedSize();
 	}
 	else if (type == TYPE_MESSAGE_BUFFER_HANDLE) {
-		return sizeof(StaticMessageBuffer_t);
+		return getStreamBuffer_FixedSize();
 	}
 	else if (type == TYPE_STREAM_BUFFER_HANDLE) {
-		return sizeof(StaticStreamBuffer_t);
+		return getStreamBuffer_FixedSize();
 	}
 	else if (type == TYPE_QUEUE_SET_HANDLE) {
 		return sizeof(StaticQueue_t);
@@ -36,7 +39,7 @@ size_t get_fixed_sizeof_struct(int type) {
 		return configMINIMAL_STACK_SIZE * 2;
 	}
 	else if (type == TYPE_LIST) {
-		return getLIST_FixedSize();
+		return getList_FixedSize();
 	}
 
 	return 0;
@@ -44,38 +47,38 @@ size_t get_fixed_sizeof_struct(int type) {
 
 size_t get_exploded_sizeof_struct(int type, void* ds) {
 	if (type == TYPE_TASK_HANDLE) {
-		return getTCB_FixedSize();
+		return getTCB_CurrentExplodedSize((TaskHandle_t)ds);
 	}
 	else if (type == TYPE_QUEUE_HANDLE) {
 		return getQueue_CurrentExplodedSize((QueueHandle_t)ds);
 	}
 	else if (type == TYPE_TIMER_HANDLE) {
-		return sizeof(StaticTimer_t);
+		return getTimer_CurrentExplodedSize((TimerHandle_t)ds);
 	}
 	else if (type == TYPE_SEMAPHORE_HANDLE) {
-		return sizeof(StaticSemaphore_t);
+		return getQueue_CurrentExplodedSize((QueueHandle_t)ds);
 	}
 	else if (type == TYPE_COUNT_SEMAPHORE) {
-		return sizeof(StaticQueue_t);
+		return getQueue_CurrentExplodedSize((QueueHandle_t)ds);
 	}
 	else if (type == TYPE_EVENT_GROUP_HANDLE) {
-		return sizeof(StaticEventGroup_t);
+		return getEventGroup_CurrentExplodedSize((EventGroupHandle_t)ds);
 	}
 	else if (type == TYPE_MESSAGE_BUFFER_HANDLE) {
-		return sizeof(StaticMessageBuffer_t);
+		return getStreamBuffer_CurrentExplodedSize((StreamBufferHandle_t)ds);
 	}
 	else if (type == TYPE_STREAM_BUFFER_HANDLE) {
-		return sizeof(StaticStreamBuffer_t);
+		return getStreamBuffer_CurrentExplodedSize((StreamBufferHandle_t)ds);
 	}
 	else if (type == TYPE_QUEUE_SET_HANDLE) {
-		return sizeof(StaticQueue_t);
+		return getQueue_CurrentExplodedSize((QueueHandle_t)ds);
 	}
 	else if (type == TYPE_STATIC_STACK) {
 		return configMINIMAL_STACK_SIZE * 2;
 	}
 	else if (type == TYPE_LIST) {
 		// TODO: expanded?
-		return getLIST_FixedSize();
+		return getList_CurrentExplodedSize((List_t *)ds);
 	}
 
 	return 0;

@@ -768,6 +768,10 @@ void vEventGroupClearBitsCallback( void * pvEventGroup,
                                UBaseType_t uxEventGroupNumber ) PRIVILEGED_FUNCTION;
 #endif
 
+    size_t getEventGroup_FixedSize();
+
+    size_t getEventGroup_CurrentExplodedSize(EventGroupHandle_t xHandle);
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
     }

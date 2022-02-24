@@ -93,6 +93,8 @@ static configSTACK_DEPTH_TYPE xBlockingStackSize = 0;
 
 static TaskHandle_t xTaskEchoServer1, xTaskEchoServer2, xTaskEchoClient1, xTaskEchoClient2;
 
+static MessageBufferHandle_t xEchoServerBuffer1, xEchoClientBuffer1, xEchoServerBuffer2, xEchoClientBuffer2;
+
 static volatile BaseType_t xTasksAlive = 4;
 
 typedef struct ECHO_PARAMETERS
@@ -125,9 +127,19 @@ void vStartMessageBufferTasks(configSTACK_DEPTH_TYPE xStackSize)
     echoNumber = 2;
     xTaskCreate(prvEchoServer, "2EchoServer", xBlockingStackSize, (void*)echoNumber, mbLOWER_PRIORITY2, &xTaskEchoServer2);
 
+    xEchoServerBuffer1 = xMessageBufferCreate(mbMESSAGE_BUFFER_LENGTH_BYTES);
+    xEchoClientBuffer1 = xMessageBufferCreate(mbMESSAGE_BUFFER_LENGTH_BYTES);
+    xEchoServerBuffer2 = xMessageBufferCreate(mbMESSAGE_BUFFER_LENGTH_BYTES); 
+    xEchoClientBuffer2 = xMessageBufferCreate(mbMESSAGE_BUFFER_LENGTH_BYTES);
+
     /* log the task handles */
     log_struct("MessageBuffer_TaskEchoServer1", TYPE_TASK_HANDLE, xTaskEchoServer1);
     log_struct("MessageBuffer_TaskEchoServer2", TYPE_TASK_HANDLE, xTaskEchoServer2);
+    log_struct("MessageBuffer_EchoServerBuffer_1", TYPE_MESSAGE_BUFFER_HANDLE, xEchoServerBuffer1);
+    log_struct("MessageBuffer_EchoClientBuffer_1", TYPE_MESSAGE_BUFFER_HANDLE, xEchoClientBuffer1);
+    log_struct("MessageBuffer_EchoServerBuffer_2", TYPE_MESSAGE_BUFFER_HANDLE, xEchoServerBuffer2);
+    log_struct("MessageBuffer_EchoClientBuffer_2", TYPE_MESSAGE_BUFFER_HANDLE, xEchoClientBuffer2);
+
 }
 /*-----------------------------------------------------------*/
 
@@ -213,14 +225,13 @@ static void prvEchoClient(void* pvParameters)
 
         console_print("MessageBuffer - Echo Client %d received back message \"%s\"\n", clientNumber, pcStringReceived);
 
-        configASSERT(strcmp(pcStringToSend, pcStringReceived) == 0);
+        configASSERTM(strcmp(pcStringToSend, pcStringReceived) == 0, "MessageBuffer ERROR - Client received a wrong echo message!");
     }
 }
 /*-----------------------------------------------------------*/
 
 static void prvEchoServer(void* pvParameters)
 {
-    char log_struct_name[200];
     MessageBufferHandle_t xTempMessageBuffer;
     size_t xReceivedLength;
     char* pcReceivedString;
@@ -235,16 +246,18 @@ static void prvEchoServer(void* pvParameters)
     /* Create the message buffer used to send data from the client to the server,
      * and the message buffer used to echo the data from the server back to the
      * client. */
-    xMessageBuffers.xEchoClientBuffer = xMessageBufferCreate(mbMESSAGE_BUFFER_LENGTH_BYTES);
-    xMessageBuffers.xEchoServerBuffer = xMessageBufferCreate(mbMESSAGE_BUFFER_LENGTH_BYTES);
+    if (echoNumber == 1)
+    {
+        xMessageBuffers.xEchoClientBuffer = xEchoClientBuffer1;
+        xMessageBuffers.xEchoServerBuffer = xEchoServerBuffer1;
+    }
+    else
+    {
+        xMessageBuffers.xEchoClientBuffer = xEchoClientBuffer2;
+        xMessageBuffers.xEchoServerBuffer = xEchoServerBuffer2;
+    }
     configASSERT(xMessageBuffers.xEchoClientBuffer);
     configASSERT(xMessageBuffers.xEchoServerBuffer);
-
-    // Log data structures
-    sprintf(log_struct_name, "MessageBuffer_EchoClientBuffer_%d", echoNumber);
-    log_struct(log_struct_name, TYPE_MESSAGE_BUFFER_HANDLE, xMessageBuffers.xEchoClientBuffer);
-    sprintf(log_struct_name, "MessageBuffer_EchoServerBuffer_%d", echoNumber);
-    log_struct(log_struct_name, TYPE_MESSAGE_BUFFER_HANDLE, xMessageBuffers.xEchoServerBuffer);
 
     /* Create the buffer into which received strings will be copied. */
     pcReceivedString = (char*)pvPortMalloc(mbMESSAGE_BUFFER_LENGTH_BYTES);
@@ -261,6 +274,8 @@ static void prvEchoServer(void* pvParameters)
     clientParameters.echoMessageBuffers = xMessageBuffers;
     clientParameters.echoClientNumber = echoNumber;
 
+    char assertMessage[200];
+
 
     /* Now the message buffers have been created the echo client task can be
      * created.  If this server task has the higher priority then the client task
@@ -268,15 +283,11 @@ static void prvEchoServer(void* pvParameters)
      * priority then the client task is created at the higher priority. */
     if (echoNumber == 1)
     {
-        xTaskCreate(prvEchoClient, "EchoClient", configMINIMAL_STACK_SIZE, (void*)&clientParameters, mbLOWER_PRIORITY1, &xTaskEchoClient1);
-        sprintf(log_struct_name, "MessageBuffer_EchoClientTCB_%d", echoNumber);
-        log_struct(log_struct_name, TYPE_TASK_HANDLE, xTaskEchoClient1);
+        xTaskCreate(prvEchoClient, "1EchoClient", configMINIMAL_STACK_SIZE, (void*)&clientParameters, mbLOWER_PRIORITY1, &xTaskEchoClient1);
     }
     else
     {
-        xTaskCreate(prvEchoClient, "EchoClient", configMINIMAL_STACK_SIZE, (void*)&clientParameters, mbHIGHER_PRIORITY2, &xTaskEchoClient2);
-        sprintf(log_struct_name, "MessageBuffer_EchoClientTCB_%d", echoNumber);
-        log_struct(log_struct_name, TYPE_TASK_HANDLE, xTaskEchoClient2);
+        xTaskCreate(prvEchoClient, "2EchoClient", configMINIMAL_STACK_SIZE, (void*)&clientParameters, mbHIGHER_PRIORITY2, &xTaskEchoClient2);
     }
 
     for (; ; )
@@ -302,9 +313,9 @@ static void prvEchoServer(void* pvParameters)
 
         /* Has any data been sent by the client? */
         xReceivedLength = xMessageBufferReceive(xMessageBuffers.xEchoClientBuffer, (void*)pcReceivedString, mbMESSAGE_BUFFER_LENGTH_BYTES, portMAX_DELAY);
-
+        sprintf(assertMessage, "MessageBuffer ERROR - Data received from client but actually received %d bytes!", xReceivedLength);
         /* Should always receive data as max delay was used. */
-        configASSERT(xReceivedLength > 0);
+        configASSERTM(xReceivedLength > 0, assertMessage);
 
         console_print("MessageBuffer - Echo Server %d received message \"%s\"\n", echoNumber, pcReceivedString);
 

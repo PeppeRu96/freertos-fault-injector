@@ -214,9 +214,12 @@ UBaseType_t uxListRemove( ListItem_t * const pxItemToRemove )
 }
 /*-----------------------------------------------------------*/
 
-size_t getLIST_FixedSize(void) {
+size_t getList_FixedSize(void)
+{
     return sizeof(List_t);
 }
-size_t list_item_size(void) {
-    return sizeof(ListItem_t);
+
+size_t getList_CurrentExplodedSize(List_t* xHandle)
+{
+    return sizeof(*xHandle);
 }
