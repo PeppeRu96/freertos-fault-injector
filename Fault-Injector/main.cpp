@@ -48,7 +48,43 @@ void menu(InjectConf &conf);
 SimulatorRun golden_run;
 std::error_code golden_run_ec;
 
-int main(int argc, char ** argv)
+int main()
+{
+    FILE* a = fopen("a.txt", "r");
+    FILE* b = fopen("b.txt", "r");
+    char lineA[200];
+    char lineB[200];
+    int i = 0;
+    int line = 1;
+
+    if (a == NULL || b == NULL) {
+        printf("error file\n");
+        exit(0);
+    }
+    while (fgets(lineA, 200, a) != NULL) {
+        fgets(lineB, 200, b);
+
+        //printf("%d\n", i++);
+
+        if (strcmp(lineA, lineB) != 0) {
+            printf("DIVERSI - %d\n", line);
+            printf("%s - %s\n", lineA, lineB);
+
+            i++;
+        }
+        line++;
+    }
+
+    if (i == 0) {
+        printf("UGUALI\n");
+    }
+    fclose(a);
+    fclose(b);
+
+    return 0;
+}
+
+int main3(int argc, char ** argv)
 {
     std::cout << "######### FreeRTOS FaultInjector v" << PROJECT_VER << " #########" << std::endl;
     std::cout << std::endl;
@@ -146,6 +182,8 @@ int main(int argc, char ** argv)
         }
         //Sleep(30000);
     }
+
+    return 0;
 }
 
 void menu(InjectConf &conf) {

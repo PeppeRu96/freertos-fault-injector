@@ -28,7 +28,8 @@
 #ifndef SEMAPHORE_TEST_H
 #define SEMAPHORE_TEST_H
 
-void vStartSemaphoreTasks( UBaseType_t uxPriority );
-BaseType_t xAreSemaphoreTasksStillRunning( void );
+void vStartSemaphoreTasks(UBaseType_t uxPriority);
+BaseType_t xAreSemaphoreTasksStillRunning(void);
+BaseType_t xAreSemaphoresAlive(void);
 
 #endif

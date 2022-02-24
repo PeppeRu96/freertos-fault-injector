@@ -36,8 +36,9 @@
 #ifndef EVENT_GROUPS_DEMO_H
 #define EVENT_GROUPS_DEMO_H
 
-void vStartEventGroupTasks( void );
-BaseType_t xAreEventGroupTasksStillRunning( void );
-void vPeriodicEventGroupsProcessing( void );
+void vStartEventGroupTasks(void);
+BaseType_t xAreEventGroupTasksStillRunning(void);
+BaseType_t xAreEventGroupTasksAlive(void);
+void vPeriodicEventGroupsProcessing(void);
 
 #endif /* EVENT_GROUPS_DEMO_H */

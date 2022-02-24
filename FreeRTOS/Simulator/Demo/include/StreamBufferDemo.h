@@ -28,8 +28,9 @@
 #ifndef STREAM_BUFFER_TEST_H
 #define STREAM_BUFFER_TEST_H
 
-void vStartStreamBufferTasks( void );
-BaseType_t xAreStreamBufferTasksStillRunning( void );
-void vPeriodicStreamBufferProcessing( void );
+void vStartStreamBufferTasks(void);
+BaseType_t xAreStreamBufferTasksStillRunning(void);
+void vPeriodicStreamBufferProcessing(void);
 
+BaseType_t xAreStreamBuffersAlive(void);
 #endif /* STREAM_BUFFER_TEST_H */

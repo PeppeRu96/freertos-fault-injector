@@ -28,8 +28,9 @@
 #ifndef QUEUE_WAIT_MULTIPLE_H
 #define QUEUE_WAIT_MULTIPLE_H
 
-void vStartQueueSetTasks( void );
-BaseType_t xAreQueueSetTasksStillRunning( void );
-void vQueueSetAccessQueueSetFromISR( void );
+void vStartQueueSetTasks(void);
+BaseType_t xAreQueueSetTasksStillRunning(void);
+void vQueueSetAccessQueueSetFromISR(void);
+BaseType_t xAreQueueSetsAlive(void);
 
 #endif /* QUEUE_WAIT_MULTIPLE_H */

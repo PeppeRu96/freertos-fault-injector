@@ -59,9 +59,14 @@
 #include "sync.h"
 
 /* Priorities at which the tasks are created. */
-#define mainCHECK_TASK_PRIORITY			( configMAX_PRIORITIES - 2 )
-#define mainQUEUE_POLL_PRIORITY			( tskIDLE_PRIORITY + 2 )
+//#define mainCHECK_TASK_PRIORITY			( configMAX_PRIORITIES - 2 )
+#define mainCHECK_TASK_PRIORITY			( configMAX_PRIORITIES - 1 )
+//#define mainQUEUE_POLL_PRIORITY			( tskIDLE_PRIORITY + 2 )
+#define mainQUEUE_POLL_PRIORITY			( tskIDLE_PRIORITY )
+
+//#define mainSEM_TEST_PRIORITY			( tskIDLE_PRIORITY + 1 )
 #define mainSEM_TEST_PRIORITY			( tskIDLE_PRIORITY + 1 )
+
 #define mainBLOCK_Q_PRIORITY			( tskIDLE_PRIORITY + 2 )
 #define mainCREATOR_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
 #define mainFLASH_TASK_PRIORITY			( tskIDLE_PRIORITY + 1 )

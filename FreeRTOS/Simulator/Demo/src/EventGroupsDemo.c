@@ -171,6 +171,7 @@ static EventGroupHandle_t xISREventGroup = NULL;
 /* Handles to the tasks that only take part in the synchronisation calls. */
 static TaskHandle_t xSyncTask1 = NULL, xSyncTask2 = NULL, xTestMasterTask;
 
+static volatile BaseType_t xTasksAlive = 2; //TestMaster, TestSlave
 /*-----------------------------------------------------------*/
 
 void vStartEventGroupTasks( void )
@@ -208,7 +209,6 @@ void vStartEventGroupTasks( void )
     log_struct("EventGroups_SyncTask2", TYPE_TASK_HANDLE, xSyncTask2);
 
     /* log the event group handles */
-    //log_struct("EventGroups_EventGroup", TYPE_EVENT_GROUP_HANDLE, xEventGroup);
     log_struct("EventGroups_EventGroupISR", TYPE_EVENT_GROUP_HANDLE, xISREventGroup);
 }
 /*-----------------------------------------------------------*/
@@ -216,6 +216,8 @@ void vStartEventGroupTasks( void )
 static void prvTestMasterTask( void * pvParameters )
 {
     BaseType_t xError;
+    int32_t iEvent = 1;
+    const int32_t iMaxValue = 400;
 
 /* The handle to the slave task is passed in as the task parameter. */
     TaskHandle_t xTestSlaveTaskHandle = ( TaskHandle_t ) pvParameters;
@@ -224,53 +226,81 @@ static void prvTestMasterTask( void * pvParameters )
     ( void ) pvParameters;
 
     /* Create the event group used by the tasks ready for the initial tests. */
+    console_print("EVENTGROUP: Master create zero event.\n");
     xEventGroup = xEventGroupCreate();
     configASSERT( xEventGroup );
-
+    
     /* Perform the tests that block two tasks on different combinations of bits,
      * then set each bit in turn and check the correct tasks unblock at the correct
      * times. */
+    console_print("EVENTGROUP: Master push SelectiveBitsTest on zero event.\n");
     xError = prvSelectiveBitsTestMasterFunction();
+    if (xError == pdTRUE) {
+        console_print("EVENTGROUP - ERROR: Task blocked on first Selective bits!\n");
+    }
 
     for( ; ; )
     {
+        if (iEvent > iMaxValue) {
+            console_print("EVENTGROUP: Master stopped.\n");
+            xTasksAlive--;
+            vTaskDelete(NULL);
+        }
+
         /* Recreate the event group ready for the next cycle. */
+        console_print("EVENTGROUP: Master create event %d\n", iEvent);
         xEventGroup = xEventGroupCreate();
         configASSERT( xEventGroup );
-
+        
         /* Perform the tests that check the behaviour when a single task is
          * blocked on various combinations of event bits. */
+        console_print("EVENTGROUP: Master %d push BitCombinationTest to Slave.\n");
+
         xError = prvBitCombinationTestMasterFunction( xError, xTestSlaveTaskHandle );
+        if (xError == pdTRUE) {
+            console_print("EVENTGROUP - ERROR: BitCombinationTest failed on event %d!\n", iEvent);
+        }
 
         /* Perform the task synchronisation tests. */
+        console_print("EVENTGROUP: Master %d push PerformTaskTest to Slave.\n");
+
         xError = prvPerformTaskSyncTests( xError, xTestSlaveTaskHandle );
+        if (xError == pdTRUE) {
+            console_print("EVENTGROUP - ERROR: PerformTaskSync failed on event %d!\n", iEvent);
+        }
 
         /* Delete the event group. */
         vEventGroupDelete( xEventGroup );
 
         /* Now all the other tasks should have completed and suspended
          * themselves ready for the next go around the loop. */
+        console_print("EVENTGROUP: Waiting for all the suspensions on event %d.\n", iEvent);
         if( eTaskGetState( xTestSlaveTaskHandle ) != eSuspended )
         {
+            console_print("EVENTGROUP - ERROR: Slave on event %d didn't suspend!\n", iEvent);
             xError = pdTRUE;
         }
 
         if( eTaskGetState( xSyncTask1 ) != eSuspended )
         {
+            console_print("EVENTGROUP - ERROR: Task1 on event %d didn't suspend!\n", iEvent);
             xError = pdTRUE;
         }
 
         if( eTaskGetState( xSyncTask2 ) != eSuspended )
         {
+            console_print("EVENTGROUP - ERROR: Task2 on event %d didn't suspend!\n", iEvent);
             xError = pdTRUE;
         }
 
         /* Only increment the cycle variable if no errors have been detected. */
         if( xError == pdFALSE )
         {
+            console_print("EVENTGROUP: Master %d event completed without errors.\n");
             ulTestMasterCycles++;
         }
 
+        iEvent++;
         configASSERT( xError == pdFALSE );
     }
 }
@@ -296,6 +326,7 @@ static void prvSyncTask( void * pvParameters )
          * master' task, which is responsible for taking this task out of the
          * Suspended state when it is time to test the synchronisation behaviour.
          * See: http://www.freertos.org/xEventGroupSync.html. */
+        console_print("EVENTBUFFER: SyncTask waiting Test Master first suspension.\n");
         vTaskSuspend( NULL );
 
         /* Set the bit that indicates this task is at the synchronisation
@@ -328,7 +359,9 @@ static void prvSyncTask( void * pvParameters )
         ( void ) uxReturned;
 
         /* Wait until the 'test master' task unsuspends this task again. */
+        console_print("EVENTBUFFER: SyncTask waiting Test Master second suspension.\n");
         vTaskSuspend( NULL );
+        
 
         /* Set the bit that indicates this task is at the synchronisation
          *  point again.  This time the 'test master' task has a higher priority
@@ -353,12 +386,20 @@ static void prvTestSlaveTask( void * pvParameters )
 {
     EventBits_t uxReturned;
     BaseType_t xError = pdFALSE;
+    int32_t iEvent = 1;
+    const int32_t iMaxValue = 400;
 
     /* Avoid compiler warnings. */
     ( void ) pvParameters;
 
     for( ; ; )
     {
+        if (iEvent > iMaxValue) {
+            console_print("EVENTGROUP: Slave stopped.\n");
+            xTasksAlive--;
+            vTaskDelete(NULL);
+        }
+
         /**********************************************************************
          * Part 1:  This section is the counterpart to the
          * prvBitCombinationTestMasterFunction() function which is called by the
@@ -368,10 +409,12 @@ static void prvTestSlaveTask( void * pvParameters )
          * This task is controller by the 'test master' task (which is
          * implemented by prvTestMasterTask()).  Suspend until resumed by the
          * 'test master' task. */
+        console_print("EVENTGROUP: Slave %d waiting for BitCombination Test\n", iEvent);
         vTaskSuspend( NULL );
 
         /* Wait indefinitely for one of the bits in ebCOMBINED_BITS to get
          * set.  Clear the bit on exit. */
+        console_print("EVENTGROUP: Slave %d processing BitCombinationTest first step.\n", iEvent);
         uxReturned = xEventGroupWaitBits( xEventGroup,     /* The event group that contains the event bits being queried. */
                                           ebBIT_1,         /* The bit to wait for. */
                                           pdTRUE,          /* Clear the bit on exit. */
@@ -385,6 +428,7 @@ static void prvTestSlaveTask( void * pvParameters )
          * the current state of the event bits will have ebBIT_1 clear.  */
         if( uxReturned != ebCOMBINED_BITS )
         {
+            console_print("EVENTGROUP - ERROR: BitCombinationTest first step failed on Slave %d!\n",iEvent);
             xError = pdTRUE;
         }
 
@@ -392,6 +436,7 @@ static void prvTestSlaveTask( void * pvParameters )
          * bits in ebCOMBINED_BITS to be set.  This call should block until the
          * 'test master' task sets ebBIT_1 - which was the bit cleared in the call
          * to xEventGroupWaitBits() above. */
+        console_print("EVENTGROUP: Slave %d processing BitCombinationTest second step.\n", iEvent);
         uxReturned = xEventGroupWaitBits( xEventGroup,
                                           ebCOMBINED_BITS, /* The bits being waited on. */
                                           pdFALSE,         /* Don't clear the bits on exit. */
@@ -401,6 +446,7 @@ static void prvTestSlaveTask( void * pvParameters )
         /* Were all the bits set? */
         if( ( uxReturned & ebCOMBINED_BITS ) != ebCOMBINED_BITS )
         {
+            console_print("EVENTGROUP - ERROR: BitCombinationTest second step failed on Slave %d!\n", iEvent);
             xError = pdTRUE;
         }
 
@@ -410,6 +456,7 @@ static void prvTestSlaveTask( void * pvParameters )
         /* Now call xEventGroupWaitBits() again, again waiting for all the bits
          * in ebCOMBINED_BITS to be set, but this time clearing the bits when the
          * task is unblocked. */
+        console_print("EVENTGROUP: Slave %d processing BitCombinationTest third step.\n", iEvent);
         uxReturned = xEventGroupWaitBits( xEventGroup,
                                           ebCOMBINED_BITS, /* The bits being waited on. */
                                           pdTRUE,          /* Clear the bits on exit. */
@@ -422,6 +469,7 @@ static void prvTestSlaveTask( void * pvParameters )
          * as 'clear on exit' was set to pdTRUE. */
         if( uxReturned != ebALL_BITS )
         {
+            console_print("EVENTGROUP - ERROR: BitCombinationTest third step failed on Slave %d!\n", iEvent);
             xError = pdTRUE;
         }
 
@@ -434,11 +482,13 @@ static void prvTestSlaveTask( void * pvParameters )
          *
          * Once again wait for the 'test master' task to unsuspend this task
          * when it is time for the next test. */
+        console_print("EVENTGROUP: Slave %d waiting for PerformTaskSync.\n", iEvent);
         vTaskSuspend( NULL );
 
         /* Now peform a synchronisation with all the other tasks.  At this point
          * the 'test master' task has the lowest priority so will get to the sync
          * point after all the other synchronising tasks. */
+        console_print("EVENTGROUP: Slave %d processing PerformTaskSync.\n", iEvent);
         uxReturned = xEventGroupSync( xEventGroup,              /* The event group used for the sync. */
                                       ebWAIT_BIT_TASK_SYNC_BIT, /* The bit in the event group used to indicate this task is at the sync point. */
                                       ebALL_SYNC_BITS,          /* The bits to wait for.  These bits are set by the other tasks taking part in the sync. */
@@ -448,6 +498,7 @@ static void prvTestSlaveTask( void * pvParameters )
          * bits are set... */
         if( ( uxReturned & ebALL_SYNC_BITS ) != ebALL_SYNC_BITS )
         {
+            console_print("EVENTGROUP - ERROR: Bits on PerformTaskSync are not setted on Slave %d!\n", iEvent);
             xError = pdTRUE;
         }
 
@@ -457,17 +508,20 @@ static void prvTestSlaveTask( void * pvParameters )
          * then leave all the bits clear. */
         if( xEventGroupSetBits( xEventGroup, 0x00 ) != 0 )
         {
+            console_print("EVENTGROUP - ERROR: All bits on PerformTaskSync aren't setted to 0 on Slave %d!\n", iEvent);
             xError = pdTRUE;
         }
 
         /* Check the bits are indeed 0 now by simply reading then. */
         if( xEventGroupGetBits( xEventGroup ) != 0 )
         {
+            console_print("EVENTGROUP - ERROR: All bits on PerformTaskSync aren't 0 on Slave %d!\n", iEvent);
             xError = pdTRUE;
         }
 
         if( xError == pdFALSE )
         {
+            console_print("EVENTGROUP: Slave %d event completed without errors.\n");
             /* This task is still cycling without finding an error. */
             ulTestSlaveCycles++;
         }
@@ -477,28 +531,33 @@ static void prvTestSlaveTask( void * pvParameters )
         /* This time sync when the 'test master' task has the highest priority
          * at the point where it sets its sync bit - so this time the 'test master'
          * task will get to the sync point before this task. */
+        console_print("EVENTGROUP: Start first sync on Slave %d.\n");
         uxReturned = xEventGroupSync( xEventGroup, ebWAIT_BIT_TASK_SYNC_BIT, ebALL_SYNC_BITS, portMAX_DELAY );
 
         /* A sync with a max delay should only exit when all the synchronisation
          * bits are set... */
         if( ( uxReturned & ebALL_SYNC_BITS ) != ebALL_SYNC_BITS )
         {
+            console_print("EVENTGROUP - ERROR: First Sync failed on Slave %d!\n", iEvent);
             xError = pdTRUE;
         }
 
         /* ...but now the sync bits should be clear again. */
         if( xEventGroupSetBits( xEventGroup, 0x00 ) != 0 )
         {
+            console_print("EVENTGROUP - ERROR: First Sync failed on Slave %d!\n", iEvent);
             xError = pdTRUE;
         }
 
         /* Block on the event group again.  This time the event group is going
          * to be deleted while this task is blocked on it, so it is expected that 0
          * will be returned. */
+        console_print("EVENTGROUP: Start second sync on Slave %d.\n");
         uxReturned = xEventGroupWaitBits( xEventGroup, ebALL_SYNC_BITS, pdFALSE, pdTRUE, portMAX_DELAY );
 
         if( uxReturned != 0 )
         {
+            console_print("EVENTGROUP - ERROR: Second Sync failed on Slave %d!\n", iEvent);
             xError = pdTRUE;
         }
 
@@ -522,16 +581,19 @@ static BaseType_t prvPerformTaskSyncTests( BaseType_t xError,
      * expected to be in the suspended state at the start of the test. */
     if( eTaskGetState( xTestSlaveTaskHandle ) != eSuspended )
     {
+        console_print("EVENTGROUP - ERROR: Slave isn't suspended!\n");
         xError = pdTRUE;
     }
 
     if( eTaskGetState( xSyncTask1 ) != eSuspended )
     {
+        console_print("EVENTGROUP - ERROR: Task1 isn't suspended!\n");
         xError = pdTRUE;
     }
 
     if( eTaskGetState( xSyncTask2 ) != eSuspended )
     {
+        console_print("EVENTGROUP - ERROR: Task2 isn't suspended!\n");
         xError = pdTRUE;
     }
 
@@ -540,6 +602,7 @@ static BaseType_t prvPerformTaskSyncTests( BaseType_t xError,
     xEventGroupSetBits( xEventGroup, ( ebALL_SYNC_BITS & ~ebSET_BIT_TASK_SYNC_BIT ) );
 
     /* Then wait on just one bit - the bit that is being set. */
+    console_print("EVENTBUFFER: PerformTaskSync waitning for synchronizing.\n");
     uxBits = xEventGroupSync( xEventGroup,             /* The event group used for the synchronisation. */
                               ebSET_BIT_TASK_SYNC_BIT, /* The bit set by this task when it reaches the sync point. */
                               ebSET_BIT_TASK_SYNC_BIT, /* The bits to wait for - in this case it is just waiting for itself. */
@@ -550,6 +613,7 @@ static BaseType_t prvPerformTaskSyncTests( BaseType_t xError,
      * sync bit anyway. */
     if( ( uxBits & ebSET_BIT_TASK_SYNC_BIT ) != ebSET_BIT_TASK_SYNC_BIT )
     {
+        console_print("EVENTGROUP - ERROR: All the synchronise bits aren't set!\n");
         xError = pdTRUE;
     }
 
@@ -557,6 +621,7 @@ static BaseType_t prvPerformTaskSyncTests( BaseType_t xError,
      * bits set (as only one bit was being waited for). */
     if( xEventGroupGetBits( xEventGroup ) != ( ebALL_SYNC_BITS & ~ebSET_BIT_TASK_SYNC_BIT ) )
     {
+        console_print("EVENTGROUP - ERROR: All the synchronise bits aren't cleared!\n");
         xError = pdTRUE;
     }
 
@@ -565,31 +630,37 @@ static BaseType_t prvPerformTaskSyncTests( BaseType_t xError,
 
     if( xEventGroupGetBits( xEventGroup ) != 0 )
     {
+        console_print("EVENTGROUP - ERROR: All the synchronise bits aren't 0!\n");
         xError = pdTRUE;
     }
 
     /* Unsuspend the other tasks then check they have executed up to the
      * synchronisation point. */
+    console_print("EVENTBUFFER: PerformTaskSync first resuming tasks.\n");
     vTaskResume( xTestSlaveTaskHandle );
     vTaskResume( xSyncTask1 );
     vTaskResume( xSyncTask2 );
 
     if( eTaskGetState( xTestSlaveTaskHandle ) != eBlocked )
     {
+        console_print("EVENTGROUP - ERROR: Slave isn't blocked!\n");
         xError = pdTRUE;
     }
 
     if( eTaskGetState( xSyncTask1 ) != eBlocked )
     {
+        console_print("EVENTGROUP - ERROR: Task1 isn't blocked!\n");
         xError = pdTRUE;
     }
 
     if( eTaskGetState( xSyncTask2 ) != eBlocked )
     {
+        console_print("EVENTGROUP - ERROR: Task2 isn't blocked!\n");
         xError = pdTRUE;
     }
 
     /* Set this task's sync bit. */
+    console_print("EVENTBUFFER: PerformTaskSync first synchronizing.\n");
     uxBits = xEventGroupSync( xEventGroup,             /* The event group used for the synchronisation. */
                               ebSET_BIT_TASK_SYNC_BIT, /* The bit set by this task when it reaches the sync point. */
                               ebALL_SYNC_BITS,         /* The bits to wait for - these bits are set by the other tasks that take part in the sync. */
@@ -599,12 +670,14 @@ static BaseType_t prvPerformTaskSyncTests( BaseType_t xError,
      * bits are set...check that is the case. */
     if( ( uxBits & ebALL_SYNC_BITS ) != ebALL_SYNC_BITS )
     {
+        console_print("EVENTGROUP - ERROR: All the synchronise bits aren't set!\n");
         xError = pdTRUE;
     }
 
     /* ...but now the sync bits should be clear again. */
     if( xEventGroupGetBits( xEventGroup ) != 0 )
     {
+        console_print("EVENTGROUP - ERROR: All the synchronise bits aren't cleared!\n");
         xError = pdTRUE;
     }
 
@@ -612,16 +685,19 @@ static BaseType_t prvPerformTaskSyncTests( BaseType_t xError,
      * synchronisation. */
     if( eTaskGetState( xTestSlaveTaskHandle ) != eSuspended )
     {
+        console_print("EVENTGROUP - ERROR: Slave isn't suspended!\n");
         xError = pdTRUE;
     }
 
     if( eTaskGetState( xSyncTask1 ) != eSuspended )
     {
+        console_print("EVENTGROUP - ERROR: Task1 isn't suspended!\n");
         xError = pdTRUE;
     }
 
     if( eTaskGetState( xSyncTask2 ) != eSuspended )
     {
+        console_print("EVENTGROUP - ERROR: Task2 isn't suspended!\n");
         xError = pdTRUE;
     }
 
@@ -629,41 +705,49 @@ static BaseType_t prvPerformTaskSyncTests( BaseType_t xError,
      * highest priority task, rather than the lowest priority task.  Unsuspend
      * the other tasks then check they have executed up to the	synchronisation
      * point. */
+    console_print("EVENTBUFFER: PerformTaskSync second resuming tasks.\n");
     vTaskResume( xTestSlaveTaskHandle );
     vTaskResume( xSyncTask1 );
     vTaskResume( xSyncTask2 );
 
     if( eTaskGetState( xTestSlaveTaskHandle ) != eBlocked )
     {
+        console_print("EVENTGROUP - ERROR: Slave isn't blocked!\n");
         xError = pdTRUE;
     }
 
     if( eTaskGetState( xSyncTask1 ) != eBlocked )
     {
+        console_print("EVENTGROUP - ERROR: Task1 isn't blocked!\n");
         xError = pdTRUE;
     }
 
     if( eTaskGetState( xSyncTask2 ) != eBlocked )
     {
+        console_print("EVENTGROUP - ERROR: Task2 isn't blocked!\n");
         xError = pdTRUE;
     }
 
     /* Raise the priority of this task above that of the other tasks. */
+    console_print("EVENTGROUP: PerformTaskSync raises priority!\n");
     vTaskPrioritySet( NULL, ebWAIT_BIT_TASK_PRIORITY + 1 );
 
     /* Set this task's sync bit. */
+    console_print("EVENTBUFFER: PerformTaskSync second synchronizing.\n");
     uxBits = xEventGroupSync( xEventGroup, ebSET_BIT_TASK_SYNC_BIT, ebALL_SYNC_BITS, portMAX_DELAY );
 
     /* A sync with a max delay should only exit when all the synchronisation
      * bits are set... */
     if( ( uxBits & ebALL_SYNC_BITS ) != ebALL_SYNC_BITS )
     {
+        console_print("EVENTGROUP - ERROR: All the synchronise bits aren't set!\n");
         xError = pdTRUE;
     }
 
     /* ...but now the sync bits should be clear again. */
     if( xEventGroupGetBits( xEventGroup ) != 0 )
     {
+        console_print("EVENTGROUP - ERROR: All the synchronise bits aren't cleared!\n");
         xError = pdTRUE;
     }
 
@@ -671,36 +755,43 @@ static BaseType_t prvPerformTaskSyncTests( BaseType_t xError,
      * executed yet as this task still has a higher relative priority. */
     if( eTaskGetState( xTestSlaveTaskHandle ) != eReady )
     {
+        console_print("EVENTGROUP - ERROR: Slave isn't ready!\n");
         xError = pdTRUE;
     }
 
     if( eTaskGetState( xSyncTask1 ) != eReady )
     {
+        console_print("EVENTGROUP - ERROR: Task1 isn't ready!\n");
         xError = pdTRUE;
     }
 
     if( eTaskGetState( xSyncTask2 ) != eReady )
     {
+        console_print("EVENTGROUP - ERROR: Task2 isn't ready!\n");
         xError = pdTRUE;
     }
 
     /* Reset the priority of this task back to its original value. */
+    console_print("EVENTGROUP: PerformTaskSync resets priority!\n");
     vTaskPrioritySet( NULL, ebSET_BIT_TASK_PRIORITY );
 
     /* Now all the other tasks should have reblocked on the event bits
      * to test the behaviour when the event bits are deleted. */
     if( eTaskGetState( xTestSlaveTaskHandle ) != eBlocked )
     {
+        console_print("EVENTGROUP - ERROR: Slave isn't blocked!\n");
         xError = pdTRUE;
     }
 
     if( eTaskGetState( xSyncTask1 ) != eBlocked )
     {
+        console_print("EVENTGROUP - ERROR: Task1 isn't blocked!\n");
         xError = pdTRUE;
     }
 
     if( eTaskGetState( xSyncTask2 ) != eBlocked )
     {
+        console_print("EVENTGROUP - ERROR: Task2 isn't blocked!\n");
         xError = pdTRUE;
     }
 
@@ -1066,4 +1157,8 @@ BaseType_t xAreEventGroupTasksStillRunning( void )
     ulPreviousISRCycles = ulISRCycles;
 
     return xStatus;
+}
+
+BaseType_t xAreEventGroupTasksAlive(void) {
+    return xTasksAlive != 0;
 }

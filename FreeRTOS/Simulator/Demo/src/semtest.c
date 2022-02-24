@@ -60,8 +60,8 @@
 #include "semtest.h"
 
 /* The value to which the shared variables are counted. */
-#define semtstBLOCKING_EXPECTED_VALUE        ( ( uint32_t ) 0xfff )
-#define semtstNON_BLOCKING_EXPECTED_VALUE    ( ( uint32_t ) 0xff )
+#define semtstBLOCKING_EXPECTED_VALUE        ( ( uint32_t ) 0x100 ) /* 256 */
+#define semtstNON_BLOCKING_EXPECTED_VALUE    ( ( uint32_t ) 0x80 ) /* 128 */
 
 #define semtstSTACK_SIZE                     configMINIMAL_STACK_SIZE
 
@@ -78,11 +78,15 @@ typedef struct SEMAPHORE_PARAMETERS
     SemaphoreHandle_t xSemaphore;
     volatile uint32_t * pulSharedVariable;
     TickType_t xBlockTime;
+    char* semType;
 } xSemaphoreParameters;
 
 /* Variables used to check that all the tasks are still running without errors. */
 static volatile short sCheckVariables[ semtstNUM_TASKS ] = { 0 };
 static volatile short sNextCheckVariable = 0;
+short sMaxIterations = 1;
+static short sTasksAlive[semtstNUM_TASKS] = { (uint16_t)1 };
+
 
 /* TaskHandle_t for tasks */
 static TaskHandle_t xTaskPolSEM1, xTaskPolSEM2, xTaskBlkSEM1, xTaskBlkSEM2;
@@ -116,9 +120,14 @@ void vStartSemaphoreTasks( UBaseType_t uxPriority )
             /* The first two tasks do not block on semaphore calls. */
             pxFirstSemaphoreParameters->xBlockTime = ( TickType_t ) 0;
 
+            pxFirstSemaphoreParameters->semType = "polling";
+
             /* Spawn the first two tasks.  As they poll they operate at the idle priority. */
-            xTaskCreate( prvSemaphoreTest, "PolSEM1", semtstSTACK_SIZE, ( void * ) pxFirstSemaphoreParameters, tskIDLE_PRIORITY, &xTaskPolSEM1 );
-            xTaskCreate( prvSemaphoreTest, "PolSEM2", semtstSTACK_SIZE, ( void * ) pxFirstSemaphoreParameters, tskIDLE_PRIORITY, &xTaskPolSEM2 );
+            // xTaskCreate( prvSemaphoreTest, "PolSEM1", semtstSTACK_SIZE, ( void * ) pxFirstSemaphoreParameters, (UBaseType_t)7U, &xTaskPolSEM1 );
+            // xTaskCreate( prvSemaphoreTest, "PolSEM2", semtstSTACK_SIZE, ( void * ) pxFirstSemaphoreParameters, (UBaseType_t)8U, &xTaskPolSEM2 );
+
+            xTaskCreate(prvSemaphoreTest, "PolSEM1", semtstSTACK_SIZE, (void*)pxFirstSemaphoreParameters, (UBaseType_t)5U, &xTaskPolSEM1);
+            xTaskCreate(prvSemaphoreTest, "PolSEM2", semtstSTACK_SIZE, (void*)pxFirstSemaphoreParameters, (UBaseType_t)6U, &xTaskPolSEM2);
 
             /* vQueueAddToRegistry() adds the semaphore to the registry, if one
              * is in use.  The registry is provided as a means for kernel aware
@@ -146,8 +155,13 @@ void vStartSemaphoreTasks( UBaseType_t uxPriority )
             *( pxSecondSemaphoreParameters->pulSharedVariable ) = semtstBLOCKING_EXPECTED_VALUE;
             pxSecondSemaphoreParameters->xBlockTime = xBlockTime / portTICK_PERIOD_MS;
 
-            xTaskCreate( prvSemaphoreTest, "BlkSEM1", semtstSTACK_SIZE, ( void * ) pxSecondSemaphoreParameters, uxPriority, &xTaskBlkSEM1 );
-            xTaskCreate( prvSemaphoreTest, "BlkSEM2", semtstSTACK_SIZE, ( void * ) pxSecondSemaphoreParameters, uxPriority, &xTaskBlkSEM2 );
+            pxSecondSemaphoreParameters->semType = "blocking";
+
+            // xTaskCreate( prvSemaphoreTest, "BlkSEM1", semtstSTACK_SIZE, ( void * ) pxSecondSemaphoreParameters, uxPriority, &xTaskBlkSEM1 );
+            // xTaskCreate( prvSemaphoreTest, "BlkSEM2", semtstSTACK_SIZE, ( void * ) pxSecondSemaphoreParameters, uxPriority, &xTaskBlkSEM2 );
+
+            xTaskCreate(prvSemaphoreTest, "BlkSEM1", semtstSTACK_SIZE, (void*)pxSecondSemaphoreParameters, 7, &xTaskBlkSEM1);
+            xTaskCreate(prvSemaphoreTest, "BlkSEM2", semtstSTACK_SIZE, (void*)pxSecondSemaphoreParameters, 7, &xTaskBlkSEM2);
 
             /* vQueueAddToRegistry() adds the semaphore to the registry, if one
              * is in use.  The registry is provided as a means for kernel aware
@@ -177,6 +191,7 @@ static portTASK_FUNCTION( prvSemaphoreTest, pvParameters )
     volatile uint32_t * pulSharedVariable, ulExpectedValue;
     uint32_t ulCounter;
     short sError = pdFALSE, sCheckVariableToUse;
+    char* type;
 
     /* See which check variable to use.  sNextCheckVariable is not semaphore
      * protected! */
@@ -189,6 +204,8 @@ static portTASK_FUNCTION( prvSemaphoreTest, pvParameters )
      * variable being guarded. */
     pxParameters = ( xSemaphoreParameters * ) pvParameters;
     pulSharedVariable = pxParameters->pulSharedVariable;
+
+    type = pxParameters->semType;
 
     /* If we are blocking we use a much higher count to ensure loads of context
      * switches occur during the count. */
@@ -206,39 +223,55 @@ static portTASK_FUNCTION( prvSemaphoreTest, pvParameters )
         /* Try to obtain the semaphore. */
         if( xSemaphoreTake( pxParameters->xSemaphore, pxParameters->xBlockTime ) == pdPASS )
         {
+            console_print("SEMTEST (Task%d): %s semaphore obtained\n", sCheckVariableToUse, type);
+
             /* We have the semaphore and so expect any other tasks using the
              * shared variable to have left it in the state we expect to find
              * it. */
             if( *pulSharedVariable != ulExpectedValue )
             {
+                console_print("SEMTEST - ERROR (Task%d): found wrong value!\n", sCheckVariableToUse);
                 sError = pdTRUE;
             }
 
             /* Clear the variable, then count it back up to the expected value
              * before releasing the semaphore.  Would expect a context switch or
              * two during this time. */
+            console_print("SEMTEST (Task%d): cleared the variable\n", sCheckVariableToUse);
             for( ulCounter = ( uint32_t ) 0; ulCounter <= ulExpectedValue; ulCounter++ )
             {
                 *pulSharedVariable = ulCounter;
 
                 if( *pulSharedVariable != ulCounter )
                 {
+                    console_print("SEMTEST - ERROR (Task%d): wrong value during operations!\n", sCheckVariableToUse);
                     sError = pdTRUE;
+                }
+                else {
+                    console_print("SEMTEST (Task%d): correctly increased variable to value %d\n", sCheckVariableToUse, ulCounter);
                 }
             }
 
             /* Release the semaphore, and if no errors have occurred increment the check
              * variable. */
-            if( xSemaphoreGive( pxParameters->xSemaphore ) == pdFALSE )
+            if (xSemaphoreGive(pxParameters->xSemaphore) == pdFALSE)
             {
+                console_print("SEMTEST - ERROR (Task%d): failed to release %s semaphore!\n", sCheckVariableToUse, type);
                 sError = pdTRUE;
             }
+            else
+                console_print("SEMTEST (Task%d): %s semaphore released\n", sCheckVariableToUse, type);
 
             if( sError == pdFALSE )
             {
                 if( sCheckVariableToUse < semtstNUM_TASKS )
                 {
                     ( sCheckVariables[ sCheckVariableToUse ] )++;
+                    if (sCheckVariables[sCheckVariableToUse] == sMaxIterations) {
+                        console_print("SEMTEST (Task%d): task terminated\n", sCheckVariableToUse);
+                        sTasksAlive[sCheckVariableToUse] = 0;
+                        vTaskDelete(NULL);
+                    }
                 }
             }
 
@@ -254,6 +287,7 @@ static portTASK_FUNCTION( prvSemaphoreTest, pvParameters )
         }
         else
         {
+            console_print("SEMTEST (Task%d): could not get %s semaphore\n", sCheckVariableToUse, type);
             if( pxParameters->xBlockTime == ( TickType_t ) 0 )
             {
                 /* We have not got the semaphore yet, so no point using the
@@ -283,4 +317,9 @@ BaseType_t xAreSemaphoreTasksStillRunning( void )
     }
 
     return xReturn;
+}
+
+BaseType_t xAreSemaphoresAlive(void)
+{
+    return (sTasksAlive[0] + sTasksAlive[1] + sTasksAlive[2] + sTasksAlive[3]) != 0;
 }

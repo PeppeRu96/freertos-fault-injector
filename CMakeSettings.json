@@ -561,7 +561,7 @@
       "variables": [
         {
           "name": "TASK_CHECK",
-          "value": "true",
+          "value": "False",
           "type": "BOOL"
         },
         {
@@ -641,7 +641,7 @@
         },
         {
           "name": "TASK_BLOCKING_QUEUE",
-          "value": "False",
+          "value": "True",
           "type": "BOOL"
         },
         {
@@ -741,7 +741,7 @@
         },
         {
           "name": "TASK_SEM_TEST",
-          "value": "False",
+          "value": "True",
           "type": "BOOL"
         },
         {
