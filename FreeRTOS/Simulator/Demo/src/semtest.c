@@ -126,8 +126,8 @@ void vStartSemaphoreTasks( UBaseType_t uxPriority )
             // xTaskCreate( prvSemaphoreTest, "PolSEM1", semtstSTACK_SIZE, ( void * ) pxFirstSemaphoreParameters, (UBaseType_t)7U, &xTaskPolSEM1 );
             // xTaskCreate( prvSemaphoreTest, "PolSEM2", semtstSTACK_SIZE, ( void * ) pxFirstSemaphoreParameters, (UBaseType_t)8U, &xTaskPolSEM2 );
 
-            xTaskCreate(prvSemaphoreTest, "PolSEM1", semtstSTACK_SIZE, (void*)pxFirstSemaphoreParameters, (UBaseType_t)5U, &xTaskPolSEM1);
-            xTaskCreate(prvSemaphoreTest, "PolSEM2", semtstSTACK_SIZE, (void*)pxFirstSemaphoreParameters, (UBaseType_t)6U, &xTaskPolSEM2);
+            xTaskCreate(prvSemaphoreTest, "PolSEM1", semtstSTACK_SIZE, (void*)pxFirstSemaphoreParameters, (UBaseType_t)7U, &xTaskPolSEM1);
+            xTaskCreate(prvSemaphoreTest, "PolSEM2", semtstSTACK_SIZE, (void*)pxFirstSemaphoreParameters, (UBaseType_t)8U, &xTaskPolSEM2);
 
             /* vQueueAddToRegistry() adds the semaphore to the registry, if one
              * is in use.  The registry is provided as a means for kernel aware
@@ -160,8 +160,8 @@ void vStartSemaphoreTasks( UBaseType_t uxPriority )
             // xTaskCreate( prvSemaphoreTest, "BlkSEM1", semtstSTACK_SIZE, ( void * ) pxSecondSemaphoreParameters, uxPriority, &xTaskBlkSEM1 );
             // xTaskCreate( prvSemaphoreTest, "BlkSEM2", semtstSTACK_SIZE, ( void * ) pxSecondSemaphoreParameters, uxPriority, &xTaskBlkSEM2 );
 
-            xTaskCreate(prvSemaphoreTest, "BlkSEM1", semtstSTACK_SIZE, (void*)pxSecondSemaphoreParameters, 7, &xTaskBlkSEM1);
-            xTaskCreate(prvSemaphoreTest, "BlkSEM2", semtstSTACK_SIZE, (void*)pxSecondSemaphoreParameters, 7, &xTaskBlkSEM2);
+            xTaskCreate(prvSemaphoreTest, "BlkSEM1", semtstSTACK_SIZE, (void*)pxSecondSemaphoreParameters, 5, &xTaskBlkSEM1);
+            xTaskCreate(prvSemaphoreTest, "BlkSEM2", semtstSTACK_SIZE, (void*)pxSecondSemaphoreParameters, 6, &xTaskBlkSEM2);
 
             /* vQueueAddToRegistry() adds the semaphore to the registry, if one
              * is in use.  The registry is provided as a means for kernel aware

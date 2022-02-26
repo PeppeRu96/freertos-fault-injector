@@ -6,6 +6,9 @@
 #include <iomanip>
 #include <sstream>
 #include <stdio.h>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 void log_init(loguru::FileMode f_mode, std::string* fname) {
     loguru::g_stderr_verbosity = 1;
@@ -25,7 +28,7 @@ void log_init(loguru::FileMode f_mode, std::string* fname) {
     loguru::add_file(f_path.c_str(), f_mode, loguru::Verbosity_INFO);
 }
 
-void log_injection_trial(SimulatorRun& golden, SimulatorRun& sr, Injection& inj, std::error_code ec, SimulatorError se) {
+void log_injection_trial(SimulatorRun& golden, SimulatorRun& sr, Injection& inj, std::error_code ec, SimulatorError se, std::string error_pattern) {
     std::stringstream ss;
     
     sr.print_stats(true);
@@ -39,11 +42,22 @@ void log_injection_trial(SimulatorRun& golden, SimulatorRun& sr, Injection& inj,
         break;
     case SDC:
         RAW_LOG_F(INFO, "Simulator error:\t Silence Data Corruption");
-        // TODO: provide a difference output
+        if (error_pattern != "") {
+            if (sr.get_error_matched_str() != "") {
+                RAW_LOG_F(INFO, "Search for specific errors containing the string: %s ...\nFound matching string: %s", error_pattern.c_str(), sr.get_error_matched_str().c_str());
+            }
+            else {
+                RAW_LOG_F(INFO, "Search for specific errors containing the string: %s ...\nNot found\nUnexpected output: %s", error_pattern.c_str(), sr.get_error_matched_str().c_str());
+            }
+        }
+        else {
+            RAW_LOG_F(INFO, "Unexpected output: %s", sr.get_error_matched_str().c_str());
+        }
         break;
     case DELAY:
         RAW_LOG_F(INFO, "Simulator error:\t Delay");
-        // TODO: provide an explanation (task output uncorrect order?)
+        RAW_LOG_F(INFO, "The injected FreeRTOS simulator has produced the following output with a delay of %d operations:", sr.get_delay_amount());
+        RAW_LOG_F(INFO, "%s", sr.get_delayed_str().c_str());
         break;
     case HANG:
         RAW_LOG_F(INFO, "Simulator error:\t Hang");
@@ -90,4 +104,11 @@ void log_join(std::string fname) {
 
 }
 
+void create_data_dirs() {
+    fs::create_directory("output");
+    fs::create_directory("tmp");
+}
 
+void remove_tmp() {
+    fs::remove_all("tmp");
+}

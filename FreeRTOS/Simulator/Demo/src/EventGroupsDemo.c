@@ -189,10 +189,10 @@ void vStartEventGroupTasks( void )
      *
      * Create the test tasks as described at the top of this file.
      */
-    xTaskCreate( prvTestSlaveTask, "WaitO", ebRENDESVOUS_TEST_TASK_STACK_SIZE, NULL, ebWAIT_BIT_TASK_PRIORITY, &xTestSlaveTaskHandle );
-    xTaskCreate( prvTestMasterTask, "SetB", ebEVENT_GROUP_SET_BITS_TEST_TASK_STACK_SIZE, ( void * ) xTestSlaveTaskHandle, ebSET_BIT_TASK_PRIORITY, &xTestMasterTask );
-    xTaskCreate( prvSyncTask, "Rndv", ebRENDESVOUS_TEST_TASK_STACK_SIZE, ( void * ) ebRENDESVOUS_TASK_1_SYNC_BIT, ebWAIT_BIT_TASK_PRIORITY, &xSyncTask1 );
-    xTaskCreate( prvSyncTask, "Rndv", ebRENDESVOUS_TEST_TASK_STACK_SIZE, ( void * ) ebRENDESVOUS_TASK_2_SYNC_BIT, ebWAIT_BIT_TASK_PRIORITY, &xSyncTask2 );
+    xTaskCreate( prvTestSlaveTask, "WaitO", ebRENDESVOUS_TEST_TASK_STACK_SIZE, NULL, 1, &xTestSlaveTaskHandle );
+    xTaskCreate( prvTestMasterTask, "SetB", ebEVENT_GROUP_SET_BITS_TEST_TASK_STACK_SIZE, ( void * ) xTestSlaveTaskHandle, 0, &xTestMasterTask );
+    xTaskCreate( prvSyncTask, "Rndv", ebRENDESVOUS_TEST_TASK_STACK_SIZE, ( void * ) ebRENDESVOUS_TASK_1_SYNC_BIT, 1, &xSyncTask1 );
+    xTaskCreate( prvSyncTask, "Rndv", ebRENDESVOUS_TEST_TASK_STACK_SIZE, ( void * ) ebRENDESVOUS_TASK_2_SYNC_BIT, 1, &xSyncTask2 );
 
     /* If the last task was created then the others will have been too. */
     configASSERT( xSyncTask2 );

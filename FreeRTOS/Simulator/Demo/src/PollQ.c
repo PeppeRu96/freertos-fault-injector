@@ -109,8 +109,11 @@ void vStartPolledQueueTasks( UBaseType_t uxPriority )
         vQueueAddToRegistry( xPolledQueue, "Poll_Test_Queue" );
 
         /* Spawn the producer and consumer. */
-        xTaskCreate( vPolledQueueConsumer, "QConsNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, &xTaskQConsNB );
-        xTaskCreate( vPolledQueueProducer, "QProdNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, &xTaskQProdNB );
+        // xTaskCreate( vPolledQueueConsumer, "QConsNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, &xTaskQConsNB );
+        // xTaskCreate( vPolledQueueProducer, "QProdNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, &xTaskQProdNB );
+
+        xTaskCreate(vPolledQueueConsumer, "QConsNB", pollqSTACK_SIZE, (void*)&xPolledQueue, 0, &xTaskQConsNB);
+        xTaskCreate(vPolledQueueProducer, "QProdNB", pollqSTACK_SIZE, (void*)&xPolledQueue, 0, &xTaskQProdNB);
 
         /* log the queue handle */
         log_struct("PollQ_Queue", TYPE_QUEUE_HANDLE, xPolledQueue);

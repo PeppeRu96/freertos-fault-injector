@@ -49,7 +49,7 @@ void write_output_to_file(void) {
     std::string s1 = OUTPUT_FILE_PREFIX;
     std::string s2 = std::to_string(boost::interprocess::ipcdetail::get_current_process_id());
     std::string s3 = ".txt";
-    std::string path = s1 + s2 + s3;
+    std::string path = "output/" + s1 + s2 + s3;
 
     out_file.open(path);
     if (out_file.is_open()) {

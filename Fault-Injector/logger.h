@@ -10,8 +10,12 @@
 
 void log_init(loguru::FileMode f_mode, std::string* fname);
 
-void log_injection_trial(SimulatorRun& golden, SimulatorRun& sr, Injection& inj, std::error_code ec, SimulatorError se);
+void log_injection_trial(SimulatorRun& golden, SimulatorRun& sr, Injection& inj, std::error_code ec, SimulatorError se, std::string error_pattern);
 
 void log_join(std::string fname);
+
+void create_data_dirs();
+
+void remove_tmp();
 
 #endif

@@ -145,8 +145,11 @@ void vStartCountingSemaphoreTasks( void )
         vQueueAddToRegistry( ( QueueHandle_t ) xParameters[ 1 ].xSemaphore, "Counting_Sem_2" );
 
         /* Create the demo tasks, passing in the semaphore to use as the parameter. */
-        xTaskCreate( prvCountingSemaphoreTask, "CNT1", configMINIMAL_STACK_SIZE, ( void * ) &( xParameters[ 0 ] ), (UBaseType_t)5U, &xTaskCNT1 );
-        xTaskCreate( prvCountingSemaphoreTask, "CNT2", configMINIMAL_STACK_SIZE, ( void * ) &( xParameters[ 1 ] ), (UBaseType_t)6U, &xTaskCNT2 );
+        // xTaskCreate( prvCountingSemaphoreTask, "CNT1", configMINIMAL_STACK_SIZE, ( void * ) &( xParameters[ 0 ] ), (UBaseType_t)5U, &xTaskCNT1 );
+        // xTaskCreate( prvCountingSemaphoreTask, "CNT2", configMINIMAL_STACK_SIZE, ( void * ) &( xParameters[ 1 ] ), (UBaseType_t)6U, &xTaskCNT2 );
+
+        xTaskCreate(prvCountingSemaphoreTask, "CNT1", configMINIMAL_STACK_SIZE, (void*)&(xParameters[0]), (UBaseType_t)9U, &xTaskCNT1);
+        xTaskCreate(prvCountingSemaphoreTask, "CNT2", configMINIMAL_STACK_SIZE, (void*)&(xParameters[1]), (UBaseType_t)10U, &xTaskCNT2);
     }
 
     /* log the task handles */

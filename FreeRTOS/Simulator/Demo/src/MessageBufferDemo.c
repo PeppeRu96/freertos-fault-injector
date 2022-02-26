@@ -122,10 +122,13 @@ void vStartMessageBufferTasks(configSTACK_DEPTH_TYPE xStackSize)
      * the other has the client as the higher priority. */
 
     echoNumber = 1;
-    xTaskCreate(prvEchoServer, "1EchoServer", xBlockingStackSize, (void*)echoNumber, mbHIGHER_PRIORITY1, &xTaskEchoServer1);
+    // xTaskCreate(prvEchoServer, "1EchoServer", xBlockingStackSize, (void*)echoNumber, mbHIGHER_PRIORITY1, &xTaskEchoServer1);
+    xTaskCreate(prvEchoServer, "1EchoServer", xBlockingStackSize, (void*)echoNumber, 14, &xTaskEchoServer1);
 
     echoNumber = 2;
-    xTaskCreate(prvEchoServer, "2EchoServer", xBlockingStackSize, (void*)echoNumber, mbLOWER_PRIORITY2, &xTaskEchoServer2);
+    // xTaskCreate(prvEchoServer, "2EchoServer", xBlockingStackSize, (void*)echoNumber, mbLOWER_PRIORITY2, &xTaskEchoServer2);
+    xTaskCreate(prvEchoServer, "2EchoServer", xBlockingStackSize, (void*)echoNumber, 12, &xTaskEchoServer2);
+
 
     xEchoServerBuffer1 = xMessageBufferCreate(mbMESSAGE_BUFFER_LENGTH_BYTES);
     xEchoClientBuffer1 = xMessageBufferCreate(mbMESSAGE_BUFFER_LENGTH_BYTES);
@@ -162,6 +165,8 @@ static void prvEchoClient(void* pvParameters)
     EchoMessageBuffers_t pxMessageBuffers = parameters->echoMessageBuffers;
     uint32_t clientNumber = parameters->echoClientNumber;
 
+    BaseType_t xIterations;
+
     /* Prevent compiler warnings. */
     (void)pvParameters;
 
@@ -176,56 +181,56 @@ static void prvEchoClient(void* pvParameters)
 
     for (; ; )
     {
-        /* Generate the length of the next string to send. */
-        xSendLength++;
+        for (xIterations = 0; xIterations < 10; xIterations++) {
+            xSendLength = 0;
+            /* Generate the length of the next string to send. */
+            while (xSendLength != (mbMESSAGE_BUFFER_LENGTH_BYTES - sizeof(size_t))) {
+                xSendLength++;
 
 
-        /* The message buffer is being used to hold variable length data, so
-         * each data item requires sizeof( size_t ) bytes to hold the data's
-         * length, hence the sizeof() in the if() condition below. */
-        if (xSendLength > (mbMESSAGE_BUFFER_LENGTH_BYTES - sizeof(size_t)))
-        {
-            console_print("MessageBuffer - Echo Client %d terminated.\n", clientNumber);
-            xTasksAlive--;
-            vTaskDelete(NULL);
-        }
+                /* The message buffer is being used to hold variable length data, so
+                 * each data item requires sizeof( size_t ) bytes to hold the data's
+                 * length, hence the sizeof() in the if() condition below. */
+                console_print("MessageBuffer (It: %d) - Echo Client %d preparing to send a string of size %d\n", xIterations, clientNumber, xSendLength);
+                memset(pcStringToSend, 0x00, mbMESSAGE_BUFFER_LENGTH_BYTES);
 
+                for (ux = 0; ux < xSendLength; ux++)
+                {
+                    pcStringToSend[ux] = cNextChar;
 
-        console_print("MessageBuffer - Echo Client %d preparing to send a string of size %d\n", clientNumber, xSendLength);
-        memset(pcStringToSend, 0x00, mbMESSAGE_BUFFER_LENGTH_BYTES);
+                    cNextChar++;
 
-        for (ux = 0; ux < xSendLength; ux++)
-        {
-            pcStringToSend[ux] = cNextChar;
+                    if (cNextChar > mbASCII_TILDA)
+                    {
+                        cNextChar = mbASCII_SPACE;
+                    }
+                }
 
-            cNextChar++;
+                /* Send the generated string to the buffer. */
+                do
+                {
+                    ux = xMessageBufferSend(pxMessageBuffers.xEchoClientBuffer, (void*)pcStringToSend, xSendLength, xTicksToWait);
 
-            if (cNextChar > mbASCII_TILDA)
-            {
-                cNextChar = mbASCII_SPACE;
+                    if (ux == 0)
+                    {
+                        mtCOVERAGE_TEST_MARKER();
+                    }
+                } while (ux == 0);
+
+                console_print("MessageBuffer (It: %d) - Echo Client %d sent message \"%s\"\n", xIterations, clientNumber, pcStringToSend);
+
+                /* Wait for the string to be echoed back. */
+                memset(pcStringReceived, 0x00, mbMESSAGE_BUFFER_LENGTH_BYTES);
+                xMessageBufferReceive(pxMessageBuffers.xEchoServerBuffer, (void*)pcStringReceived, xSendLength, portMAX_DELAY);
+
+                console_print("MessageBuffer (It: %d) - Echo Client %d received back message \"%s\"\n", xIterations, clientNumber, pcStringReceived);
+
+                configASSERTM(strcmp(pcStringToSend, pcStringReceived) == 0, "MessageBuffer ERROR - Client received a wrong echo message!");
             }
         }
-
-        /* Send the generated string to the buffer. */
-        do
-        {
-            ux = xMessageBufferSend(pxMessageBuffers.xEchoClientBuffer, (void*)pcStringToSend, xSendLength, xTicksToWait);
-
-            if (ux == 0)
-            {
-                mtCOVERAGE_TEST_MARKER();
-            }
-        } while (ux == 0);
-
-        console_print("MessageBuffer - Echo Client %d sent message \"%s\"\n", clientNumber, pcStringToSend);
-
-        /* Wait for the string to be echoed back. */
-        memset(pcStringReceived, 0x00, mbMESSAGE_BUFFER_LENGTH_BYTES);
-        xMessageBufferReceive(pxMessageBuffers.xEchoServerBuffer, (void*)pcStringReceived, xSendLength, portMAX_DELAY);
-
-        console_print("MessageBuffer - Echo Client %d received back message \"%s\"\n", clientNumber, pcStringReceived);
-
-        configASSERTM(strcmp(pcStringToSend, pcStringReceived) == 0, "MessageBuffer ERROR - Client received a wrong echo message!");
+        console_print("MessageBuffer - Echo Client %d terminated.\n", clientNumber);
+        xTasksAlive--;
+        vTaskDelete(NULL);
     }
 }
 /*-----------------------------------------------------------*/
@@ -283,11 +288,13 @@ static void prvEchoServer(void* pvParameters)
      * priority then the client task is created at the higher priority. */
     if (echoNumber == 1)
     {
-        xTaskCreate(prvEchoClient, "1EchoClient", configMINIMAL_STACK_SIZE, (void*)&clientParameters, mbLOWER_PRIORITY1, &xTaskEchoClient1);
+        // xTaskCreate(prvEchoClient, "1EchoClient", configMINIMAL_STACK_SIZE, (void*)&clientParameters, mbLOWER_PRIORITY1, &xTaskEchoClient1);
+        xTaskCreate(prvEchoClient, "1EchoClient", configMINIMAL_STACK_SIZE, (void*)&clientParameters, 11, &xTaskEchoClient1);
     }
     else
     {
-        xTaskCreate(prvEchoClient, "2EchoClient", configMINIMAL_STACK_SIZE, (void*)&clientParameters, mbHIGHER_PRIORITY2, &xTaskEchoClient2);
+        // xTaskCreate(prvEchoClient, "2EchoClient", configMINIMAL_STACK_SIZE, (void*)&clientParameters, mbHIGHER_PRIORITY2, &xTaskEchoClient2);
+        xTaskCreate(prvEchoClient, "2EchoClient", configMINIMAL_STACK_SIZE, (void*)&clientParameters, 13, &xTaskEchoClient2);
     }
 
     for (; ; )

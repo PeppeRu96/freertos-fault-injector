@@ -9,6 +9,9 @@
 
 SimulatorRun::SimulatorRun() {
     this->loaded_duration = nullptr;
+    this->error_matched_str = "";
+    this->delayed_str = "";
+    this->delay_amount = 0;
 }
 
 SimulatorRun::~SimulatorRun() {
@@ -52,7 +55,7 @@ void SimulatorRun::read_data_structures() {
     std::string s1 = MEM_LOG_FILE_PREFIX;
     std::string s2 = std::to_string(this->c.id());
     std::string s3 = ".txt";
-    std::string path = s1 + s2 + s3;
+    std::string path = "tmp/" + s1 + s2 + s3;
     FILE *structures_log_fp = fopen(path.c_str(), "r");
 
     if (structures_log_fp == NULL) {
@@ -120,7 +123,8 @@ void SimulatorRun::terminate() {
 void SimulatorRun::save_output(int* pid) {
     std::ifstream output_file;
     std::string pid_str = pid != nullptr ? std::to_string(*pid) : std::to_string(this->c.id());
-    std::string path = OUTPUT_FILE_PREFIX + pid_str + ".txt";
+    std::string output_f_pref = OUTPUT_FILE_PREFIX;
+    std::string path = "output/" + output_f_pref + pid_str + ".txt";
     std::string line;
 
     output_file.open(path);
@@ -175,7 +179,7 @@ void SimulatorRun::print_stats(bool use_logger) {
     }
 }
 
-SimulatorError SimulatorRun::compare_with_golden(const SimulatorRun& golden) {
+SimulatorError SimulatorRun::compare_with_golden(const SimulatorRun& golden, std::string error_pattern) {
     // Output out-of-order -> Delay
     // Output different -> SDC
     // Output equal -> Masked
@@ -184,23 +188,52 @@ SimulatorError SimulatorRun::compare_with_golden(const SimulatorRun& golden) {
         return SDC;
 
     bool masked = true;
+    bool sdc = false;
     for (int i = 0; i < this->output.size(); i++) {
         if (this->output[i] == golden.output[i])
             continue;
         masked = false;
         bool out_of_order = false;
-        for (auto s : golden.output) {
-            if (this->output[i] == s) {
-                out_of_order = true;
-                break;
+        if (sdc == false) {
+            for (int j = 0; j < golden.output.size(); j++) {
+                if (this->output[i] == golden.output[j]) {
+                    if (j < i)
+                        if (this->delay_amount == 0 || this->delay_amount < i - j) {
+                            this->delayed_str = this->output[i];
+                            this->delay_amount = i - j;
+                        }
+                    out_of_order = true;
+                    break;
+                }
             }
         }
-        if (out_of_order == false)
-            return SDC;
+        if (out_of_order == false) {
+            std::string tmp1 = this->output[i];
+            std::string tmp2 = error_pattern;
+
+            std::for_each(tmp1.begin(), tmp1.end(), [](char& c) {
+                c = ::toupper(c);
+                });
+            std::for_each(tmp2.begin(), tmp2.end(), [](char& c) {
+                c = ::toupper(c);
+                });
+
+            if (error_pattern == "") {
+                this->error_matched_str = this->output[i];
+                return SDC;
+            }
+            else if (tmp1.find(tmp2, 0) != -1) {
+                this->error_matched_str = this->output[i];
+                return SDC;
+            }
+            sdc = true;
+        }
     }
     if (masked)
         return MASKED;
-    
+    if (sdc)
+        return SDC;
+
     return DELAY;
 }
 
@@ -233,3 +266,14 @@ bool SimulatorRun::is_running() {
     return this->c.running();
 }
 
+std::string SimulatorRun::get_error_matched_str() const {
+    return this->error_matched_str;
+}
+
+std::string SimulatorRun::get_delayed_str() const {
+    return this->delayed_str;
+}
+
+int SimulatorRun::get_delay_amount() const {
+    return delay_amount;
+}

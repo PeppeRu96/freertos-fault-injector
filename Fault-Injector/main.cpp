@@ -13,35 +13,17 @@
 #include "loguru.hpp"
 #include "logger.h"
 
-// PC fisso - Giuseppe
-//#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/"
-//#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/"
-//#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-FaultInjector/FreeRTOS/Simulator/"
-
-
-// PC portatile - Giuseppe
-//#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/";
-//#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/";
-#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-FaultInjector-Portatile/FreeRTOS/Simulator/";
-
-// Ubuntu - Giuseppe
-//#define SIMULATOR_FOLDER_PATH "/home/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
-
-// Mac - Giuseppe
-//#define SIMULATOR_FOLDER_PATH "/Users/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
-
 #define SIMULATOR_EXE_NAME      "FreeRTOS_Simulator"
 
-
-std::string sim_folder_path = SIMULATOR_FOLDER_PATH;
 std::string sim_exe_name = SIMULATOR_EXE_NAME;
-std::string sim_path = sim_folder_path + sim_exe_name;
+std::string sim_path = sim_exe_name;
 
 typedef struct {
     int struct_id;
     int inject_n;
     long long max_time_ms;
     bool parallelize;
+    std::string error_pattern;
 } InjectConf;
 
 void menu(InjectConf &conf);
@@ -55,46 +37,11 @@ void sequential_injections(InjectConf &conf);
 
 void parallel_injections(InjectConf& conf, char* exe_name);
 
-int main3()
-{
-    FILE* a = fopen("a.txt", "r");
-    FILE* b = fopen("b.txt", "r");
-    char lineA[200];
-    char lineB[200];
-    int i = 0;
-    int line = 1;
-
-    if (a == NULL || b == NULL) {
-        printf("error file\n");
-        exit(0);
-    }
-    while (fgets(lineA, 200, a) != NULL) {
-        fgets(lineB, 200, b);
-
-        //printf("%d\n", i++);
-
-        if (strcmp(lineA, lineB) != 0) {
-            printf("DIVERSI - %d\n", line);
-            printf("%s - %s\n", lineA, lineB);
-
-            i++;
-        }
-        line++;
-    }
-
-    if (i == 0) {
-        printf("UGUALI\n");
-    }
-    fclose(a);
-    fclose(b);
-
-    return 0;
-}
-
 int main(int argc, char ** argv)
 {
     InjectConf conf;
 
+    create_data_dirs();
 
     // Check if this process has been created from another process (parallelization)
     int golden_run_pid;
@@ -116,6 +63,10 @@ int main(int argc, char ** argv)
         conf.struct_id = atoi(argv[4]);
         conf.inject_n = atoi(argv[5]);
         conf.max_time_ms = atoi(argv[6]);
+        if (argc > 7)
+            conf.error_pattern = atoi(argv[7]);
+        else
+            conf.error_pattern = "";
 
         // Open temp log
         log_init(loguru::Truncate, &curr_pid);
@@ -141,7 +92,6 @@ int main(int argc, char ** argv)
         golden_run.init(sim_path);
         golden_run.start();
         golden_run_ec = golden_run.wait();
-        // Handle the case in which the golden execution fails for some reason (integrate the error handling)
         golden_run.save_output(nullptr);
         RAW_LOG_F(INFO, "Golden run stats:");
         golden_run.print_stats(true);
@@ -158,6 +108,8 @@ int main(int argc, char ** argv)
 
     }
 
+    remove_tmp();
+
     return 0;
 }
 
@@ -165,6 +117,7 @@ void menu(InjectConf &conf) {
     using namespace std;
     int op;
     string parallelize_str;
+    string pattern_error_str;
 
     while (true) {
         cout << endl;
@@ -251,6 +204,27 @@ void menu(InjectConf &conf) {
                 cerr << "The time can't be zero or less. Try again." << endl;
             }
         }
+
+        while (true) {
+            cout << "Conf5 -) In the case of a Silence Data Corruption, do you want to search for a specific error pattern? [Y/N] ";
+            cin >> pattern_error_str;
+            std::for_each(pattern_error_str.begin(), pattern_error_str.end(), [](char& c) {
+                c = ::toupper(c);
+                });
+            if (pattern_error_str == "Y") {
+                cout << "\tPlease, insert the error pattern to match: ";
+                cin >> conf.error_pattern;
+                break;
+            }
+            else if (pattern_error_str == "N") {
+                conf.error_pattern = "";
+                break;
+            }
+            else
+                cerr << "Invalid option. Try again." << endl;
+
+        }
+
         cout << "-- Configuration completed --" << endl;
         cout << endl;
         return;
@@ -280,55 +254,25 @@ void injection(InjectConf& conf) {
         // The child exited and the timer has not expired yet
         int native_exit_code = sr.get_native_exit_code();
 
-        //std::cout << "Child exited and the timer has not expired yet." << std::endl;
-
-        // Handle the error to check if the program crashed or if it is ok
-        //std::cout << "Child native exit code: " << native_exit_code << std::endl;
-
         if (native_exit_code) {
-            // Child process exited with some errors (maybe crash?)
-            //std::cout << "Child crashed!" << std::endl;
-            //std::cout << "Error code: " << ec << ", native exit code: " << sr.get_native_exit_code() << std::endl;
-
-            //std::cout << "\n---------------- CRASH -----------------\n\n" << std::endl;
             se = CRASH;
         }
         else {
             // Child process exited with code 0 and everything should be ok
-            //std::cout << "No errors. Proceed to do the golden execution output comparison. Error code: " << ec << std::endl;
             sr.save_output(nullptr);
 
             // Perform comparison
-            se = sr.compare_with_golden(golden_run);
-            if (se == MASKED) {
-                //std::cout << "\n---------------- MASKED -----------------\n\n" << std::endl;
-            }
-            else if (se == SDC) {
-                //std::cout << "\n---------------- Silence Data Corruption -----------------\n\n" << std::endl;
-            }
-            else if (se == DELAY) {
-                //std::cout << "\n---------------- DELAY -----------------\n\n" << std::endl;
-            }
+            se = sr.compare_with_golden(golden_run, conf.error_pattern);
         }
-        //std::cout << "Injection #" << i + 1 << " run execution took " << std::chrono::duration_cast<std::chrono::seconds>(sr.duration()).count() << " seconds.\n\n" << std::endl;
-
     }
     else {
         // The child didn't exit and the timer has expired (possible deadlock)
         sr.terminate();
-        // sr.wait() needed?
-        //std::cout << "Child didn't exit and the timer has expired. Possible deadlock recognized. Child process killed." << std::endl;
-        //std::cout << "Error code: " << ec << std::endl;
-        // Classify as deadlock
-
-        //std::cout << "\n---------------- DEADLOCK -----------------\n\n" << std::endl;
         se = HANG;
     }
 
     // Log injection results
-    log_injection_trial(golden_run, sr, inj, ec, se);
-
-    //Sleep(30000);
+    log_injection_trial(golden_run, sr, inj, ec, se, conf.error_pattern);
 }
 
 void sequential_injections(InjectConf& conf) {
@@ -348,18 +292,35 @@ void parallel_injections(InjectConf& conf, char *exe_name) {
     // Start #Injections fault injector processes (in parallel mode)
     for (int i = 0; i < conf.inject_n; i++) {
         int rand_seed = rand() % RAND_MAX;
-        bp::child c (
-            bp::search_path(exe_name),
-            std::to_string(golden_run.get_pid()),
-            std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(golden_run.duration()).count()),
-            std::to_string(rand_seed),
-            std::to_string(conf.struct_id),
-            std::to_string(i),
-            std::to_string(conf.max_time_ms),
-            bp::std_out > bp::null,
-            bp::std_err > bp::null
+        if (conf.error_pattern == "") {
+            bp::child c(
+                bp::search_path(exe_name),
+                std::to_string(golden_run.get_pid()),
+                std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(golden_run.duration()).count()),
+                std::to_string(rand_seed),
+                std::to_string(conf.struct_id),
+                std::to_string(i),
+                std::to_string(conf.max_time_ms),
+                bp::std_out > bp::null,
+                bp::std_err > bp::null
             );
-        childs[i] = std::move(c);
+            childs[i] = std::move(c);
+        }
+        else {
+            bp::child c(
+                bp::search_path(exe_name),
+                std::to_string(golden_run.get_pid()),
+                std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(golden_run.duration()).count()),
+                std::to_string(rand_seed),
+                std::to_string(conf.struct_id),
+                std::to_string(i),
+                std::to_string(conf.max_time_ms),
+                conf.error_pattern,
+                bp::std_out > bp::null,
+                bp::std_err > bp::null
+            );
+            childs[i] = std::move(c);
+        }
     }
 
     // Wait for the completion of all the fault injectors and join their output to the main logging file

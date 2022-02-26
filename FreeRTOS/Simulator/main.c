@@ -24,34 +24,15 @@
 #include <semphr.h>
 
 /* Standard demo includes. */
-#include "BlockQ.h"
-#include "integer.h"
-#include "semtest.h"
 #include "PollQ.h"
-#include "GenQTest.h"
-#include "QPeek.h"
-#include "recmutex.h"
-#include "flop.h"
 #include "TimerDemo.h"
-#include "countsem.h"
-#include "death.h"
-#include "dynamic.h"
-#include "QueueSet.h"
-#include "QueueOverwrite.h"
-#include "EventGroupsDemo.h"
-#include "IntSemTest.h"
-#include "TaskNotify.h"
-#if defined _WIN32
-    #include "TaskNotifyArray.h"
-#endif
-#include "QueueSetPolling.h"
-#include "StaticAllocation.h"
-#include "blocktim.h"
-#include "AbortDelay.h"
 #include "MessageBufferDemo.h"
+#include "BlockQ.h"
+#include "EventGroupsDemo.h"
+#include "QueueSet.h"
 #include "StreamBufferDemo.h"
-#include "StreamBufferInterrupt.h"
-#include "MessageBufferAMP.h"
+#include "countsem.h"
+#include "semtest.h"
 
 /* Local includes. */
 #include "console.h"
@@ -68,12 +49,6 @@
 #define mainSEM_TEST_PRIORITY			( tskIDLE_PRIORITY + 1 )
 
 #define mainBLOCK_Q_PRIORITY			( tskIDLE_PRIORITY + 2 )
-#define mainCREATOR_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
-#define mainFLASH_TASK_PRIORITY			( tskIDLE_PRIORITY + 1 )
-#define mainINTEGER_TASK_PRIORITY		( tskIDLE_PRIORITY )
-#define mainGEN_QUEUE_TASK_PRIORITY		( tskIDLE_PRIORITY )
-#define mainFLOP_TASK_PRIORITY			( tskIDLE_PRIORITY )
-#define mainQUEUE_OVERWRITE_PRIORITY	( tskIDLE_PRIORITY )
 
 #define mainTIMER_TEST_PERIOD			( 50 )
 
@@ -103,12 +78,6 @@ static void prvCheckTask( void *pvParameters );
 /* A task that is created from the idle task to test the functionality of
 eTaskStateGet(). */
 static void prvTestTask( void *pvParameters );
-
-/*
- * Called from the idle task hook function to demonstrate a few utility
- * functions that are not demonstrated by any of the standard demo tasks.
- */
-static void prvDemonstrateTaskStateAndHandleGetFunctions( void );
 
 /*
  * Called from the idle task hook function to demonstrate the use of
@@ -182,12 +151,6 @@ int main( void )
 #endif
 
     /* Create the standard demo tasks. */
-#if defined TASK_TASK_NOTIFY
-    vStartTaskNotifyTask();
-#endif
-#if defined _WIN32 && defined TASK_TASK_NOTIFY_ARRAY
-    vStartTaskNotifyArrayTask();
-#endif
 #if defined TASK_BLOCKING_QUEUE
     vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
 #endif
@@ -197,41 +160,11 @@ int main( void )
 #if defined TASK_POLL_QUEUE
     vStartPolledQueueTasks( mainQUEUE_POLL_PRIORITY );
 #endif
-#if defined TASK_INTEGER
-    vStartIntegerMathTasks( mainINTEGER_TASK_PRIORITY );
-#endif
-#if defined TASK_GEN_QUEUE
-    vStartGenericQueueTasks( mainGEN_QUEUE_TASK_PRIORITY );
-#endif
-#if defined TASK_PEEK_QUEUE
-    vStartQueuePeekTasks();
-#endif
-#if defined TASK_FLOP
-    vStartMathTasks( mainFLOP_TASK_PRIORITY );
-#endif
-#if defined TASK_REC_MUTEX
-    vStartRecursiveMutexTasks();
-#endif
 #if defined TASK_COUNT_SEM
     vStartCountingSemaphoreTasks();
 #endif
-#if defined TASK_DYNAMIC_PRIOR
-    vStartDynamicPriorityTasks();
-#endif
-#if defined TASK_QUEUE_OVERWRITE
-    vStartQueueOverwriteTask( mainQUEUE_OVERWRITE_PRIORITY );
-#endif
 #if defined TASK_EVENT_GROUPS
     vStartEventGroupTasks();
-#endif
-#if defined TASK_INT_SEM_TEST
-    vStartInterruptSemaphoreTasks();
-#endif
-#if defined TASK_BLOCK_TIM
-    vCreateBlockTimeTasks();
-#endif
-#if defined TASK_ABORT_DELAY
-    vCreateAbortDelayTasks();
 #endif
 #if defined TASK_QUEUE_SPACE_AVAIL
     xTaskCreate( prvDemoQueueSpaceFunctions, "QSpace", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTaskQSpace );
@@ -258,28 +191,11 @@ int main( void )
 #if defined TASK_STREAM_BUFFER
     vStartStreamBufferTasks();
 #endif
-#if defined TASK_STREAM_BUFF_INT
-    vStartStreamBufferInterruptDemo();
-#endif
-#if defined TASK_MESSAGE_BUFF_AMP
-    vStartMessageBufferAMPTasks( configMINIMAL_STACK_SIZE );
-#endif
 
     #if ( configUSE_QUEUE_SETS == 1 )
         {
             #if defined TASK_QUEUE_SET
                 vStartQueueSetTasks();
-            #endif
-            #if defined TASK_QUEUE_SET_POLL
-                vStartQueueSetPollingTask();
-            #endif
-        }
-    #endif
-
-    #if ( configSUPPORT_STATIC_ALLOCATION == 1 )
-        {
-            #if defined TASK_STATIC_ALLOC
-                vStartStaticallyAllocatedTasks();
             #endif
         }
     #endif
@@ -293,14 +209,6 @@ int main( void )
         }
     #endif
     
-#if defined TASK_DEATH
-    /* The suicide tasks must be created last as they need to know how many
-     * tasks were running prior to their creation.  This then allows them to
-     * ascertain whether or not the correct/expected number of tasks are running at
-     * any given time. */
-    vCreateSuicidalTasks( mainCREATOR_TASK_PRIORITY );
-#endif
-
 #if defined TEST_DELETE_MUTEX
     /* Create the semaphore that will be deleted in the idle task hook.  This
      * is done purely to test the use of vSemaphoreDelete(). */
@@ -457,12 +365,6 @@ void *pvAllocated;
     /* Sleep to reduce CPU load, but don't sleep indefinitely in case there are
     tasks waiting to be terminated by the idle task. */
     vSleepMS( ulMSToSleep );
-
-#if defined TASK_TASK_INTERNAL
-    /* Demonstrate a few utility functions that are not demonstrated by any of
-    the standard demo tasks. */
-    prvDemonstrateTaskStateAndHandleGetFunctions();
-#endif
 
 #if defined TASK_PEND_FUNC_CALL
     /* Demonstrate the use of xTimerPendFunctionCall(), which is not
@@ -649,10 +551,6 @@ static void prvCheckTask( void * pvParameters )
     for( ; ; )
     {
         count++;
-
-        //if (count == 2) {
-        //    count = count / 0;
-        //}
 
         /* Place this task in the blocked state until it is time to run again. */
         vTaskDelayUntil( &xNextWakeTime, xCycleFrequency );
@@ -859,7 +757,7 @@ static void prvCheckTask( void * pvParameters )
                 pcStatusMessage,
                 xTaskGetTickCount());
                 */
-            console_print("%s\n", pcStatusMessage);
+            //console_print("%s\n", pcStatusMessage);
         /*
         if( xErrorCount != 0 )
         {
@@ -908,8 +806,8 @@ static void prvPendedFunction( void *pvParameter1, uint32_t ulParameter2 )
     ulParameter1 = ( uint32_t ) pvParameter1;
 
     /* Ensure the parameters are as expected. */
-    configASSERT( ulParameter1 == ( ulLastParameter1 + 1 ) );
-    configASSERT( ulParameter2 == ( ulLastParameter2 + 1 ) );
+    configASSERTM( ulParameter1 == ( ulLastParameter1 + 1 ) , "Pended function error - Parameter 1 unexpected value");
+    configASSERTM( ulParameter2 == ( ulLastParameter2 + 1 ) , "Pended function error - Parameter 2 unexpected value");
 
     /* Remember the parameters for the next time the function is called. */
     ulLastParameter1 = ulParameter1;
@@ -983,129 +881,6 @@ static void prvDemonstratePendingFunctionCall( void )
 }
 /*-----------------------------------------------------------*/
 
-static void prvDemonstrateTaskStateAndHandleGetFunctions( void )
-{
-    TaskHandle_t xIdleTaskHandle, xTimerTaskHandle;
-    char * pcTaskName;
-    static portBASE_TYPE xPerformedOneShotTests = pdFALSE;
-    TaskHandle_t xTestTask;
-    TaskStatus_t xTaskInfo;
-    extern StackType_t uxTimerTaskStack[];
-
-    /* Demonstrate the use of the xTimerGetTimerDaemonTaskHandle() and
-     * xTaskGetIdleTaskHandle() functions.  Also try using the function that sets
-     * the task number. */
-    xIdleTaskHandle = xTaskGetIdleTaskHandle();
-    xTimerTaskHandle = xTimerGetTimerDaemonTaskHandle();
-
-    /* This is the idle hook, so the current task handle should equal the
-     * returned idle task handle. */
-    if( xTaskGetCurrentTaskHandle() != xIdleTaskHandle )
-    {
-        pcStatusMessage = "Error:  Returned idle task handle was incorrect";
-        xErrorCount++;
-    }
-
-    /* Check the same handle is obtained using the idle task's name.  First try
-     * with the wrong name, then the right name. */
-    if( xTaskGetHandle( "Idle" ) == xIdleTaskHandle )
-    {
-        pcStatusMessage = "Error:  Returned handle for name Idle was incorrect";
-        xErrorCount++;
-    }
-
-    if( xTaskGetHandle( "IDLE" ) != xIdleTaskHandle )
-    {
-        pcStatusMessage = "Error:  Returned handle for name Idle was incorrect";
-        xErrorCount++;
-    }
-
-    /* Check the timer task handle was returned correctly. */
-    pcTaskName = pcTaskGetName( xTimerTaskHandle );
-
-    if( strcmp( pcTaskName, "Tmr Svc" ) != 0 )
-    {
-        pcStatusMessage = "Error:  Returned timer task handle was incorrect";
-        xErrorCount++;
-    }
-
-    if( xTaskGetHandle( "Tmr Svc" ) != xTimerTaskHandle )
-    {
-        pcStatusMessage = "Error:  Returned handle for name Tmr Svc was incorrect";
-        xErrorCount++;
-    }
-
-    /* This task is running, make sure it's state is returned as running. */
-    if( eTaskStateGet( xIdleTaskHandle ) != eRunning )
-    {
-        pcStatusMessage = "Error:  Returned idle task state was incorrect";
-        xErrorCount++;
-    }
-
-    /* If this task is running, then the timer task must be blocked. */
-    if( eTaskStateGet( xTimerTaskHandle ) != eBlocked )
-    {
-        pcStatusMessage = "Error:  Returned timer task state was incorrect";
-        xErrorCount++;
-    }
-
-    /* Also with the vTaskGetInfo() function. */
-    vTaskGetInfo( xTimerTaskHandle, /* The task being queried. */
-                  &xTaskInfo,       /* The structure into which information on the task will be written. */
-                  pdTRUE,           /* Include the task's high watermark in the structure. */
-                  eInvalid );       /* Include the task state in the structure. */
-
-    /* Check the information returned by vTaskGetInfo() is as expected. */
-    if( ( xTaskInfo.eCurrentState != eBlocked ) ||
-        ( strcmp( xTaskInfo.pcTaskName, "Tmr Svc" ) != 0 ) ||
-        ( xTaskInfo.uxCurrentPriority != configTIMER_TASK_PRIORITY ) ||
-        ( xTaskInfo.pxStackBase != uxTimerTaskStack ) ||
-        ( xTaskInfo.xHandle != xTimerTaskHandle ) )
-    {
-        pcStatusMessage = "Error:  vTaskGetInfo() returned incorrect information about the timer task";
-        xErrorCount++;
-    }
-
-    /* Other tests that should only be performed once follow.  The test task
-     * is not created on each iteration because to do so would cause the death
-     * task to report an error (too many tasks running). */
-    if( xPerformedOneShotTests == pdFALSE )
-    {
-        /* Don't run this part of the test again. */
-        xPerformedOneShotTests = pdTRUE;
-
-        /* Create a test task to use to test other eTaskStateGet() return values. */
-        if( xTaskCreate( prvTestTask, "Test", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTestTask ) == pdPASS )
-        {
-            /* If this task is running, the test task must be in the ready state. */
-            if( eTaskStateGet( xTestTask ) != eReady )
-            {
-                pcStatusMessage = "Error: Returned test task state was incorrect 1";
-                xErrorCount++;
-            }
-
-            /* Now suspend the test task and check its state is reported correctly. */
-            vTaskSuspend( xTestTask );
-
-            if( eTaskStateGet( xTestTask ) != eSuspended )
-            {
-                pcStatusMessage = "Error: Returned test task state was incorrect 2";
-                xErrorCount++;
-            }
-
-            /* Now delete the task and check its state is reported correctly. */
-            vTaskDelete( xTestTask );
-
-            if( eTaskStateGet( xTestTask ) != eDeleted )
-            {
-                pcStatusMessage = "Error: Returned test task state was incorrect 3";
-                xErrorCount++;
-            }
-        }
-    }
-}
-/*-----------------------------------------------------------*/
-
 static void prvDemoQueueSpaceFunctions( void *pvParameters )
 {
     QueueHandle_t xQueue = NULL;
@@ -1133,7 +908,7 @@ static void prvDemoQueueSpaceFunctions( void *pvParameters )
             {
                 /* xQueue cannot be NULL so this is deliberately causing an
                 assert to be triggered as there is an error. */
-                configASSERT( xQueue == NULL );
+                configASSERTM( xQueue == NULL, "QueueSpaceDemo Error - the number of bytes read does not match the expected one");
             }
 
             /* Ask how many spaces remain in the queue... */
@@ -1145,7 +920,7 @@ static void prvDemoQueueSpaceFunctions( void *pvParameters )
             {
                 /* xQueue cannot be NULL so this is deliberately causing an
                 assert to be triggered as there is an error. */
-                configASSERT( xQueue == NULL );
+                configASSERTM( xQueue == NULL, "QueueSpaceDemo Error - the space of the queue is unexpected");
             }
 
             /* Fill one more space in the queue. */
@@ -1156,14 +931,14 @@ static void prvDemoQueueSpaceFunctions( void *pvParameters )
         uxReturn = uxQueueMessagesWaiting( xQueue );
         if( uxReturn != uxQueueLength )
         {
-            configASSERT( xQueue == NULL );
+            configASSERTM( xQueue == NULL, "QueueSpaceDemo Error - the number of messages inside the queue is wrong");
         }
 
         uxReturn = uxQueueSpacesAvailable( xQueue );
 
         if( uxReturn != 0 )
         {
-            configASSERT( xQueue == NULL );
+            configASSERTM( xQueue == NULL, "QueueSpaceDemo Error - the queue should be full but there is space instead");
         }
 
         /* The queue is full, start again. */
@@ -1192,7 +967,7 @@ static void prvPermanentlyBlockingSemaphoreTask( void *pvParameters )
 
     /* The above xSemaphoreTake() call should never return, force an assert if
     it does. */
-    configASSERT( pvParameters != NULL );
+    configASSERTM( pvParameters != NULL, "Error - Permanently blocking semaphore unexpected unblocking!");
     vTaskDelete( NULL );
 }
 /*-----------------------------------------------------------*/
@@ -1208,6 +983,6 @@ static void prvPermanentlyBlockingNotificationTask( void *pvParameters )
 
     /* The above ulTaskNotifyTake() call should never return, force an assert
     if it does. */
-    configASSERT( pvParameters != NULL );
+    configASSERTM( pvParameters != NULL, "Error - permanent blocking notification task unexpected unblocking!");
     vTaskDelete( NULL );
 }

@@ -46,6 +46,10 @@ private:
     std::chrono::steady_clock::time_point end_time;
     std::chrono::steady_clock::duration* loaded_duration;
 
+    std::string error_matched_str;
+    std::string delayed_str;
+    int delay_amount;
+
     void read_data_structures();
 
 public:
@@ -65,7 +69,7 @@ public:
     void show_output();
     void print_stats(bool use_logger);
 
-    SimulatorError compare_with_golden(const SimulatorRun& golden);
+    SimulatorError compare_with_golden(const SimulatorRun& golden, std::string error_pattern);
 
     std::vector<DataStructure> get_data_structures() const;
     DataStructure get_ds_by_id(int id) const;
@@ -73,6 +77,10 @@ public:
     long long get_pid() const;
     int get_native_exit_code() const;
     bool is_running();
+
+    std::string get_error_matched_str() const;
+    std::string get_delayed_str() const;
+    int get_delay_amount() const;
 };
 
 
