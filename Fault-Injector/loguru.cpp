@@ -817,7 +817,7 @@ namespace loguru
 		add_callback(path_in, file_log, file, verbosity, file_close, file_flush);
 #endif
 
-		if (mode == FileMode::Append) {
+		/*if (mode == FileMode::Append) {
 			fprintf(file, "\n\n\n\n\n");
 		}
 		if (!s_arguments.empty()) {
@@ -831,10 +831,10 @@ namespace loguru
 			char preamble_explain[LOGURU_PREAMBLE_WIDTH];
 			print_preamble_header(preamble_explain, sizeof(preamble_explain));
 			fprintf(file, "%s\n", preamble_explain);
-		}
+		}*/
 		fflush(file);
 
-		VLOG_F(g_internal_verbosity, "Logging to '" LOGURU_FMT(s) "', mode: '" LOGURU_FMT(s) "', verbosity: " LOGURU_FMT(d) "", path, mode_str, verbosity);
+		// VLOG_F(g_internal_verbosity, "Logging to '" LOGURU_FMT(s) "', mode: '" LOGURU_FMT(s) "', verbosity: " LOGURU_FMT(d) "", path, mode_str, verbosity);
 		return true;
 		}
 

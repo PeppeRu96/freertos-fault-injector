@@ -1,5 +1,7 @@
 #include "DataStructure.h"
 
+#include "memory_logger.h"
+
 DataStructure::DataStructure(int id, const char* name, int type, void* address) {
 	this->id = id;
 	this->name = name;
@@ -9,7 +11,7 @@ DataStructure::DataStructure(int id, const char* name, int type, void* address) 
 }
 
 std::ostream& operator<<(std::ostream& output, const DataStructure& ds) {
-	output << "Id: " << ds.id << ", Name: " << ds.name << ", Type: " << ds.type << ", Address: " << std::hex << ds.address;
+	output << "Id: " << ds.id << ", Name: " << ds.name << ", Type: " << get_data_struct_type(ds.type) << ", Address: " << std::hex << ds.address;
 	return output;
 }
 

@@ -3,6 +3,7 @@
 #include <string>
 #include <time.h>
 #include <algorithm>
+#include <cstdlib>
 
 #include "SimulatorRun.h"
 #include "Injection.h"
@@ -15,12 +16,13 @@
 // PC fisso - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/"
 //#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/"
-#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-FaultInjector/FreeRTOS/Simulator/"
+//#define SIMULATOR_FOLDER_PATH "D:/development/freertos_fault_injector/project_repo/build/Win32-Debug-FaultInjector/FreeRTOS/Simulator/"
 
 
 // PC portatile - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-All-Tasks/FreeRTOS/Simulator/";
 //#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/";
+#define SIMULATOR_FOLDER_PATH "C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-FaultInjector-Portatile/FreeRTOS/Simulator/";
 
 // Ubuntu - Giuseppe
 //#define SIMULATOR_FOLDER_PATH "/home/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
@@ -29,7 +31,6 @@
 //#define SIMULATOR_FOLDER_PATH "/Users/ruggeri/development/freertos_fault_injector/project_repo/cmake-build-debug/FreeRTOS/Simulator/"
 
 #define SIMULATOR_EXE_NAME      "FreeRTOS_Simulator"
-#define DEADLOCK_TIME_FACTOR    2
 
 
 std::string sim_folder_path = SIMULATOR_FOLDER_PATH;
@@ -48,7 +49,13 @@ void menu(InjectConf &conf);
 SimulatorRun golden_run;
 std::error_code golden_run_ec;
 
-int main()
+void injection(InjectConf& conf);
+
+void sequential_injections(InjectConf &conf);
+
+void parallel_injections(InjectConf& conf, char* exe_name);
+
+int main3()
 {
     FILE* a = fopen("a.txt", "r");
     FILE* b = fopen("b.txt", "r");
@@ -84,103 +91,71 @@ int main()
     return 0;
 }
 
-int main3(int argc, char ** argv)
+int main(int argc, char ** argv)
 {
-    std::cout << "######### FreeRTOS FaultInjector v" << PROJECT_VER << " #########" << std::endl;
-    std::cout << std::endl;
-
-    log_init();
-
-    // LOG_F(INFO, "I'm hungry for some %.3f!", 3.14159);
-
-    srand((unsigned)time(NULL));
-
-    // Start a simulator and save the golden execution
-    std::cout << "Executing the simulator and saving the golden execution..." << std::endl;
-
-    golden_run.init(sim_path);
-    //golden_run.init("C:/Users/rugge/Documents/development/freertos_fault_injector/project_repo/build/Win32-Debug-Simulator-Conf1/FreeRTOS/Simulator/FreeRTOS_Simulator_gold");
-    golden_run.start();
-    golden_run_ec = golden_run.wait();
-    // Handle the case in which the golden execution fails for some reason (integrate the error handling)
-    std::cout << "Golden execution native exit code: " << golden_run.get_native_exit_code() << std::endl;
-    golden_run.save_output();
-    std::cout << "Golden run execution took " << std::chrono::duration_cast<std::chrono::seconds>(golden_run.duration()).count() << " seconds." << std::endl;
-
     InjectConf conf;
-    // Display user menu
-    menu(conf);
 
-    // Perform selected operation
-    std::cout << "-- Injections start --" << std::endl;
-    // Sequential injections
-    for (int i = 0; i < conf.inject_n; i++) {
-        std::cout << "Injection Try #" << i + 1 << " ..." << std::endl;
-        SimulatorRun sr;
-        std::error_code ec;
 
-        // Spawn a simulator instance to be injected and load its data structures
-        sr.init(sim_path);
+    // Check if this process has been created from another process (parallelization)
+    int golden_run_pid;
+    std::string curr_pid = std::to_string(boost::interprocess::ipcdetail::get_current_process_id());
 
-        // Retrieve the data structure to be injected
-        DataStructure ds = sr.get_ds_by_id(conf.struct_id);
-        Injection inj(&sr, ds, conf.max_time_ms);
+    if (argc > 1) {
+        // Parallel instance
 
-        // Signal to the simulator instance that it can start the scheduler
-        sr.start();
-        inj.init();
-        inj.inject(sr.get_begin_time());
-        inj.close();
-        inj.print_stats();
+        unsigned long golden_run_dur_ms;
 
-        // Wait && Log
-        if (sr.wait_for(golden_run.duration() * DEADLOCK_TIME_FACTOR, ec)) {
-            // The child exited and the timer has not expired yet
-            int native_exit_code = sr.get_native_exit_code();
+        golden_run_pid = atoi(argv[1]);
+        std::stringstream ss(argv[2]);
+        ss >> golden_run_dur_ms;
+        golden_run.load_duration(golden_run_dur_ms);
 
-            std::cout << "Child exited and the timer has not expired yet." << std::endl;
+        int rand_seed = atoi(argv[3]);
+        srand((unsigned)rand_seed);
 
-            // Handle the error to check if the program crashed or if it is ok
-            std::cout << "Child native exit code: " << native_exit_code << std::endl;
+        conf.struct_id = atoi(argv[4]);
+        conf.inject_n = atoi(argv[5]);
+        conf.max_time_ms = atoi(argv[6]);
 
-            if (native_exit_code) {
-                // Child process exited with some errors (maybe crash?)
-                std::cout << "Child crashed!" << std::endl;
-                std::cout << "Error code: " << ec << ", native exit code: " << sr.get_native_exit_code() << std::endl;
+        // Open temp log
+        log_init(loguru::Truncate, &curr_pid);
 
-                std::cout << "\n---------------- CRASH -----------------\n\n" << std::endl;
-            }
-            else {
-                // Child process exited with code 0 and everything should be ok
-                std::cout << "No errors. Proceed to do the the golden execution output comparison. Error code: " << ec << std::endl;
-                sr.save_output();
+        // Load the golden run output
+        golden_run.save_output(&golden_run_pid);
 
-                // Perform comparison
-                SimulatorError se = sr.compare_with_golden(golden_run);
-                if (se == MASKED) {
-                    std::cout << "\n---------------- MASKED -----------------\n\n" << std::endl;
-                }
-                else if (se == SDC) {
-                    std::cout << "\n---------------- Silence Data Corruption -----------------\n\n" << std::endl;
-                }
-                else if (se == DELAY) {
-                    std::cout << "\n---------------- DELAY -----------------\n\n" << std::endl;
-                }
-            }
-            std::cout << "Injection #" << i+1 << " run execution took " << std::chrono::duration_cast<std::chrono::seconds>(sr.duration()).count() << " seconds.\n\n" << std::endl;
+        // Start a simulation and inject
+        injection(conf);
+    }
+    else {
+        // Master instance
+        srand((unsigned)time(NULL));
 
-        }
-        else {
-            // The child didn't exit and the timer has expired (possible deadlock)
-            sr.terminate();
-            // sr.wait() needed?
-            std::cout << "Child didn't exit and the timer has expired. Possible deadlock recognized. Child process killed." << std::endl;
-            std::cout << "Error code: " << ec << std::endl;
-            // Classify as deadlock
+        std::cout << "######### FreeRTOS FaultInjector v" << PROJECT_VER << " #########" << std::endl;
+        std::cout << std::endl;
 
-            std::cout << "\n---------------- DEADLOCK -----------------\n\n" << std::endl;
-        }
-        //Sleep(30000);
+        log_init(loguru::Truncate, nullptr);
+
+        // Start a simulator and save the golden execution
+        LOG_F(INFO, "Executing the simulator and saving the golden execution...");
+
+        golden_run.init(sim_path);
+        golden_run.start();
+        golden_run_ec = golden_run.wait();
+        // Handle the case in which the golden execution fails for some reason (integrate the error handling)
+        golden_run.save_output(nullptr);
+        RAW_LOG_F(INFO, "Golden run stats:");
+        golden_run.print_stats(true);
+
+        // Display user menu
+        menu(conf);
+
+        // Perform injections
+        LOG_F(INFO, "-- Injections start --");
+        if (!conf.parallelize)
+            sequential_injections(conf);
+        else
+            parallel_injections(conf, argv[0]);
+
     }
 
     return 0;
@@ -279,5 +254,121 @@ void menu(InjectConf &conf) {
         cout << "-- Configuration completed --" << endl;
         cout << endl;
         return;
+    }
+}
+
+void injection(InjectConf& conf) {
+    SimulatorRun sr;
+    std::error_code ec;
+    SimulatorError se;
+
+    // Spawn a simulator instance to be injected and load its data structures
+    sr.init(sim_path);
+
+    // Retrieve the data structure to be injected
+    DataStructure ds = sr.get_ds_by_id(conf.struct_id);
+    Injection inj(&sr, ds, conf.max_time_ms);
+
+    // Signal to the simulator instance that it can start the scheduler
+    sr.start();
+    inj.init();
+    inj.inject(sr.get_begin_time());
+    inj.close();
+
+    // Wait for the simulator to finish and log
+    if (sr.wait_for(golden_run.duration() * DEADLOCK_TIME_FACTOR, ec)) {
+        // The child exited and the timer has not expired yet
+        int native_exit_code = sr.get_native_exit_code();
+
+        //std::cout << "Child exited and the timer has not expired yet." << std::endl;
+
+        // Handle the error to check if the program crashed or if it is ok
+        //std::cout << "Child native exit code: " << native_exit_code << std::endl;
+
+        if (native_exit_code) {
+            // Child process exited with some errors (maybe crash?)
+            //std::cout << "Child crashed!" << std::endl;
+            //std::cout << "Error code: " << ec << ", native exit code: " << sr.get_native_exit_code() << std::endl;
+
+            //std::cout << "\n---------------- CRASH -----------------\n\n" << std::endl;
+            se = CRASH;
+        }
+        else {
+            // Child process exited with code 0 and everything should be ok
+            //std::cout << "No errors. Proceed to do the golden execution output comparison. Error code: " << ec << std::endl;
+            sr.save_output(nullptr);
+
+            // Perform comparison
+            se = sr.compare_with_golden(golden_run);
+            if (se == MASKED) {
+                //std::cout << "\n---------------- MASKED -----------------\n\n" << std::endl;
+            }
+            else if (se == SDC) {
+                //std::cout << "\n---------------- Silence Data Corruption -----------------\n\n" << std::endl;
+            }
+            else if (se == DELAY) {
+                //std::cout << "\n---------------- DELAY -----------------\n\n" << std::endl;
+            }
+        }
+        //std::cout << "Injection #" << i + 1 << " run execution took " << std::chrono::duration_cast<std::chrono::seconds>(sr.duration()).count() << " seconds.\n\n" << std::endl;
+
+    }
+    else {
+        // The child didn't exit and the timer has expired (possible deadlock)
+        sr.terminate();
+        // sr.wait() needed?
+        //std::cout << "Child didn't exit and the timer has expired. Possible deadlock recognized. Child process killed." << std::endl;
+        //std::cout << "Error code: " << ec << std::endl;
+        // Classify as deadlock
+
+        //std::cout << "\n---------------- DEADLOCK -----------------\n\n" << std::endl;
+        se = HANG;
+    }
+
+    // Log injection results
+    log_injection_trial(golden_run, sr, inj, ec, se);
+
+    //Sleep(30000);
+}
+
+void sequential_injections(InjectConf& conf) {
+    for (int i = 0; i < conf.inject_n; i++) {
+        LOG_F(INFO, "Injection Try #%d / %d ...", i + 1, conf.inject_n);
+
+        injection(conf);
+
+        LOG_F(INFO, "Injection finished.", i + 1);
+        LOG_F(INFO, "----------------------\n");
+    }
+}
+
+void parallel_injections(InjectConf& conf, char *exe_name) {
+    std::vector<bp::child> childs(conf.inject_n);
+    std::cout << "Performing " << conf.inject_n << " parallel injection trials.." << std::endl;
+    // Start #Injections fault injector processes (in parallel mode)
+    for (int i = 0; i < conf.inject_n; i++) {
+        int rand_seed = rand() % RAND_MAX;
+        bp::child c (
+            bp::search_path(exe_name),
+            std::to_string(golden_run.get_pid()),
+            std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(golden_run.duration()).count()),
+            std::to_string(rand_seed),
+            std::to_string(conf.struct_id),
+            std::to_string(i),
+            std::to_string(conf.max_time_ms),
+            bp::std_out > bp::null,
+            bp::std_err > bp::null
+            );
+        childs[i] = std::move(c);
+    }
+
+    // Wait for the completion of all the fault injectors and join their output to the main logging file
+    for (int i = 0; i < conf.inject_n; i++) {
+        childs[i].wait();
+
+        LOG_F(INFO, "Injection Try #%d / %d ...", i + 1, conf.inject_n);
+        log_join(std::to_string(childs[i].id()));
+        LOG_F(INFO, "Injection finished.", i + 1);
+        LOG_F(INFO, "----------------------\n");
     }
 }

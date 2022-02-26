@@ -46,7 +46,7 @@ public:
 	void inject(std::chrono::steady_clock::time_point begin_time);
 	void close();
 
-	void print_stats();
+	void print_stats(bool use_logger);
 };
 
 #endif //FREERTOS_FAULTINJECTOR_INJECTION_H

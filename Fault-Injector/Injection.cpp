@@ -1,5 +1,9 @@
 #include "Injection.h"
 
+#include "loguru.hpp"
+#include <string.h>
+#include <sstream>
+
 #if defined __unix__
 #include <unistd.h>
 #include <sys/uio.h>
@@ -60,9 +64,9 @@ void Injection::inject(std::chrono::steady_clock::time_point begin_time) {
     // Read the entire data structure
     char* struct_before = ds.get_struct_before();
     read_memory(ds.get_address(), struct_before, ds.get_fixed_size());
-    std::cout << "Before injection queue:" << std::endl;
-    std::cout << "----------------------" << std::endl;
-    test_print(struct_before);
+    //std::cout << "Before injection queue:" << std::endl;
+    //std::cout << "----------------------" << std::endl;
+    //test_print(struct_before);
     // Get the exploded data structure size (including items stored in lists etc.)
     exploded_size = ds.get_exploded_size();
 
@@ -99,23 +103,41 @@ void Injection::inject(std::chrono::steady_clock::time_point begin_time) {
     char struct_after[500];
     read_memory(ds.get_address(), struct_after, ds.get_fixed_size());
 
-    std::cout << "\n----------------------------" << std::endl;
-    std::cout << "Queue after the injection: " << std::endl;
-    test_print(struct_after);
+    //std::cout << "\n----------------------------" << std::endl;
+    //std::cout << "Queue after the injection: " << std::endl;
+    //test_print(struct_after);
     std::cout << "\n" << std::endl;
 }
 
-void Injection::print_stats() {
+void Injection::print_stats(bool use_logger) {
     using namespace std;
+    
+    stringstream ss;
 
-    cout << "Injection stats:" << endl;
-    cout << "Performed after " << random_time_ms << " ms from the FreeRTOS simulator scheduler start" << endl;
-    cout << "Target data structure size (bytes): " << ds.get_fixed_size() << endl;
-    cout << "Target data structure expanded size (bytes): " << ds.get_exploded_size() << endl;
-    cout << "Target byte: " << target_byte_number << endl;
-    cout << "Target bit: " << target_bit_number << endl;
-    cout << "Byte value as unsigned integer before injection: " << (unsigned int)byte_buffer_before << endl;
-    cout << "Byte value as unsigned integer after injection: " << (unsigned int)byte_buffer_after << endl;
+    if (use_logger) {
+        RAW_LOG_F(INFO, "Injection stats:");
+        ss.clear();
+        ss << ds;
+        RAW_LOG_F(INFO, "Injected data structure: %s", ss.str().c_str());
+        RAW_LOG_F(INFO, "Target data structure size (bytes): %d", ds.get_fixed_size());
+        RAW_LOG_F(INFO, "Target data structure expanded size (bytes): %d", ds.get_exploded_size());
+        RAW_LOG_F(INFO, "Target byte: %d", target_byte_number);
+        RAW_LOG_F(INFO, "Target bit: %d", target_bit_number);
+        RAW_LOG_F(INFO, "Byte value as unsigned integer before injection: %u", (unsigned int)byte_buffer_before);
+        RAW_LOG_F(INFO, "Byte value as unsigned integer after injection: %u", (unsigned int)byte_buffer_after);
+        RAW_LOG_F(INFO, "Performed after %lu ms from the start of the FreeRTOS simulator scheduler", random_time_ms);
+    }
+    else {
+        cout << "Injection stats:\n";
+        cout << "Injected data structure: " << ds << "\n";
+        cout << "Target data structure size (bytes): " << ds.get_fixed_size() << "\n";
+        cout << "Target data structure expanded size (bytes): " << ds.get_exploded_size() << "\n";
+        cout << "Target byte: " << target_byte_number << "\n";
+        cout << "Target bit: " << target_bit_number << "\n";
+        cout << "Byte value as unsigned integer before injection: " << (unsigned int)byte_buffer_before << "\n";
+        cout << "Byte value as unsigned integer after injection: " << (unsigned int)byte_buffer_after << "\n";
+        cout << "Performed after " << random_time_ms << " ms from the start of the FreeRTOS simulator scheduler" << endl;
+    }
 }
 
 

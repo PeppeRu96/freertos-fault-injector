@@ -4,7 +4,11 @@
 //
 #include "SimulatorRun.h"
 
+#include "loguru.hpp"
+#include <sstream>
+
 SimulatorRun::SimulatorRun() {
+    this->loaded_duration = nullptr;
 }
 
 SimulatorRun::~SimulatorRun() {
@@ -98,16 +102,25 @@ bool SimulatorRun::wait_for(const std::chrono::steady_clock::duration& rel_time,
 }
 
 std::chrono::steady_clock::duration SimulatorRun::duration() {
+    if (this->loaded_duration != nullptr)
+        return *(this->loaded_duration);
+
     return (this->end_time - this->begin_time);
+}
+
+void SimulatorRun::load_duration(unsigned long ms) {
+    auto dur = std::chrono::milliseconds(ms);
+    this->loaded_duration = new std::chrono::steady_clock::duration(dur);
 }
 
 void SimulatorRun::terminate() {
     this->c.terminate();
 }
 
-void SimulatorRun::save_output() {
+void SimulatorRun::save_output(int* pid) {
     std::ifstream output_file;
-    std::string path = OUTPUT_FILE_PREFIX + std::to_string(this->c.id()) + ".txt";
+    std::string pid_str = pid != nullptr ? std::to_string(*pid) : std::to_string(this->c.id());
+    std::string path = OUTPUT_FILE_PREFIX + pid_str + ".txt";
     std::string line;
 
     output_file.open(path);
@@ -143,6 +156,23 @@ void SimulatorRun::show_output() {
     }
        
     output_file.close();
+}
+
+void SimulatorRun::print_stats(bool use_logger) {
+    using namespace std;
+
+    stringstream ss;
+
+    ss << "Simulator run (PID " << this->get_pid() << ") stats:\n";
+    ss << "Native exit code: " << this->get_native_exit_code() << std::endl;
+    ss << "Execution took " << std::chrono::duration_cast<std::chrono::seconds>(this->duration()).count() << " seconds." << std::endl;
+
+    if (use_logger) {
+        RAW_LOG_F(INFO, ss.str().c_str());
+    }
+    else {
+        cout << ss.str() << endl;
+    }
 }
 
 SimulatorError SimulatorRun::compare_with_golden(const SimulatorRun& golden) {

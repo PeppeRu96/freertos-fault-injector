@@ -21,6 +21,8 @@
 #include "DataStructure.h"
 #include "simulator_config.h"
 
+#define DEADLOCK_TIME_FACTOR    2
+
 namespace bp = boost::process;
 namespace bi = boost::interprocess;
 
@@ -42,6 +44,7 @@ private:
 
     std::chrono::steady_clock::time_point begin_time;
     std::chrono::steady_clock::time_point end_time;
+    std::chrono::steady_clock::duration* loaded_duration;
 
     void read_data_structures();
 
@@ -54,11 +57,13 @@ public:
     void init(std::string sim_path);
     void start();
     std::chrono::steady_clock::duration duration();
+    void load_duration(unsigned long ms);
     std::error_code wait();
     bool wait_for(const std::chrono::steady_clock::duration& rel_time, std::error_code& ec);
     void terminate();
-    void save_output();
+    void save_output(int* pid);
     void show_output();
+    void print_stats(bool use_logger);
 
     SimulatorError compare_with_golden(const SimulatorRun& golden);
 
