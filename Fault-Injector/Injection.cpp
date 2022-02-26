@@ -23,6 +23,8 @@ Injection::Injection(SimulatorRun* sr, DataStructure ds, unsigned long max_time_
 
 #if defined __linux__
     this->linux_pid = pid;
+#elif defined __APPLE__ || defined __MACH__
+    this->proc_port = task_for_pid(mach_task_self(), this->pid, $(this->proc_port));
 #elif defined _WIN32
     this->sim_proc_handle = OpenProcess(PROCESS_ALL_ACCESS, false, pid);
     this->handle_open = true;
@@ -106,7 +108,7 @@ void Injection::inject(std::chrono::steady_clock::time_point begin_time) {
     //std::cout << "\n----------------------------" << std::endl;
     //std::cout << "Queue after the injection: " << std::endl;
     //test_print(struct_after);
-    std::cout << "\n" << std::endl;
+    //std::cout << "\n" << std::endl;
 }
 
 void Injection::print_stats(bool use_logger) {
@@ -142,7 +144,7 @@ void Injection::print_stats(bool use_logger) {
 
 
 // Low level read/write memory (platform-dependent)
-#if defined __linux
+#if defined __linux__
 void Injection::read_memory(void* address, char* buffer, size_t size) {
     struct iovec local[1];
     struct iovec remote[1];
@@ -173,6 +175,27 @@ void Injection::write_memory(void* address, char* buffer, size_t size) {
 
     nwrite = process_vm_writev(this->linux_pid, local, 1, remote, 1, 0);
     if (nwrite == -1) {
+        std::cerr << "Can't write simulator memory" << std::endl;
+        exit(1);
+    }
+}
+#elif defined __APPLE__ || defined __MACH__
+void Injection::read_memory(void* address, char* buffer, size_t size) {
+    kern_return_t kret;
+    size_t nread;
+
+    kr = vm_read_overwrite(this->proc_port, (vm_address_t)address, size, (vm_address_t)buffer, &nread);
+    if (kr != KERN_SUCCCESS) {
+        std::cerr << "Can't read simulator memory" << std::endl;
+        exit(1);
+    }
+}
+void Injection::write_memory(void* address, char* buffer, size_t size) {
+    kern_return_t kret;
+    size_t nread;
+
+    kr = vm_write(this->proc_port, (vm_address_t)address, (vm_offset_t)buffer, size);
+    if (kr != KERN_SUCCCESS) {
         std::cerr << "Can't write simulator memory" << std::endl;
         exit(1);
     }
@@ -342,4 +365,79 @@ void Injection::write_memory(void* address, char* buffer, size_t size) {
         CloseHandle(simProc);
     }
 #endif
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+void Injection::inject(std::chrono::steady_clock::time_point begin_time) {
+    kern_return_t kret;  //return value for read/write
+    mach_port_t simProc; //like HANDLE or pid_t
+
+    size_t nread;
+
+    char byte_buffer;
+    int target_byte_number = rand() % 168;
+    int target_bit_number = rand() % 8;
+
+    // Open simulator Process, select the target byte and compute its address
+    simProc = task_for_pid(mach_task_self(), this->pid, &simProc);
+
+    printf("\tTarget byte number: %d\n", target_byte_number);
+    printf("\tTarget bit number: %d\n", target_bit_number);
+
+    char* target_address = (char*)this->ds.get_address() + target_byte_number;
+
+    // Wait
+    printf("\trandom_time_ms: %lld\n", this->random_time_ms);
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - begin_time).count();
+    printf("\twaiting ms %lld\n", this->random_time_ms - ms);
+    std::this_thread::sleep_for(std::chrono::milliseconds(this->random_time_ms - ms));
+    printf("\tafter waiting..\n");
+
+    // Injection
+    // Read the byte
+    kr = vm_read_overwrite(simProc, (vm_address_t)target_address, sizeof(byte_buffer), (vm_address_t)&byte_buffer, &nread);
+    if (kr != KERN_SUCCCESS) {
+        std::cerr << "Can't read simulator memory" << std::endl;
+        exit(1);
+    }
+
+    printf("\tchar read before injection: %d\n", byte_buffer);
+
+    // Flip bit
+    byte_buffer = byte_buffer ^ (1 << target_bit_number);
+
+    printf("\tTheoretical injected byte: %d\n", byte_buffer);
+
+    // Write the byte
+    kr = vm_write(port, (vm_address_t)target_address, (vm_offset_t)&byte_buffer, sizeof(byte_buffer));
+    if (kr != KERN_SUCCCESS) {
+        std::cerr << "Can't write simulator memory" << std::endl;
+        exit(1);
+    }
+
+    // Debug
+    kr = vm_read_overwrite(simProc, (vm_address_t)target_address, sizeof(byte_buffer), (vm_address_t)&byte_buffer, &nread);
+    if (kr != KERN_SUCCCESS) {
+        std::cerr << "Can't read simulator memory" << std::endl;
+        exit(1);
+    }
+
+    printf("\tchar read after injection: %d\n", byte_buffer);
+
+
+}
 */
