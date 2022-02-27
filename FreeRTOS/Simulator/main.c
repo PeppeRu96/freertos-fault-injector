@@ -467,12 +467,6 @@ BaseType_t xTimerDemoAlive;
     xNotifyArrayTaskFromISR();
 #endif
 
-#if defined STREAM_BUFFER_PROC
-    /* Writes to stream buffer byte by byte to test the stream buffer trigger
-    level functionality. */
-    vPeriodicStreamBufferProcessing();
-#endif
-
 #if defined STREAM_BUFFER_SEND_ISR
     /* Writes a string to a string buffer four bytes at a time to demonstrate
     a stream being sent from an interrupt to a task. */

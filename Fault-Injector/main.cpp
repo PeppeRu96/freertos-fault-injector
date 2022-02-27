@@ -10,6 +10,8 @@
 #include "simulator_config.h"
 #include "memory_logger.h"
 
+#include <boost/interprocess/detail/os_thread_functions.hpp>
+
 #include "loguru.hpp"
 #include "logger.h"
 
@@ -281,7 +283,7 @@ void sequential_injections(InjectConf& conf) {
 
         injection(conf);
 
-        LOG_F(INFO, "Injection finished.", i + 1);
+        LOG_F(INFO, "Injection finished.");
         LOG_F(INFO, "----------------------\n");
     }
 }
@@ -329,7 +331,7 @@ void parallel_injections(InjectConf& conf, char *exe_name) {
 
         LOG_F(INFO, "Injection Try #%d / %d ...", i + 1, conf.inject_n);
         log_join(std::to_string(childs[i].id()));
-        LOG_F(INFO, "Injection finished.", i + 1);
+        LOG_F(INFO, "Injection finished.");
         LOG_F(INFO, "----------------------\n");
     }
 }
