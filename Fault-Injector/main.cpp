@@ -296,7 +296,7 @@ void parallel_injections(InjectConf& conf, char *exe_name) {
         int rand_seed = rand() % RAND_MAX;
         if (conf.error_pattern == "") {
             bp::child c(
-                bp::search_path(exe_name),
+                exe_name,
                 std::to_string(golden_run.get_pid()),
                 std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(golden_run.duration()).count()),
                 std::to_string(rand_seed),
@@ -310,7 +310,7 @@ void parallel_injections(InjectConf& conf, char *exe_name) {
         }
         else {
             bp::child c(
-                bp::search_path(exe_name),
+                exe_name,
                 std::to_string(golden_run.get_pid()),
                 std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(golden_run.duration()).count()),
                 std::to_string(rand_seed),
