@@ -56,6 +56,7 @@ if (${Boost_FOUND})
 	# Include header-only boost
 	target_include_directories(FreeRTOS_FaultInjector PRIVATE ${Boost_INCLUDE_DIRS})
 	target_link_directories(FreeRTOS_FaultInjector PRIVATE ${Boost_LIBRARY_DIRS})
+	target_link_libraries(FreeRTOS_FaultInjector PRIVATE ${Boost_LIBRARIES})
 endif()
 
 
