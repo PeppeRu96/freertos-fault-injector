@@ -30,6 +30,8 @@ private:
 
 #if defined __linux__
 	pid_t linux_pid;
+#elif defined __APPLE__ || defined __MACH__
+    mach_port_t sim_task_port;
 #elif defined _WIN32
 	bool handle_open;
 	HANDLE sim_proc_handle;

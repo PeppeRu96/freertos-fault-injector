@@ -48,7 +48,9 @@ target_include_directories(FreeRTOS_FaultInjector PRIVATE ${FI_INCLUDES})
 
 target_link_libraries(FreeRTOS_FaultInjector PRIVATE Threads::Threads)
 if (UNIX)
-	target_link_libraries(FreeRTOS_FaultInjector PRIVATE rt)
+	if (NOT APPLE)
+		target_link_libraries(FreeRTOS_FaultInjector PRIVATE rt)
+	endif()
     target_link_libraries(FreeRTOS_FaultInjector PRIVATE dl)
 endif()
 

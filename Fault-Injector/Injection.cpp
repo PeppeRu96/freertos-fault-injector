@@ -8,6 +8,13 @@
 #include <unistd.h>
 #include <sys/uio.h>
 #include <errno.h>
+#elif defined __APPLE__ || defined __MACH__
+#include <unistd.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <mach/mach.h>
+#include <mach/mach_types.h>
+#include <mach/kern_return.h>
 #elif defined _WIN32
 #include <Windows.h>
 #endif
@@ -24,7 +31,9 @@ Injection::Injection(SimulatorRun* sr, DataStructure ds, unsigned long max_time_
 #if defined __linux__
     this->linux_pid = pid;
 #elif defined __APPLE__ || defined __MACH__
-    this->proc_port = task_for_pid(mach_task_self(), this->pid, $(this->proc_port));
+    kern_return_t kret;
+    kret = task_for_pid(mach_task_self(), this->pid, &(this->sim_task_port));
+    //printf("task_for_pid kret: %d\n", kret);
 #elif defined _WIN32
     this->sim_proc_handle = OpenProcess(PROCESS_ALL_ACCESS, false, pid);
     this->handle_open = true;
@@ -102,8 +111,8 @@ void Injection::inject(std::chrono::steady_clock::time_point begin_time) {
     // 3. Write phase
     write_memory(injected_byte_addr, &byte_buffer_after, 1);
 
-    char struct_after[500];
-    read_memory(ds.get_address(), struct_after, ds.get_fixed_size());
+    //char struct_after[500];
+    //read_memory(ds.get_address(), struct_after, ds.get_fixed_size());
 
     //std::cout << "\n----------------------------" << std::endl;
     //std::cout << "Queue after the injection: " << std::endl;
@@ -184,18 +193,18 @@ void Injection::read_memory(void* address, char* buffer, size_t size) {
     kern_return_t kret;
     size_t nread;
 
-    kr = vm_read_overwrite(this->proc_port, (vm_address_t)address, size, (vm_address_t)buffer, &nread);
-    if (kr != KERN_SUCCCESS) {
+    kret = vm_read_overwrite(this->sim_task_port, (vm_address_t)address, size, (vm_address_t) buffer, &nread);
+    //printf("vm_read_overwrite kret: %d, nread: %d\n", kret, nread);
+    if (kret != 0) {
         std::cerr << "Can't read simulator memory" << std::endl;
         exit(1);
     }
 }
 void Injection::write_memory(void* address, char* buffer, size_t size) {
     kern_return_t kret;
-    size_t nread;
 
-    kr = vm_write(this->proc_port, (vm_address_t)address, (vm_offset_t)buffer, size);
-    if (kr != KERN_SUCCCESS) {
+    kret = vm_write(this->sim_task_port, (vm_address_t)address, (vm_offset_t)buffer, size);
+    if (kret != 0) {
         std::cerr << "Can't write simulator memory" << std::endl;
         exit(1);
     }
